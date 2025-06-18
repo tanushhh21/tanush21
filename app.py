@@ -85,8 +85,8 @@ def save_users(users):
 
 users = load_users()
 
-st.sidebar.title("💡 FinLight")
-st.sidebar.markdown("MoneyMate — Track. Save. Thrive.")
+st.sidebar.title("MoneyMate — Track. Save. Thrive.")
+
 
 st.sidebar.subheader("Login or Sign Up")
 mode = st.sidebar.radio("Select", ["Login", "Sign Up"])
