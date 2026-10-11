@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useMotionValueEvent, useScroll } from "motion/react";
-import PillarFigure from "./PillarFigure";
+import PillarFigure, { StaticFigure } from "./PillarFigure";
 import Reveal from "./Reveal";
 
 const STEPS = [
@@ -38,7 +38,10 @@ function Pinned() {
   return (
     <div ref={ref} className="relative hidden h-[300vh] md:block motion-reduce:md:hidden">
       <div className="sticky top-0 flex h-[100svh] items-center">
-        <ol aria-hidden="true" className="absolute left-6 top-1/2 flex -translate-y-1/2 flex-col gap-2">
+        <ol
+          aria-hidden="true"
+          className="absolute left-[max(16px,calc((100%-1180px)/2-24px))] top-1/2 flex -translate-y-1/2 flex-col gap-2"
+        >
           {STEPS.map((s, i) => (
             <li
               key={s.n}
@@ -48,7 +51,7 @@ function Pinned() {
             />
           ))}
         </ol>
-        <div className="wrap grid grid-cols-2 items-center gap-16">
+        <div className="wrap grid grid-cols-2 items-center gap-16 pl-14! xl:pl-6!">
           <div className="grid">
             {STEPS.map((s, i) => (
               <div key={s.n} className="[grid-area:1/1]" aria-hidden={i !== step}>
@@ -86,7 +89,7 @@ function Stacked() {
           className={`grid items-center gap-10 md:grid-cols-2 md:gap-16 ${i > 0 ? "mt-[clamp(5rem,12vh,9rem)]" : ""}`}
         >
           <div className="mx-auto w-full max-w-[320px] md:order-2 md:max-w-[440px]">
-            <PillarFigure step={i} />
+            <StaticFigure step={i} />
           </div>
           <div>
             <span className="label block">{s.n}</span>
