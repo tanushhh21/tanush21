@@ -96,6 +96,33 @@
   }
 }
 
+/* Hover underline: the one link treatment on the page. */
+@utility link-underline {
+  position: relative;
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -3px;
+    height: 1px;
+    background: var(--color-signal);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 200ms var(--ease-standard);
+  }
+  &:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
 /* Lenis */
 html.lenis,
 html.lenis body {
@@ -132,5 +159,8 @@ html.lenis body {
     animation-delay: 0ms !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+  .reveal-child {
+    transform: none !important;
   }
 }
