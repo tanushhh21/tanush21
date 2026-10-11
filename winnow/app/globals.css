@@ -151,6 +151,24 @@ html.lenis body {
   animation: rise-in 700ms var(--ease-out-expo) both;
 }
 
+/* The display-xl scale, held to one line per sentence from tablet up. */
+@media (min-width: 768px) {
+  .hero-title {
+    white-space: nowrap;
+    font-size: min(clamp(2.75rem, 8.5vw, 7.5rem), calc((min(100vw, 1180px) - 48px) / 10.4));
+  }
+}
+
+.hero-canvas,
+.hero-counter {
+  opacity: 0;
+  transition: opacity 800ms var(--ease-standard);
+}
+.hero-canvas[data-ready],
+.hero-canvas[data-ready] ~ .hero-counter {
+  opacity: 1;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
