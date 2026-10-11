@@ -16,12 +16,22 @@ import {
 } from "@/lib/field";
 
 const fmt = new Intl.NumberFormat("en-US");
+const SLATE = [107, 114, 128];
+
+const ease = (p: number, a: number, b: number) => {
+  const t = Math.min(1, Math.max(0, (p - a) / (b - a)));
+  return t * t * (3 - 2 * t);
+};
+const mixColor = (a: number[], b: number[], t: number) =>
+  `rgb(${a.map((v, i) => Math.round(v + (b[i] - v) * t)).join(" ")})`;
 
 export default function Hero() {
   const sectionRef = useRef<HTMLElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const counterRef = useRef<HTMLSpanElement>(null);
+  const appliedRef = useRef<HTMLSpanElement>(null);
+  const findsRef = useRef<HTMLSpanElement>(null);
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end end"],
@@ -32,6 +42,8 @@ export default function Hero() {
     const stage = stageRef.current!;
     const canvas = canvasRef.current!;
     const counter = counterRef.current!;
+    const applied = appliedRef.current!;
+    const finds = findsRef.current!;
     const ctx = canvas.getContext("2d", { alpha: true })!;
 
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -60,6 +72,10 @@ export default function Hero() {
         counter.textContent = fmt.format(count);
         lastCount = count;
       }
+      // The words follow the field: the two thousand recede to slate as they
+      // are eliminated, and "Winnow finds them." lands in ink as the ten settle.
+      applied.style.color = mixColor(INK, SLATE, ease(p, 0.12, 0.8));
+      finds.style.color = mixColor(SLATE, INK, ease(p, 0.72, 0.95));
       if (!shown) {
         shown = true;
         // Load sequence: the field arrives after the headline has started to rise.
@@ -138,7 +154,11 @@ export default function Hero() {
         <div className="wrap relative flex h-full flex-col justify-end pb-[max(5rem,14svh)]">
           <h1 id="hero-heading" className="display-xl hero-title">
             <span className="block overflow-hidden pb-[0.1em] -mb-[0.1em]">
-              <span className="load-rise block text-ink" style={{ animationDelay: "250ms" }}>
+              <span
+                ref={appliedRef}
+                className="load-rise block text-ink"
+                style={{ animationDelay: "250ms" }}
+              >
                 Two thousand applied.
               </span>
             </span>
@@ -149,7 +169,7 @@ export default function Hero() {
             </span>
           </h1>
           <p className="body-lg mt-6 overflow-hidden sm:mt-8">
-            <span className="load-rise block" style={{ animationDelay: "430ms" }}>
+            <span ref={findsRef} className="load-rise block" style={{ animationDelay: "430ms" }}>
               Winnow finds them.
             </span>
           </p>
