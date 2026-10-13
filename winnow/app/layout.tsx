@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import SmoothScroll from "@/components/SmoothScroll";
 import MotionProvider from "@/components/MotionProvider";
+import RevealObserver from "@/components/RevealObserver";
 import "./globals.css";
 
 const geist = Geist({
@@ -19,8 +20,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Winnow",
-  description: "Two thousand applied. Ten are worth meeting. Winnow finds them.",
+  title: "Winnow · AI-native hiring",
+  description: "Winnow is an AI-native hiring firm for teams in India. We source across every channel, read every profile in full, and bring you ten names with the reasons behind each.",
 };
 
 export const viewport: Viewport = {
@@ -30,10 +31,15 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${geist.variable} ${geistMono.variable}`}>
+    <html lang="en" className={`${geist.variable} ${geistMono.variable}`} suppressHydrationWarning>
+      <head>
+        {/* Lets CSS hide not-yet-revealed content only when JS will reveal it. */}
+        <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
+      </head>
       <body>
         <SmoothScroll />
         <MotionProvider>{children}</MotionProvider>
+        <RevealObserver />
       </body>
     </html>
   );

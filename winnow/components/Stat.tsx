@@ -35,10 +35,13 @@ export default function Stat() {
   }, [inView]);
 
   return (
-    <section aria-label="Today" className="section-y bg-mist">
-      <div className="wrap text-center">
+    <section aria-label="The problem" className="section-y bg-mist">
+      <div className="wrap flex flex-col items-center text-center">
+        <p className="label">
+          <Reveal>A résumé&rsquo;s first look, today</Reveal>
+        </p>
         <m.p
-          className="display-xl font-mono tabular-nums text-ink [word-spacing:-0.3em]"
+          className="display-xl mt-8 font-mono tabular-nums text-ink [word-spacing:-0.3em]"
           viewport={VIEWPORT}
           onViewportEnter={() => setInView(true)}
         >
@@ -49,8 +52,14 @@ export default function Stat() {
             <span className="sr-only">{TARGET} seconds</span>
           </Reveal>
         </m.p>
-        <p className="label mt-8">
-          <Reveal delay={0.06}>per application, today</Reveal>
+        <p className="body-lg mt-10 max-w-[36rem]">
+          <Reveal delay={0.06}>
+            That is how long most applications get before a yes or no. Great people are skipped
+            for a missing keyword, and the best are rarely applying at all.
+          </Reveal>
+        </p>
+        <p className="mt-6 max-w-[36rem] text-[clamp(1.0625rem,1.4vw,1.3rem)] font-medium text-ink">
+          <Reveal delay={0.12}>Winnow reads every profile in full, and goes looking for the rest.</Reveal>
         </p>
       </div>
     </section>

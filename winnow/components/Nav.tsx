@@ -3,6 +3,12 @@
 import { useState } from "react";
 import { useMotionValueEvent, useScroll } from "motion/react";
 
+const LINKS = [
+  { href: "#how", label: "How it works" },
+  { href: "#shortlist", label: "Shortlist" },
+  { href: "#pricing", label: "Pricing" },
+];
+
 export default function Nav() {
   const { scrollY } = useScroll();
   const [solid, setSolid] = useState(false);
@@ -20,9 +26,23 @@ export default function Nav() {
         <a href="#top" className="text-[17px] font-semibold tracking-[-0.02em] text-ink">
           Winnow
         </a>
-        <a href="#talk" className="link-underline text-[15px] font-medium text-ink">
-          Talk to us
-        </a>
+        <div className="flex items-center gap-8">
+          <ul className="hidden items-center gap-8 md:flex">
+            {LINKS.map((l) => (
+              <li key={l.href}>
+                <a href={l.href} className="link-underline text-[14px] text-slate transition-colors duration-150 hover:text-ink">
+                  {l.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+          <a
+            href="#talk"
+            className="inline-flex items-center rounded-full bg-ink px-4 py-2 text-[14px] font-medium text-paper transition-transform duration-200 ease-standard hover:-translate-y-px"
+          >
+            Talk to us
+          </a>
+        </div>
       </nav>
     </header>
   );

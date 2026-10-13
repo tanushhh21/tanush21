@@ -1,33 +1,19 @@
-"use client";
-
-import { m } from "motion/react";
-import { EASE_OUT, VIEWPORT } from "./motion";
-
 type Props = {
   children: React.ReactNode;
-  delay?: number;
+  delay?: number; // seconds
   className?: string;
 };
 
 /**
- * Mask reveal from below. The observed element is the clipping parent:
- * the translated child sits outside the clip, so observing it would never fire.
+ * Mask reveal from below, once, when the element is 15% into the viewport.
+ * Plain markup: RevealObserver (mounted once) marks elements as they enter and
+ * CSS runs the transition, so reveals cost nothing to hydrate. Without JS the
+ * content is simply shown.
  */
 export default function Reveal({ children, delay = 0, className = "" }: Props) {
   return (
-    <m.span
-      className={`block overflow-hidden pb-[0.14em] -mb-[0.14em] ${className}`}
-      initial="hidden"
-      whileInView="show"
-      viewport={VIEWPORT}
-    >
-      <m.span
-        className="reveal-child block"
-        variants={{ hidden: { y: "105%" }, show: { y: "0%" } }}
-        transition={{ duration: 0.7, ease: EASE_OUT, delay }}
-      >
-        {children}
-      </m.span>
-    </m.span>
+    <span data-reveal="" className={`reveal ${className}`} style={{ "--reveal-delay": `${delay}s` } as React.CSSProperties}>
+      <span className="reveal-child">{children}</span>
+    </span>
   );
 }
