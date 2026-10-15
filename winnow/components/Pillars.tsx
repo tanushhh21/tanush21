@@ -6,9 +6,9 @@ import PillarFigure, { StaticFigure } from "./PillarFigure";
 import Reveal from "./Reveal";
 
 const STEPS = [
-  { n: "01", title: "Source", line: "Every channel, one pipeline." },
-  { n: "02", title: "Evaluate", line: "Read like your best recruiter would." },
-  { n: "03", title: "Shortlist", line: "Ten names, and why." },
+  { n: "01", title: "Source", line: "Inbound and outbound, on every role." },
+  { n: "02", title: "Evaluate", line: "Read against your bar. Then verified." },
+  { n: "03", title: "Shortlist", line: "Ranked, with reasons. Interviews booked." },
 ];
 
 function Mask({ state, delay = 0, children }: { state: number; delay?: number; children: React.ReactNode }) {

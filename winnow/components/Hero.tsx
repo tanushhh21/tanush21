@@ -19,10 +19,10 @@ import {
 
 // One short line per act, shown while that act plays.
 const CAPTIONS = [
-  { from: 0.06, to: 0.21, text: "Found everywhere." },
-  { from: 0.21, to: 0.56, text: "Read in full." },
-  { from: 0.56, to: 0.74, text: "Narrowed with care." },
-  { from: 0.74, to: 1.5, text: "Ten names. One hire." },
+  { from: 0.06, to: 0.21, text: "Applied, and sourced." },
+  { from: 0.21, to: 0.56, text: "Every profile, read." },
+  { from: 0.56, to: 0.74, text: "Verified before the interview." },
+  { from: 0.74, to: 1.5, text: "You interview. You make the offer." },
 ];
 
 const clamp01 = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v);
@@ -222,7 +222,12 @@ export default function Hero() {
               </span>
             </span>
           </h1>
-          <div className="load-fade mt-10" style={{ animationDelay: "450ms" }}>
+          <p className="body-lg mt-4 overflow-hidden">
+            <span className="load-rise block" style={{ animationDelay: "340ms" }}>
+              AI-native hiring for Indian companies.
+            </span>
+          </p>
+          <div className="load-fade mt-9" style={{ animationDelay: "450ms" }}>
             <a href="#talk" className="btn-primary">
               Talk to us
             </a>

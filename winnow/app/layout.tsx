@@ -27,7 +27,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Winnow · Find faster. Read smarter. Hire better.",
-  description: "Find faster. Read smarter. Hire better. Winnow is an AI-native hiring firm in India.",
+  description: "AI-native hiring for Indian companies. Sourcing, evaluation and shortlisting on one system.",
 };
 
 export const viewport: Viewport = {
