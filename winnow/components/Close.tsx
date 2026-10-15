@@ -1,7 +1,6 @@
 import Reveal from "./Reveal";
 import Logo from "./Logo";
-
-const MAIL = "mailto:hello@winnow.example?subject=Blind%20re-rank";
+import { MAIL } from "@/lib/site";
 
 export default function Close() {
   return (
@@ -15,19 +14,17 @@ export default function Close() {
         </h2>
         <p className="body-lg mt-5 max-w-[30rem]">
           <Reveal delay={0.12}>
-            Give us ten roles you have already filled. We rank them blind and show you where your
-            hire landed.
+            Give us ten roles you have already filled. We rank them blind and show you where your hire landed.
           </Reveal>
         </p>
-        <div className="mt-10 flex flex-col items-center gap-5">
-          <a href={MAIL} className="btn-primary">
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-7">
+          <a href={`${MAIL}?subject=Blind%20re-rank`} className="btn-primary">
             Run the blind test
           </a>
-          <a href="mailto:hello@winnow.example" className="label link-underline">
-            hello@winnow.example
+          <a href="/pricing" className="link-chevron">
+            See pricing <span aria-hidden="true">›</span>
           </a>
         </div>
-        <p className="label mt-14">Paid on the hire · Nothing if nobody joins</p>
       </div>
     </section>
   );

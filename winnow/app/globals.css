@@ -182,40 +182,43 @@ html:not(.js) .hero-lockword {
   display: none;
 }
 
-/* Buttons and links, Apple-style: one blue pill, one blue chevron link. */
-.btn-primary {
-  display: inline-flex;
-  align-items: center;
-  border-radius: 9999px;
-  background: var(--color-signal);
-  color: var(--color-paper);
-  padding: 0.8rem 1.4rem;
-  font-size: 15px;
-  font-weight: 500;
-  box-shadow: var(--shadow-lift);
-  transition: transform 200ms var(--ease-standard), box-shadow 200ms var(--ease-standard), background-color 200ms var(--ease-standard);
-}
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lift-hover);
-  background: #1440e0;
-}
-.link-chevron {
-  color: var(--color-signal);
-  font-size: 15px;
-  font-weight: 500;
-}
-.link-chevron span {
-  display: inline-block;
-  margin-left: 0.15em;
-  transition: transform 200ms var(--ease-standard);
-}
-.link-chevron:hover {
-  text-decoration: underline;
-  text-underline-offset: 4px;
-}
-.link-chevron:hover span {
-  transform: translateX(3px);
+/* Buttons and links, Apple-style: one blue pill, one blue chevron link.
+   In the components layer so utilities (hidden, padding) can override them. */
+@layer components {
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 9999px;
+    background: var(--color-signal);
+    color: var(--color-paper);
+    padding: 0.8rem 1.4rem;
+    font-size: 15px;
+    font-weight: 500;
+    box-shadow: var(--shadow-lift);
+    transition: transform 200ms var(--ease-standard), box-shadow 200ms var(--ease-standard), background-color 200ms var(--ease-standard);
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lift-hover);
+    background: #1440e0;
+  }
+  .link-chevron {
+    color: var(--color-signal);
+    font-size: 15px;
+    font-weight: 500;
+  }
+  .link-chevron span {
+    display: inline-block;
+    margin-left: 0.15em;
+    transition: transform 200ms var(--ease-standard);
+  }
+  .link-chevron:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+  .link-chevron:hover span {
+    transform: translateX(3px);
+  }
 }
 
 .hero-canvas {

@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Funnel_Display, Geist, Geist_Mono } from "next/font/google";
 import SmoothScroll from "@/components/SmoothScroll";
 import RevealObserver from "@/components/RevealObserver";
+import Nav from "@/components/Nav";
+import Footer from "@/components/Footer";
 import "./globals.css";
 
 const geist = Geist({
@@ -26,7 +28,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Winnow · Find faster. Read smarter. Hire better.",
+  title: { default: "Winnow · Find faster. Read smarter. Hire better.", template: "%s · Winnow" },
   description: "AI-native hiring for Indian companies. Sourcing, evaluation and shortlisting on one system.",
 };
 
@@ -44,7 +46,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <SmoothScroll />
+        <Nav />
         {children}
+        <Footer />
         <RevealObserver />
       </body>
     </html>
