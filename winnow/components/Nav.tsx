@@ -4,13 +4,6 @@ import { useState } from "react";
 import { useMotionValueEvent, useScroll } from "motion/react";
 import Logo from "./Logo";
 
-const LINKS = [
-  { href: "#why", label: "Why Winnow" },
-  { href: "#how", label: "How it works" },
-  { href: "#shortlist", label: "Shortlist" },
-  { href: "#pricing", label: "Pricing" },
-];
-
 export default function Nav() {
   const { scrollY } = useScroll();
   const [solid, setSolid] = useState(false);
@@ -26,20 +19,9 @@ export default function Nav() {
         <a href="#top" aria-label="Winnow, back to top">
           <Logo size={21} />
         </a>
-        <div className="flex items-center gap-8">
-          <ul className="hidden items-center gap-7 md:flex">
-            {LINKS.map((l) => (
-              <li key={l.href}>
-                <a href={l.href} className="text-[13.5px] text-slate transition-colors duration-150 hover:text-ink">
-                  {l.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-          <a href="#talk" className="btn-primary !px-4 !py-1.5 !text-[13.5px]">
-            Talk to us
-          </a>
-        </div>
+        <a href="#talk" className="btn-primary !px-4 !py-1.5 !text-[13.5px]">
+          Talk to us
+        </a>
       </nav>
     </header>
   );

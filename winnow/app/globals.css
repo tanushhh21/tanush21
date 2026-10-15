@@ -174,12 +174,10 @@ html.lenis body {
   font-size: clamp(2.5rem, 6vw, 5.25rem);
 }
 .js .hero-caption,
-.js .hero-counts,
 .js .hero-lockword {
   opacity: 0;
 }
 html:not(.js) .hero-caption,
-html:not(.js) .hero-counts,
 html:not(.js) .hero-lockword {
   display: none;
 }

@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Funnel_Display, Geist, Geist_Mono } from "next/font/google";
 import SmoothScroll from "@/components/SmoothScroll";
-import MotionProvider from "@/components/MotionProvider";
 import RevealObserver from "@/components/RevealObserver";
 import "./globals.css";
 
@@ -28,7 +27,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Winnow · Find faster. Read smarter. Hire better.",
-  description: "Winnow is an AI-native hiring firm for teams in India. We source across every channel, read every profile in full, and bring you ten names with the reasons behind each.",
+  description: "Find faster. Read smarter. Hire better. Winnow is an AI-native hiring firm in India.",
 };
 
 export const viewport: Viewport = {
@@ -45,7 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <SmoothScroll />
-        <MotionProvider>{children}</MotionProvider>
+        {children}
         <RevealObserver />
       </body>
     </html>

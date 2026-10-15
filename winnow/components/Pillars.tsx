@@ -6,39 +6,9 @@ import PillarFigure, { StaticFigure } from "./PillarFigure";
 import Reveal from "./Reveal";
 
 const STEPS = [
-  {
-    n: "01",
-    title: "Source",
-    line: "Every channel, one pipeline.",
-    body: "We go well past your inbound. LinkedIn, GitHub, Naukri, referrals and alumni networks are searched together, de-duplicated, and built into one pipeline for the role.",
-    details: [
-      "Passive candidates, not only applicants",
-      "One profile per person, every source merged",
-      "The search widens until the bar is met",
-    ],
-  },
-  {
-    n: "02",
-    title: "Evaluate",
-    line: "Read like your best recruiter would.",
-    body: "Every profile is read in full against a rubric we agree with you: what they have shipped, how they have grown, and what they would bring. Keywords are where we start, not where we stop.",
-    details: [
-      "Your rubric, written down on day one",
-      "Evidence quoted from the profile",
-      "Notice period and CTC checked early",
-    ],
-  },
-  {
-    n: "03",
-    title: "Shortlist",
-    line: "Ten names, and why.",
-    body: "You get ten people, each with the reasons they made it and the risks worth probing. We have already reached out, confirmed interest and found time for a first conversation.",
-    details: [
-      "Reasons and risks, never a bare score",
-      "Interest confirmed before you see them",
-      "First conversations booked for you",
-    ],
-  },
+  { n: "01", title: "Source", line: "Every channel, one pipeline." },
+  { n: "02", title: "Evaluate", line: "Read like your best recruiter would." },
+  { n: "03", title: "Shortlist", line: "Ten names, and why." },
 ];
 
 function Mask({ state, delay = 0, children }: { state: number; delay?: number; children: React.ReactNode }) {
@@ -53,19 +23,6 @@ function Mask({ state, delay = 0, children }: { state: number; delay?: number; c
         {children}
       </span>
     </span>
-  );
-}
-
-function Details({ items }: { items: string[] }) {
-  return (
-    <ul className="grid border-t border-hairline">
-      {items.map((d) => (
-        <li key={d} className="flex items-center gap-3 border-b border-hairline py-3 text-[15px] text-ink">
-          <span aria-hidden="true" className="h-px w-3 bg-slate" />
-          {d}
-        </li>
-      ))}
-    </ul>
   );
 }
 
@@ -88,42 +45,27 @@ function Pinned() {
           {STEPS.map((s, i) => (
             <li
               key={s.n}
-              className={`h-12 w-[2px] transition-colors duration-300 ease-standard ${
-                i === step ? "bg-signal" : "bg-hairline"
-              }`}
+              className={`h-12 w-[2px] transition-colors duration-300 ease-standard ${i === step ? "bg-signal" : "bg-hairline"}`}
             />
           ))}
         </ol>
-        <div className="wrap grid grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] items-center gap-16 pl-14! xl:pl-6!">
+        <div className="wrap grid grid-cols-2 items-center gap-16 pl-14! xl:pl-6!">
           <div className="grid">
             {STEPS.map((s, i) => (
               <div key={s.n} className="[grid-area:1/1]" aria-hidden={i !== step}>
                 <Mask state={i - step}>
-                  <span className="label">
-                    How it works <span className="mx-2 text-hairline">/</span>
-                    <span className="text-ink">{s.n}</span> of 03
-                  </span>
+                  <span className="label">{s.n}</span>
                 </Mask>
                 <h2 className="display-lg mt-6 text-ink">
                   <Mask state={i - step} delay={30}>
                     {s.title}
                   </Mask>
                 </h2>
-                <p className="mt-3 text-[clamp(1.25rem,1.8vw,1.6rem)] font-medium tracking-[-0.015em] text-ink">
-                  <Mask state={i - step} delay={60}>
+                <p className="body-lg mt-5">
+                  <Mask state={i - step} delay={90}>
                     {s.line}
                   </Mask>
                 </p>
-                <p className="body-lg mt-5 max-w-[34rem]">
-                  <Mask state={i - step} delay={90}>
-                    {s.body}
-                  </Mask>
-                </p>
-                <div className="mt-8 max-w-[34rem]">
-                  <Mask state={i - step} delay={120}>
-                    <Details items={s.details} />
-                  </Mask>
-                </div>
               </div>
             ))}
           </div>
@@ -139,31 +81,19 @@ function Pinned() {
 function Stacked() {
   return (
     <div className="wrap">
-      <span className="label block">How it works</span>
       {STEPS.map((s, i) => (
-        <div
-          key={s.n}
-          className={`grid items-center gap-10 md:grid-cols-2 md:gap-16 ${i > 0 ? "mt-[clamp(5rem,12vh,9rem)]" : "mt-12"}`}
-        >
+        <div key={s.n} className={`grid items-center gap-10 md:grid-cols-2 md:gap-16 ${i > 0 ? "mt-[clamp(5rem,12vh,9rem)]" : ""}`}>
           <div className="mx-auto w-full max-w-[320px] md:order-2 md:max-w-[440px]">
             <StaticFigure step={i} />
           </div>
           <div>
-            <span className="label block">
-              <span className="text-ink">{s.n}</span> of 03
-            </span>
+            <span className="label block">{s.n}</span>
             <h2 className="display-lg mt-5 text-ink">
               <Reveal>{s.title}</Reveal>
             </h2>
-            <p className="mt-3 text-[1.25rem] font-medium tracking-[-0.015em] text-ink">
+            <p className="body-lg mt-4">
               <Reveal delay={0.06}>{s.line}</Reveal>
             </p>
-            <p className="body-lg mt-4">
-              <Reveal delay={0.12}>{s.body}</Reveal>
-            </p>
-            <div className="mt-7">
-              <Details items={s.details} />
-            </div>
           </div>
         </div>
       ))}
@@ -173,7 +103,7 @@ function Stacked() {
 
 export default function Pillars() {
   return (
-    <section id="how" aria-label="How it works" className="relative scroll-mt-0 bg-paper">
+    <section id="how" aria-label="How it works" className="relative bg-paper">
       <Pinned />
       <div className="section-y md:hidden motion-reduce:md:block">
         <Stacked />

@@ -3,8 +3,8 @@ import { createNoise2D, mulberry32 } from "./noise";
 /**
  * The hero, as one particle system telling the whole story.
  *
- *   Find       On load (clock-driven), candidates stream in from the channels
- *              they were found on and assemble the wordmark: winnow.
+ *   Find       On load (clock-driven), candidates fly in from every direction
+ *              and assemble the wordmark: winnow.
  *   Read       On scroll, the word dissolves into a field. A reading line
  *              sweeps it; every dot is read as the line passes and most fall
  *              away. A second, deeper read narrows the rest.
@@ -17,10 +17,6 @@ import { createNoise2D, mulberry32 } from "./noise";
  */
 
 export const KEEP = 10;
-export const DISPLAY_TOTAL = 2140;
-
-export const CHANNELS = ["LinkedIn", "GitHub", "Naukri", "Referrals", "Alumni networks", "Inbound"];
-const CHANNEL_WEIGHT = [0.3, 0.13, 0.24, 0.1, 0.08, 0.15];
 
 export const INK = [10, 12, 15];
 export const SIGNAL = [27, 77, 255];
@@ -57,7 +53,7 @@ export type Field = {
   r: Float32Array;
   a: Float32Array; // alpha in the field
   wa: Float32Array; // alpha in the word
-  ch: Uint8Array;
+  ang: Float32Array; // direction it flies in from
   depart: Float32Array;
   bend: Float32Array;
   dissolve: Float32Array; // progress at which it leaves the word
@@ -84,10 +80,9 @@ export function createField(n: number, quick = false, seedValue = 21400): Field 
   const ox = f32(), oy = f32(), r = f32(), a = f32(), wa = f32();
   const depart = f32(), bend = f32(), dissolve = f32(), read = f32(), out = f32();
   const fall = f32(), sx = f32();
-  const ch = new Uint8Array(n);
+  const ang = f32();
   const considered = new Uint8Array(n);
   const speed = quick ? PHONE_SPEED : 1;
-  const cum = CHANNEL_WEIGHT.map((_, i) => CHANNEL_WEIGHT.slice(0, i + 1).reduce((s, v) => s + v, 0));
 
   for (let i = 0; i < n; ) {
     const x = rand();
@@ -99,8 +94,7 @@ export function createField(n: number, quick = false, seedValue = 21400): Field 
     r[i] = 1.35 + rand() * 1.05;
     a[i] = 0.13 + rand() * 0.07;
     wa[i] = 0.62 + rand() * 0.3;
-    const c = rand();
-    ch[i] = cum.findIndex((v) => c <= v + 1e-9);
+    ang[i] = rand() * Math.PI * 2;
     depart[i] = (Math.pow(rand(), 1.3) * SOURCE_SPREAD) / speed;
     bend[i] = (rand() - 0.5) * 120;
     dissolve[i] = P.dissolveFrom + rand() * (P.dissolveTo - DISSOLVE - P.dissolveFrom);
@@ -161,7 +155,7 @@ export function createField(n: number, quick = false, seedValue = 21400): Field 
   });
 
   return {
-    n, ox, oy, r, a, wa, ch, depart, bend, dissolve, read, out, fall, sx, considered, kept,
+    n, ox, oy, r, a, wa, ang, depart, bend, dissolve, read, out, fall, sx, considered, kept,
     wx: f32(),
     wy: f32(),
     keep: Int32Array.from(ordered),
@@ -179,7 +173,6 @@ export type Layout = {
   w: number;
   h: number;
   mobile: boolean;
-  channels: { x: number; y: number }[];
   word: { cx: number; cy: number; width: number }; // the wordmark's box
   mark: { x: number; y: number }[]; // the ten slots of the Winnow mark
   markR: number;
@@ -204,21 +197,10 @@ export function computeLayout(
   lockup: { x: number; y: number; s: number },
 ): Layout {
   const mobile = w < 640;
-  const gutter = mobile ? 20 : 24;
-  const left = Math.max(gutter, (w - 1180) / 2 + gutter);
-  const right = Math.min(w - gutter, (w + 1180) / 2 - gutter);
-  const span = right - left;
-  const top = mobile ? 84 : Math.max(96, h * 0.115);
-  const channels = CHANNELS.map((_, i) =>
-    mobile
-      ? { x: left + (span * ((i % 3) + 0.5)) / 3, y: top + Math.floor(i / 3) * 36 }
-      : { x: left + (span * (i + 0.5)) / CHANNELS.length, y: top },
-  );
   return {
     w,
     h,
     mobile,
-    channels,
     word,
     mark: markSlots(lockup.x, lockup.y, lockup.s),
     markR: mobile ? 5.5 : 8,
@@ -278,20 +260,6 @@ function countBelow(sorted: Float32Array, v: number) {
   return lo;
 }
 
-export type Counts = { sourced: number; read: number; shortlisted: number };
-
-export function countsAt(f: Field, sourceT: number, p: number): Counts {
-  const arrived = countBelow(f.departSorted, sourceT - f.travel * 0.6);
-  const read = countBelow(f.readSorted, p);
-  let shortlisted = 0;
-  for (let k = 0; k < KEEP; k++) if (p >= f.start[k] + P.tenTravel * 0.7) shortlisted++;
-  return {
-    sourced: Math.round((arrived / f.n) * DISPLAY_TOTAL),
-    read: Math.round((read / f.n) * DISPLAY_TOTAL),
-    shortlisted,
-  };
-}
-
 export function makeSprite(rgb: number[]): HTMLCanvasElement {
   const c = document.createElement("canvas");
   const s = 64;
@@ -304,7 +272,6 @@ export function makeSprite(rgb: number[]): HTMLCanvasElement {
   return c;
 }
 
-const fmtIN = new Intl.NumberFormat("en-IN");
 const clamp01 = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v);
 const smooth = (e0: number, e1: number, v: number) => {
   const t = clamp01((v - e0) / (e1 - e0));
@@ -313,19 +280,18 @@ const smooth = (e0: number, e1: number, v: number) => {
 const easeOutCubic = (t: number) => 1 - (1 - t) ** 3;
 const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
 
-/** Down out of the channel label as a narrow stream, then out to its place. */
-function streamPoint(c: { x: number; y: number }, bend: number, hx: number, hy: number, e: number) {
-  const x0 = c.x + bend * 0.04;
-  const y0 = c.y + 22;
-  const x1 = c.x + bend * 0.12;
-  const y1 = y0 + (hy - y0) * 0.55;
-  const y2 = y0 + (hy - y0) * 0.75;
+/**
+ * Flying in from beyond the edge of the stage along a gentle curve. The
+ * origin is set by the dot's direction; bend bows the path to one side.
+ */
+function flyPoint(w: number, h: number, ang: number, bend: number, hx: number, hy: number, e: number) {
+  const R = Math.hypot(w, h) / 2 + 40;
+  const x0 = w / 2 + Math.cos(ang) * R;
+  const y0 = h / 2 + Math.sin(ang) * R;
+  const mx = (x0 + hx) / 2 - Math.sin(ang) * bend * 2;
+  const my = (y0 + hy) / 2 + Math.cos(ang) * bend * 2;
   const m = 1 - e;
-  const A = m * m * m;
-  const B = 3 * m * m * e;
-  const C = 3 * m * e * e;
-  const D = e * e * e;
-  return [A * x0 + B * x1 + C * hx + D * hx, A * y0 + B * y1 + C * y2 + D * hy];
+  return [m * m * x0 + 2 * m * e * mx + e * e * hx, m * m * y0 + 2 * m * e * my + e * e * hy];
 }
 
 // Under-damped spring step response, normalised to land at exactly 1.
@@ -340,7 +306,7 @@ function spring(t: number) {
 }
 
 export type Sprites = { ink: HTMLCanvasElement; signal: HTMLCanvasElement };
-export type Frame = { p: number; sourceT: number; time: number; drift: number; mono: string };
+export type Frame = { p: number; sourceT: number; time: number; drift: number };
 
 /**
  * While the page sits at the top, a dot that has arrived in the word never
@@ -371,7 +337,6 @@ export function renderField(
   ctx.clearRect(0, 0, w, h);
   const { ox, oy, r, a, noise } = f;
   const tt = F.time * 0.035;
-  const perChannel = [0, 0, 0, 0, 0, 0];
 
   // The reading line.
   const scanX = ((p - P.scanFrom) / (P.scanTo - P.scanFrom)) * 1.06 * w - 0.03 * w;
@@ -383,8 +348,7 @@ export function renderField(
   }
 
   if (settled && p <= P.dissolveFrom) {
-    renderOpening(ctx, f, L, F, sprites, settled, perChannel);
-    drawLabels(ctx, f, L, F, perChannel, p, sourceT);
+    renderOpening(ctx, f, L, F, sprites, settled);
     ctx.globalAlpha = 1;
     return;
   }
@@ -406,7 +370,7 @@ export function renderField(
     let alpha = f.wa[i] + (a[i] - f.wa[i]) * dv;
     if (u < 1) {
       const e = easeOutCubic(u);
-      [x, y] = streamPoint(L.channels[f.ch[i]], f.bend[i], x, y, e);
+      [x, y] = flyPoint(w, h, f.ang[i], f.bend[i], x, y, e);
       alpha *= 0.35 + 0.65 * e;
     }
     return [x, y, alpha, dv];
@@ -415,7 +379,6 @@ export function renderField(
   for (let i = 0; i < f.n; i++) {
     const u = clamp01((sourceT - f.depart[i]) / f.travel);
     if (u <= 0) continue;
-    if (u > 0.6) perChannel[f.ch[i]]++;
     if (f.kept[i]) continue; // the ten are drawn last, on top
     const d = (p - f.out[i]) / FALL;
     if (d >= 1) continue;
@@ -480,7 +443,6 @@ export function renderField(
     }
   }
 
-  drawLabels(ctx, f, L, F, perChannel, p, sourceT);
   ctx.globalAlpha = 1;
 }
 
@@ -492,13 +454,11 @@ function renderOpening(
   F: Frame,
   sprites: Sprites,
   S: Settled,
-  perChannel: number[],
 ) {
   const { sourceT } = F;
   for (let i = 0; i < f.n; i++) {
     const u = clamp01((sourceT - f.depart[i]) / f.travel);
     if (u <= 0) continue;
-    if (u > 0.6) perChannel[f.ch[i]]++;
     if (u >= 1 && !S.done[i]) {
       S.done[i] = 1;
       const rad = f.r[i];
@@ -512,38 +472,10 @@ function renderOpening(
     const u = clamp01((sourceT - f.depart[i]) / f.travel);
     if (u <= 0 || u >= 1) continue;
     const e = easeOutCubic(u);
-    const [x, y] = streamPoint(L.channels[f.ch[i]], f.bend[i], f.wx[i], f.wy[i], e);
+    const [x, y] = flyPoint(L.w, L.h, f.ang[i], f.bend[i], f.wx[i], f.wy[i], e);
     const rad = f.r[i];
     ctx.globalAlpha = f.wa[i] * (0.35 + 0.65 * e);
     ctx.drawImage(sprites.ink, x - rad, y - rad, rad * 2, rad * 2);
-  }
-}
-
-function drawLabels(
-  ctx: CanvasRenderingContext2D,
-  f: Field,
-  L: Layout,
-  F: Frame,
-  perChannel: number[],
-  p: number,
-  sourceT: number,
-) {
-  // Channel labels with live counts, while candidates are arriving.
-  const labelAlpha = 1 - smooth(0, P.dissolveFrom + 0.02, p);
-  if (labelAlpha > 0.01) {
-    const size = L.mobile ? 9.5 : 10.5;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    (ctx as CanvasRenderingContext2D & { letterSpacing?: string }).letterSpacing = "1.4px";
-    L.channels.forEach((c, i) => {
-      ctx.globalAlpha = labelAlpha * smooth(0, 0.5, sourceT - i * 0.08);
-      ctx.font = `500 ${size}px ${F.mono}`;
-      ctx.fillStyle = "rgb(107 114 128)";
-      ctx.fillText(CHANNELS[i].toUpperCase(), c.x, c.y);
-      ctx.font = `400 ${size + 1}px ${F.mono}`;
-      ctx.fillStyle = "rgb(10 12 15)";
-      ctx.fillText(fmtIN.format(Math.round((perChannel[i] / f.n) * DISPLAY_TOTAL)), c.x, c.y + 15);
-    });
   }
 }
 
