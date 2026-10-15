@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import PageHead from "@/components/PageHead";
 import BlindTest from "@/components/BlindTest";
 import Reveal from "@/components/Reveal";
-import { MAIL } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Pricing",
@@ -47,7 +46,7 @@ export default function Pricing() {
                 </p>
               </div>
               <div className="mt-10">
-                <a href={MAIL} className="btn-primary">
+                <a href="#talk" className="btn-primary">
                   Talk to us
                 </a>
               </div>

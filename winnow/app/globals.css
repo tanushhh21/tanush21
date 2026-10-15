@@ -296,6 +296,26 @@ html:not(.js) .stage .stage-title {
   transform: scale(0.85);
 }
 
+/* How we work: the analysis card. Bars grow once it is in view, text swaps
+   in when the candidate changes, and a hairline counts down to the next one. */
+.js [data-pending] .an-bar {
+  transform: scaleX(0) !important;
+}
+@keyframes an-swap {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.an-swap {
+  animation: an-swap 450ms var(--ease-out-expo) both;
+}
+@keyframes an-timer {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+.an-timer {
+  animation: an-timer 6000ms linear both;
+}
+
 /* Cards that rise in, staggered, when they enter view (RevealObserver marks them). */
 .js .rise {
   opacity: 0;

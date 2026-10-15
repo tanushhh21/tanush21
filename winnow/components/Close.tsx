@@ -1,6 +1,7 @@
 import Reveal from "./Reveal";
 import Logo from "./Logo";
-import { MAIL } from "@/lib/site";
+import InquiryForm from "./InquiryForm";
+import { EMAIL, MAIL } from "@/lib/site";
 
 export default function Close() {
   return (
@@ -18,14 +19,13 @@ export default function Close() {
             show you where your hire placed.
           </Reveal>
         </p>
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-7">
-          <a href={`${MAIL}?subject=Blind%20re-rank`} className="btn-primary">
-            Request a blind test
+        <InquiryForm />
+        <p className="mt-8 text-[15px] text-slate">
+          Or email us at{" "}
+          <a href={MAIL} className="link-underline text-ink">
+            {EMAIL}
           </a>
-          <a href="/pricing" className="link-chevron">
-            See pricing <span aria-hidden="true">›</span>
-          </a>
-        </div>
+        </p>
       </div>
     </section>
   );

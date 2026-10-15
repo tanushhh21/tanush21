@@ -4,7 +4,7 @@ import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { useMotionValueEvent, useScroll } from "motion/react";
 import Logo from "./Logo";
-import { MAIL, TABS } from "@/lib/site";
+import { TABS } from "@/lib/site";
 
 
 // "/pricing", "pricing.html" and "/pricing/" all name the same tab.
@@ -46,7 +46,7 @@ export default function Nav() {
               );
             })}
           </ul>
-          <a href={MAIL} className="btn-primary hidden !px-4 !py-1.5 !text-[13.5px] sm:inline-flex">
+          <a href="#talk" className="btn-primary hidden !px-4 !py-1.5 !text-[13.5px] sm:inline-flex">
             Talk to us
           </a>
         </div>
