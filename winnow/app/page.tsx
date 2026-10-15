@@ -1,6 +1,6 @@
 import Nav from "@/components/Nav";
 import Hero from "@/components/Hero";
-import Stat from "@/components/Stat";
+import Bento from "@/components/Bento";
 import Pillars from "@/components/Pillars";
 import ShortlistExample from "@/components/ShortlistExample";
 import Process from "@/components/Process";
@@ -14,7 +14,7 @@ export default function Home() {
       <Nav />
       <main>
         <Hero />
-        <Stat />
+        <Bento />
         <Pillars />
         <ShortlistExample />
         <Process />

@@ -11,6 +11,7 @@
 
   --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-wordmark: var(--font-funnel), var(--font-geist), ui-sans-serif, sans-serif;
 
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
@@ -151,22 +152,79 @@ html.lenis body {
   animation: rise-in 700ms var(--ease-out-expo) both;
 }
 
-/* The display-xl scale, held to one line per sentence from tablet up and kept
-   narrow enough to leave the upper right to the field's counters. */
-@media (min-width: 768px) {
-  .hero-title {
-    white-space: nowrap;
-    font-size: min(clamp(2.75rem, 8.5vw, 7.5rem), calc((min(100vw, 1180px) - 48px) / 11.5));
-  }
+/* Hero. The tagline is set like a product line: large, tight, centred. */
+.hero-tagline {
+  font-size: clamp(1.75rem, 4.4vw, 3.75rem);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.06;
+  text-wrap: balance;
+}
+.hero-word {
+  container-type: inline-size;
+  aspect-ratio: 4.4 / 1;
+}
+.hero-word-fallback {
+  font-size: 27cqi;
+}
+.js .hero-word-fallback {
+  visibility: hidden;
+}
+.hero-lockword {
+  font-size: clamp(2.5rem, 6vw, 5.25rem);
+}
+.js .hero-caption,
+.js .hero-counts,
+.js .hero-lockword {
+  opacity: 0;
+}
+html:not(.js) .hero-caption,
+html:not(.js) .hero-counts,
+html:not(.js) .hero-lockword {
+  display: none;
 }
 
-.hero-canvas,
-.hero-counter {
-  opacity: 0;
-  transition: opacity 800ms var(--ease-standard);
+/* Buttons and links, Apple-style: one blue pill, one blue chevron link. */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  background: var(--color-signal);
+  color: var(--color-paper);
+  padding: 0.8rem 1.4rem;
+  font-size: 15px;
+  font-weight: 500;
+  box-shadow: var(--shadow-lift);
+  transition: transform 200ms var(--ease-standard), box-shadow 200ms var(--ease-standard), background-color 200ms var(--ease-standard);
 }
-.hero-canvas[data-ready],
-.hero-canvas[data-ready] ~ .hero-counter {
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lift-hover);
+  background: #1440e0;
+}
+.link-chevron {
+  color: var(--color-signal);
+  font-size: 15px;
+  font-weight: 500;
+}
+.link-chevron span {
+  display: inline-block;
+  margin-left: 0.15em;
+  transition: transform 200ms var(--ease-standard);
+}
+.link-chevron:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.link-chevron:hover span {
+  transform: translateX(3px);
+}
+
+.hero-canvas {
+  opacity: 0;
+  transition: opacity 600ms var(--ease-standard);
+}
+.hero-canvas[data-ready] {
   opacity: 1;
 }
 

@@ -3,12 +3,14 @@
 import { m } from "motion/react";
 import Reveal from "./Reveal";
 import { EASE_OUT, VIEWPORT } from "./motion";
+import { Tag } from "./Bento";
 
 // Illustrative only: anonymised, invented candidates showing the format.
 const ROWS = [
   {
     who: "Candidate A",
     meta: ["7 yrs", "Payments infrastructure", "Notice: 30 days"],
+    tags: ["Go", "Postgres", "Ledgers"],
     why: "Led the ledger rewrite at a Series C fintech and owns reconciliation for four million transactions a day.",
     probe: "Has managed two engineers. Ask how they would grow a team of five.",
     status: "Interest confirmed",
@@ -16,6 +18,7 @@ const ROWS = [
   {
     who: "Candidate B",
     meta: ["5 yrs", "Distributed systems", "Notice: 60 days, buyout possible"],
+    tags: ["Go", "Kafka", "Open source"],
     why: "Maintains an open-source Go rate limiter that other companies run in production. Writes unusually clear design docs.",
     probe: "Mostly internal platform work so far, little customer-facing product.",
     status: "Interest confirmed",
@@ -23,6 +26,7 @@ const ROWS = [
   {
     who: "Candidate C",
     meta: ["6 yrs", "Platform", "Notice: 15 days"],
+    tags: ["Kubernetes", "SRE", "Team lead"],
     why: "Went from SDE-1 to tech lead in three years. Built on-call and incident review from scratch.",
     probe: "Expected CTC sits at the top of your band.",
     status: "First call booked",
@@ -30,6 +34,7 @@ const ROWS = [
   {
     who: "Candidate D",
     meta: ["8 yrs", "Data infrastructure", "Serving notice"],
+    tags: ["Spark", "Flink", "Mentoring"],
     why: "Moved a nightly batch pipeline to streaming with no downtime. Mentors a community study group.",
     probe: "Prefers hybrid. Confirm how many office days you need.",
     status: "Interest confirmed",
@@ -90,6 +95,11 @@ export default function ShortlistExample() {
                 <div>
                   <p className="text-[16px] font-medium text-ink">{r.who}</p>
                   <p className="mt-1.5 text-[14px] leading-snug text-slate">{r.meta.join(" · ")}</p>
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {r.tags.map((t) => (
+                      <Tag key={t}>{t}</Tag>
+                    ))}
+                  </div>
                 </div>
                 <dl className="grid gap-3 text-[15px] leading-relaxed">
                   <div className="grid gap-1 sm:grid-cols-[4.5rem_minmax(0,1fr)] sm:gap-4">
@@ -101,8 +111,8 @@ export default function ShortlistExample() {
                     <dd className="text-slate">{r.probe}</dd>
                   </div>
                 </dl>
-                <p className="self-start justify-self-start whitespace-nowrap rounded-full border border-hairline px-3 py-1 text-[13px] text-ink md:justify-self-end">
-                  {r.status}
+                <p className="self-start justify-self-start md:justify-self-end">
+                  <Tag tone={r.status === "First call booked" ? "signal" : "plain"}>{r.status}</Tag>
                 </p>
               </m.li>
             ))}

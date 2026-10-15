@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Funnel_Display, Geist, Geist_Mono } from "next/font/google";
 import SmoothScroll from "@/components/SmoothScroll";
 import MotionProvider from "@/components/MotionProvider";
 import RevealObserver from "@/components/RevealObserver";
@@ -12,6 +12,13 @@ const geist = Geist({
   variable: "--font-geist",
 });
 
+const funnel = Funnel_Display({
+  subsets: ["latin"],
+  weight: ["700"],
+  display: "swap",
+  variable: "--font-funnel",
+});
+
 const geistMono = Geist_Mono({
   subsets: ["latin"],
   weight: ["400", "500"],
@@ -20,7 +27,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Winnow · AI-native hiring",
+  title: "Winnow · Find faster. Read smarter. Hire better.",
   description: "Winnow is an AI-native hiring firm for teams in India. We source across every channel, read every profile in full, and bring you ten names with the reasons behind each.",
 };
 
@@ -31,7 +38,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${geist.variable} ${geistMono.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${geist.variable} ${geistMono.variable} ${funnel.variable}`} suppressHydrationWarning>
       <head>
         {/* Lets CSS hide not-yet-revealed content only when JS will reveal it. */}
         <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
