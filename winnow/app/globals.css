@@ -248,7 +248,52 @@ html:not(.js) .hero-lockword {
   transform: none;
 }
 
+/* How we work: the stage list dims everything but the current stage. */
+.stage .stage-title,
+.stage .stage-line {
+  color: var(--color-slate);
+  transition: color 300ms var(--ease-standard);
+}
+.stage .stage-n {
+  transition: color 300ms var(--ease-standard);
+}
+.stage.is-active .stage-title,
+.stage.is-active .stage-line {
+  color: var(--color-ink);
+}
+.stage.is-active .stage-n {
+  color: var(--color-signal);
+}
+html:not(.js) .stage .stage-title {
+  color: var(--color-ink);
+}
+
+/* The example list: verification lands once the rows are ranked. */
+.ranked-verify {
+  display: inline-flex;
+  transition: opacity 400ms var(--ease-standard), transform 400ms var(--ease-out-expo);
+}
+.ranked[data-ranked="false"] .ranked-verify {
+  opacity: 0;
+  transform: scale(0.85);
+}
+
+/* Cards that rise in, staggered, when they enter view (RevealObserver marks them). */
+.js .rise {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 600ms var(--ease-standard) var(--reveal-delay, 0s), transform 700ms var(--ease-out-expo) var(--reveal-delay, 0s);
+}
+.js .rise[data-shown] {
+  opacity: 1;
+  transform: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .stage .stage-title,
+  .stage .stage-line {
+    color: var(--color-ink);
+  }
   *,
   *::before,
   *::after {
