@@ -9,7 +9,15 @@ export const metadata: Metadata = {
   description: "Paid on the hire. No licence, no monthly minimum, no setup fee. If nobody joins, you pay nothing.",
 };
 
-const INCLUDED = ["Brief and JD", "Distribution", "Sourcing", "Evaluation", "Verification", "Ranked shortlist", "Scheduling"];
+const INCLUDED = [
+  "Job description",
+  "Job distribution",
+  "Candidate sourcing",
+  "Candidate evaluation",
+  "Identity and credential checks",
+  "Ranked shortlist with reasoning",
+  "Interview scheduling",
+];
 const NONE = ["Licence", "Monthly minimum", "Setup fee"];
 
 function Check() {
@@ -23,19 +31,19 @@ function Check() {
 export default function Pricing() {
   return (
     <main>
-      <PageHead label="Pricing" title="Paid on the hire." sub="If nobody joins, you pay nothing." />
+      <PageHead label="Pricing" title="You pay only when you hire." sub="No hire, no fee." />
 
       <section aria-label="Plan" className="section-y">
         <div className="wrap">
           <div className="mx-auto grid max-w-[60rem] overflow-hidden rounded-[28px] border border-hairline bg-paper shadow-lift md:grid-cols-2">
             <div className="flex flex-col justify-between p-8 sm:p-11">
               <div>
-                <p className="label">Per role</p>
-                <p className="mt-8 text-[clamp(2.5rem,5vw,3.75rem)] font-semibold leading-none tracking-[-0.04em] text-ink">
+                <p className="eyebrow">Per role</p>
+                <p className="mt-6 font-display text-[clamp(2.5rem,5vw,3.75rem)] font-semibold leading-none tracking-[-0.04em] text-ink">
                   Success fee
                 </p>
                 <p className="mt-5 max-w-[22rem] text-[1.0625rem] leading-snug text-slate">
-                  A share of first-year CTC, charged only when someone we introduced joins.
+                  A percentage of first-year CTC, charged only when a candidate we introduced joins.
                 </p>
               </div>
               <div className="mt-10">
@@ -45,7 +53,7 @@ export default function Pricing() {
               </div>
             </div>
             <div className="border-t border-hairline bg-mist p-8 sm:p-11 md:border-l md:border-t-0">
-              <p className="label">Included on every role</p>
+              <p className="eyebrow">Included on every role</p>
               <ul className="mt-6 grid gap-3.5">
                 {INCLUDED.map((item) => (
                   <li key={item} className="flex items-center gap-3 text-[15.5px] text-ink">
@@ -65,7 +73,7 @@ export default function Pricing() {
             ))}
           </ul>
           <p className="mt-12 text-center text-[1.25rem] font-medium tracking-[-0.015em] text-ink">
-            <Reveal>Paid on outcomes, not seats.</Reveal>
+            <Reveal>Pricing tied to outcomes, not seats.</Reveal>
           </p>
         </div>
       </section>

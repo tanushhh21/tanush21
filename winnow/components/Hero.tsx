@@ -19,10 +19,10 @@ import {
 
 // One short line per act, shown while that act plays.
 const CAPTIONS = [
-  { from: 0.06, to: 0.21, text: "Applied, and sourced." },
-  { from: 0.21, to: 0.56, text: "Every profile, read." },
-  { from: 0.56, to: 0.74, text: "Verified before the interview." },
-  { from: 0.74, to: 1.5, text: "You interview. You make the offer." },
+  { from: 0.06, to: 0.21, text: "Applicants and sourced talent, in one pool." },
+  { from: 0.21, to: 0.56, text: "Every profile read for hidden signals." },
+  { from: 0.56, to: 0.74, text: "Verified before any interview." },
+  { from: 0.74, to: 1.5, text: "You interview and make the offer." },
 ];
 
 const clamp01 = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v);
@@ -218,7 +218,9 @@ export default function Hero() {
             <span className="sr-only">Winnow. </span>
             <span className="block overflow-hidden pb-[0.08em]">
               <span className="load-rise block" style={{ animationDelay: "260ms" }}>
-                Find faster. Read smarter. <span className="text-signal">Hire better.</span>
+                <span className="whitespace-nowrap">Source faster.</span>{" "}
+                <span className="whitespace-nowrap">Screen smarter.</span>{" "}
+                <span className="whitespace-nowrap text-signal">Hire better.</span>
               </span>
             </span>
           </h1>

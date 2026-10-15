@@ -11,13 +11,13 @@ import Reveal from "../Reveal";
  */
 
 export const STAGES = [
-  { title: "Brief", line: "Tell us the role. We write the JD, or work from yours." },
-  { title: "Distribute", line: "Posted to Naukri, your careers page and campus platforms." },
-  { title: "Source", line: "In parallel, we find the people who did not apply." },
-  { title: "Evaluate", line: "Every profile read against your requirement, not keywords." },
-  { title: "Verify", line: "Identity and credentials checked before any interview." },
-  { title: "Shortlist", line: "A ranked list, with the reasoning behind every name." },
-  { title: "Schedule", line: "Interviews booked. Anyone who goes quiet, chased." },
+  { title: "Brief", line: "Share the role. We draft the job description, or work from yours." },
+  { title: "Distribute", line: "We publish it on Naukri, your careers page and campus platforms." },
+  { title: "Source", line: "We search databases and talent networks for ideal candidates, including people who have not applied yet." },
+  { title: "Evaluate", line: "We look past the CV for hidden signals, and assess every profile against your requirements." },
+  { title: "Verify", line: "We verify identity and credentials before any interview." },
+  { title: "Shortlist", line: "You receive a ranked list with the reasoning behind each candidate." },
+  { title: "Schedule", line: "We schedule interviews and follow up with candidates." },
 ];
 
 // ---- The drawing -----------------------------------------------------------
@@ -282,7 +282,7 @@ export default function StagesStory() {
             <li key={s.title} className={`stage grid min-h-[38vh] grid-cols-[3rem_minmax(0,1fr)] content-center gap-x-4 md:min-h-[42vh] ${rowState(i)}`}>
               <span className="stage-n label tabular-nums">{String(i + 1).padStart(2, "0")}</span>
               <div>
-                <h2 className="stage-title text-[clamp(1.75rem,3.2vw,2.75rem)] font-medium tracking-[-0.03em]">
+                <h2 className="stage-title text-[clamp(1.75rem,3.2vw,2.75rem)] font-semibold tracking-[-0.03em]">
                   {s.title}
                 </h2>
                 <p className="stage-line mt-2 max-w-[28rem] text-[clamp(1rem,1.3vw,1.2rem)] leading-snug">{s.line}</p>
@@ -292,11 +292,11 @@ export default function StagesStory() {
           <li className={`stage grid min-h-[38vh] grid-cols-[3rem_minmax(0,1fr)] content-center gap-x-4 md:min-h-[42vh] ${rowState(7)}`}>
             <span aria-hidden="true" className="mt-[0.6em] h-2.5 w-2.5 rounded-full bg-signal" />
             <div>
-              <p className="text-[clamp(1.75rem,3.2vw,2.75rem)] font-medium tracking-[-0.03em] text-signal">
-                <Reveal>Then it&rsquo;s yours.</Reveal>
+              <p className="font-display text-[clamp(1.75rem,3.2vw,2.75rem)] font-semibold tracking-[-0.03em] text-signal">
+                <Reveal>Then it&rsquo;s your call.</Reveal>
               </p>
               <p className="mt-2 text-[clamp(1rem,1.3vw,1.2rem)] leading-snug text-ink">
-                <Reveal delay={0.06}>You interview. You make the offer.</Reveal>
+                <Reveal delay={0.06}>You interview and make the offer.</Reveal>
               </p>
             </div>
           </li>

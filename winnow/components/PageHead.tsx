@@ -4,7 +4,7 @@ import Reveal from "./Reveal";
 export default function PageHead({ label, title, sub }: { label: string; title: React.ReactNode; sub?: React.ReactNode }) {
   return (
     <header className="wrap flex flex-col items-center pt-[calc(4rem+clamp(4rem,12vh,8rem))] text-center">
-      <p className="label">
+      <p className="eyebrow">
         <Reveal>{label}</Reveal>
       </p>
       <h1 className="hero-tagline mt-6 max-w-[18ch] text-ink">

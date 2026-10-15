@@ -108,8 +108,8 @@ function Count({ to, run, ms }: { to: number; run: boolean; ms: number }) {
 }
 
 const TILES = [
-  { kind: "volume" as const, n: 2000, k: "Volume role", line: "applications for a support role in Bengaluru.", act: "We read every one." },
-  { kind: "scarce" as const, n: 9, k: "Scarce role", line: "applications for a battery storage engineer.", act: "So we go and find the rest." },
+  { kind: "volume" as const, n: 2000, k: "High-volume role", line: "applications for a support role in Bengaluru.", act: "We assess every one." },
+  { kind: "scarce" as const, n: 9, k: "Hard-to-fill role", line: "applications for a battery storage engineer.", act: "We find the candidates who did not apply." },
 ];
 
 export default function VolumeScarce() {
@@ -119,7 +119,7 @@ export default function VolumeScarce() {
     <div ref={ref} className="mt-14 grid gap-4 md:grid-cols-2 md:gap-5">
       {TILES.map((t) => (
         <div key={t.k} className="rounded-[28px] bg-paper p-8 sm:p-10">
-          <span className="label">{t.k}</span>
+          <span className="eyebrow">{t.k}</span>
           <p className="mt-8 font-mono text-[clamp(3rem,7vw,5.5rem)] font-medium leading-none tracking-[-0.08em] tabular-nums text-ink">
             <Count to={t.n} run={run} ms={t.kind === "volume" ? 1200 : 600} />
           </p>

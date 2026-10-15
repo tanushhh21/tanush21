@@ -9,9 +9,10 @@
   --color-hairline: #e8eaed;
   --color-signal: #1b4dff;
 
-  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-funnel-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-funnel), var(--font-funnel-sans), ui-sans-serif, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
-  --font-wordmark: var(--font-funnel), var(--font-geist), ui-sans-serif, sans-serif;
+  --font-wordmark: var(--font-funnel), ui-sans-serif, sans-serif;
 
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
@@ -24,25 +25,36 @@
 }
 
 @utility display-xl {
+  font-family: var(--font-display);
   font-size: clamp(2.75rem, 8.5vw, 7.5rem);
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: -0.04em;
   line-height: 0.95;
   text-wrap: balance;
 }
 
 @utility display-lg {
-  font-size: clamp(2rem, 5.5vw, 4rem);
-  font-weight: 500;
+  font-family: var(--font-display);
+  font-size: clamp(2.125rem, 5.2vw, 4.25rem);
+  font-weight: 600;
   letter-spacing: -0.03em;
   line-height: 1.05;
   text-wrap: balance;
 }
 
 @utility body-lg {
-  font-size: clamp(1.0625rem, 1.4vw, 1.3rem);
+  font-size: clamp(1.0625rem, 1.35vw, 1.3125rem);
   font-weight: 400;
-  line-height: 1.5;
+  line-height: 1.45;
+  color: var(--color-slate);
+}
+
+/* Section labels, Apple-style: short, sentence case, semibold. */
+@utility eyebrow {
+  font-family: var(--font-display);
+  font-size: clamp(1rem, 1.15vw, 1.1875rem);
+  font-weight: 600;
+  letter-spacing: -0.01em;
   color: var(--color-slate);
 }
 
@@ -77,6 +89,11 @@
   html,
   body {
     overflow-x: clip;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
   }
   body {
     background: var(--color-paper);
@@ -154,7 +171,8 @@ html.lenis body {
 
 /* Hero. The tagline is set like a product line: large, tight, centred. */
 .hero-tagline {
-  font-size: clamp(1.75rem, 4.4vw, 3.75rem);
+  font-family: var(--font-display);
+  font-size: clamp(1.875rem, 4.6vw, 4rem);
   font-weight: 600;
   letter-spacing: -0.035em;
   line-height: 1.06;
@@ -303,6 +321,10 @@ html:not(.js) .stage .stage-title {
     scroll-behavior: auto !important;
   }
   .reveal-child {
+    transform: none !important;
+  }
+  .rise {
+    opacity: 1 !important;
     transform: none !important;
   }
 }

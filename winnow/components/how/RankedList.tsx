@@ -4,9 +4,9 @@ import { useEffect, useRef } from "react";
 import { easeOut, prefersReducedMotion, useOnceInView } from "./useOnceInView";
 
 const ROWS = [
-  { name: "Candidate A", source: "Sourced", score: 92, why: "Shipped payments infra at scale.", met: ["Go", "Postgres", "On-call"], miss: [] as string[] },
-  { name: "Candidate B", source: "Inbound", score: 88, why: "Strong systems depth, clear writing.", met: ["Go", "Kafka"], miss: ["On-call"] },
-  { name: "Candidate C", source: "Inbound", score: 81, why: "Fast growth to tech lead.", met: ["Postgres", "On-call"], miss: ["Go"] },
+  { name: "Candidate A", source: "Sourced", score: 92, why: "Built payment infrastructure at scale.", met: ["Go", "Postgres", "On-call"], miss: [] as string[] },
+  { name: "Candidate B", source: "Inbound", score: 88, why: "Deep experience with distributed systems.", met: ["Go", "Kafka"], miss: ["On-call"] },
+  { name: "Candidate C", source: "Inbound", score: 81, why: "Promoted to tech lead within three years.", met: ["Postgres", "On-call"], miss: ["Go"] },
 ];
 // Where each row sits before ranking: the order they arrived in.
 const ARRIVAL = [2, 0, 1];
@@ -79,7 +79,7 @@ export default function RankedList() {
     <div ref={wrap} data-ranked="true" className="ranked mx-auto mt-14 max-w-[56rem] overflow-hidden rounded-[22px] border border-hairline bg-paper shadow-lift">
       <div className="flex items-center justify-between border-b border-hairline px-5 py-4 sm:px-7">
         <p className="text-[15px] font-medium text-ink">Backend Engineer</p>
-        <p className="label">Example</p>
+        <p className="eyebrow !text-[14px]">Example</p>
       </div>
       <ol className="relative">
         {ROWS.map((r, i) => (

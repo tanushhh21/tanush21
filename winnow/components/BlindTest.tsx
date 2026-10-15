@@ -11,12 +11,13 @@ export default function BlindTest({ tone = "mist" }: { tone?: "mist" | "paper" }
         </h2>
         <p className="body-lg mt-5 max-w-[30rem]">
           <Reveal delay={0.06}>
-            Give us ten roles you have already filled. We rank them blind and show you where your hire landed.
+            Share ten roles you have already filled. We rank each applicant pool without knowing who you hired, then
+            show you where your hire placed.
           </Reveal>
         </p>
         <div className="mt-10">
           <a href={`${MAIL}?subject=Blind%20re-rank`} className="btn-primary">
-            Run the blind test
+            Request a blind test
           </a>
         </div>
       </div>

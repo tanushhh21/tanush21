@@ -1,21 +1,21 @@
 import type { Metadata, Viewport } from "next";
-import { Funnel_Display, Geist, Geist_Mono } from "next/font/google";
+import { Funnel_Display, Funnel_Sans, Geist_Mono } from "next/font/google";
 import SmoothScroll from "@/components/SmoothScroll";
 import RevealObserver from "@/components/RevealObserver";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import "./globals.css";
 
-const geist = Geist({
+const funnelSans = Funnel_Sans({
   subsets: ["latin"],
   weight: ["400", "500", "600"],
   display: "swap",
-  variable: "--font-geist",
+  variable: "--font-funnel-sans",
 });
 
 const funnel = Funnel_Display({
   subsets: ["latin"],
-  weight: ["700"],
+  weight: ["600", "700"],
   display: "swap",
   variable: "--font-funnel",
 });
@@ -28,7 +28,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: { default: "Winnow · Find faster. Read smarter. Hire better.", template: "%s · Winnow" },
+  title: { default: "Winnow · Source faster. Screen smarter. Hire better.", template: "%s · Winnow" },
   description: "AI-native hiring for Indian companies. Sourcing, evaluation and shortlisting on one system.",
 };
 
@@ -39,7 +39,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${geist.variable} ${geistMono.variable} ${funnel.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${funnelSans.variable} ${geistMono.variable} ${funnel.variable}`} suppressHydrationWarning>
       <head>
         {/* Lets CSS hide not-yet-revealed content only when JS will reveal it. */}
         <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
