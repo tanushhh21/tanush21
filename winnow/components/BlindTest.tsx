@@ -1,5 +1,6 @@
 import Reveal from "./Reveal";
-import { MAIL } from "@/lib/site";
+import InquiryForm from "./InquiryForm";
+import { EMAIL, MAIL } from "@/lib/site";
 
 /** The offer from the PRD: a blind re-rank of roles already filled. */
 export default function BlindTest({ tone = "mist" }: { tone?: "mist" | "paper" }) {
@@ -15,11 +16,13 @@ export default function BlindTest({ tone = "mist" }: { tone?: "mist" | "paper" }
             show you where your hire placed.
           </Reveal>
         </p>
-        <div className="mt-10">
-          <a href={`${MAIL}?subject=Blind%20re-rank`} className="btn-primary">
-            Request a blind test
+        <InquiryForm />
+        <p className="mt-8 text-[15px] text-slate">
+          Or email us at{" "}
+          <a href={MAIL} className="link-underline text-ink">
+            {EMAIL}
           </a>
-        </div>
+        </p>
       </div>
     </section>
   );

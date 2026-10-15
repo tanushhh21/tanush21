@@ -22,7 +22,7 @@ export default function Footer() {
             </a>
           </li>
         </ul>
-        <p className="label">Bengaluru · © 2026</p>
+        <p className="label">© 2026</p>
       </div>
     </footer>
   );
