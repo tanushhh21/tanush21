@@ -4,6 +4,7 @@ import SmoothScroll from "@/components/SmoothScroll";
 import RevealObserver from "@/components/RevealObserver";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
+import { SITE_URL, pageMeta } from "@/lib/site";
 import "./globals.css";
 
 const funnelSans = Funnel_Sans({
@@ -27,9 +28,13 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
 });
 
+const TITLE = "Winnow · Source faster. Screen smarter. Hire better.";
+
 export const metadata: Metadata = {
-  title: { default: "Winnow · Source faster. Screen smarter. Hire better.", template: "%s · Winnow" },
-  description: "AI-native hiring for Indian companies. Sourcing, evaluation and shortlisting on one system.",
+  metadataBase: new URL(SITE_URL),
+  title: { default: TITLE, template: "%s · Winnow" },
+  ...pageMeta("/", TITLE, "AI-native hiring for Indian companies. Sourcing, evaluation and shortlisting on one system."),
+  twitter: { card: "summary" },
 };
 
 export const viewport: Viewport = {

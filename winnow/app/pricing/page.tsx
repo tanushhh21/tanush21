@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/site";
 import PageHead from "@/components/PageHead";
 import BlindTest from "@/components/BlindTest";
 import Reveal from "@/components/Reveal";
 
 export const metadata: Metadata = {
   title: "Pricing",
-  description: "Paid on the hire. No licence, no monthly minimum, no setup fee. If nobody joins, you pay nothing.",
+  ...pageMeta("/pricing", "Pricing · Winnow", "Paid on the hire. No licence, no monthly minimum, no setup fee. If nobody joins, you pay nothing."),
 };
 
 const INCLUDED = [
