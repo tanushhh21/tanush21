@@ -1,0 +1,56 @@
+import type { Metadata, Viewport } from "next";
+import { Funnel_Display, Funnel_Sans, Geist_Mono } from "next/font/google";
+import SmoothScroll from "@/components/SmoothScroll";
+import RevealObserver from "@/components/RevealObserver";
+import Nav from "@/components/Nav";
+import Footer from "@/components/Footer";
+import "./globals.css";
+
+const funnelSans = Funnel_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  display: "swap",
+  variable: "--font-funnel-sans",
+});
+
+const funnel = Funnel_Display({
+  subsets: ["latin"],
+  weight: ["600", "700"],
+  display: "swap",
+  variable: "--font-funnel",
+});
+
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  display: "swap",
+  variable: "--font-geist-mono",
+});
+
+export const metadata: Metadata = {
+  title: { default: "Winnow · Source faster. Screen smarter. Hire better.", template: "%s · Winnow" },
+  description: "AI-native hiring for Indian companies. Sourcing, evaluation and shortlisting on one system.",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#FFFFFF",
+  colorScheme: "light",
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en" className={`${funnelSans.variable} ${geistMono.variable} ${funnel.variable}`} suppressHydrationWarning>
+      <head>
+        {/* Lets CSS hide not-yet-revealed content only when JS will reveal it. */}
+        <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
+      </head>
+      <body>
+        <SmoothScroll />
+        <Nav />
+        {children}
+        <Footer />
+        <RevealObserver />
+      </body>
+    </html>
+  );
+}

@@ -1,0 +1,330 @@
+@import "tailwindcss";
+
+@theme {
+  --color-*: initial;
+  --color-paper: #ffffff;
+  --color-mist: #f6f7f8;
+  --color-ink: #0a0c0f;
+  --color-slate: #6b7280;
+  --color-hairline: #e8eaed;
+  --color-signal: #1b4dff;
+
+  --font-sans: var(--font-funnel-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-funnel), var(--font-funnel-sans), ui-sans-serif, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-wordmark: var(--font-funnel), ui-sans-serif, sans-serif;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+
+  --shadow-lift: 0 1px 2px rgb(10 12 15 / 0.06);
+  --shadow-lift-hover: 0 6px 16px -4px rgb(10 12 15 / 0.14);
+
+  --spacing-gutter: 24px;
+  --container-content: 1180px;
+}
+
+@utility display-xl {
+  font-family: var(--font-display);
+  font-size: clamp(2.75rem, 8.5vw, 7.5rem);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+  text-wrap: balance;
+}
+
+@utility display-lg {
+  font-family: var(--font-display);
+  font-size: clamp(2.125rem, 5.2vw, 4.25rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  text-wrap: balance;
+}
+
+@utility body-lg {
+  font-size: clamp(1.0625rem, 1.35vw, 1.3125rem);
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--color-slate);
+}
+
+/* Section labels, Apple-style: short, sentence case, semibold. */
+@utility eyebrow {
+  font-family: var(--font-display);
+  font-size: clamp(1rem, 1.15vw, 1.1875rem);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--color-slate);
+}
+
+@utility label {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--color-slate);
+}
+
+@utility section-y {
+  padding-block: clamp(7rem, 16vh, 13rem);
+}
+
+@utility wrap {
+  width: 100%;
+  max-width: var(--container-content);
+  margin-inline: auto;
+  padding-inline: 20px;
+  @media (min-width: 640px) {
+    padding-inline: 24px;
+  }
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+    background: var(--color-paper);
+    -webkit-text-size-adjust: 100%;
+  }
+  html,
+  body {
+    overflow-x: clip;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+  }
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection {
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-signal);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+}
+
+/* Hover underline: the one link treatment on the page. */
+@utility link-underline {
+  position: relative;
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -3px;
+    height: 1px;
+    background: var(--color-signal);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 200ms var(--ease-standard);
+  }
+  &:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Lenis */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* Load sequence: CSS-driven so first paint never waits on JS. */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes rise-in {
+  from { transform: translateY(105%); }
+  to { transform: translateY(0); }
+}
+.load-fade {
+  animation: fade-in 400ms var(--ease-standard) both;
+}
+.load-rise {
+  animation: rise-in 700ms var(--ease-out-expo) both;
+}
+
+/* Hero. The tagline is set like a product line: large, tight, centred. */
+.hero-tagline {
+  font-family: var(--font-display);
+  font-size: clamp(1.875rem, 4.6vw, 4rem);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.06;
+  text-wrap: balance;
+}
+.hero-word {
+  container-type: inline-size;
+  aspect-ratio: 4.4 / 1;
+}
+.hero-word-fallback {
+  font-size: 27cqi;
+}
+.js .hero-word-fallback {
+  visibility: hidden;
+}
+.hero-lockword {
+  font-size: clamp(2.5rem, 6vw, 5.25rem);
+}
+.js .hero-caption,
+.js .hero-lockword {
+  opacity: 0;
+}
+html:not(.js) .hero-caption,
+html:not(.js) .hero-lockword {
+  display: none;
+}
+
+/* Buttons and links, Apple-style: one blue pill, one blue chevron link.
+   In the components layer so utilities (hidden, padding) can override them. */
+@layer components {
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 9999px;
+    background: var(--color-signal);
+    color: var(--color-paper);
+    padding: 0.8rem 1.4rem;
+    font-size: 15px;
+    font-weight: 500;
+    box-shadow: var(--shadow-lift);
+    transition: transform 200ms var(--ease-standard), box-shadow 200ms var(--ease-standard), background-color 200ms var(--ease-standard);
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lift-hover);
+    background: #1440e0;
+  }
+  .link-chevron {
+    color: var(--color-signal);
+    font-size: 15px;
+    font-weight: 500;
+  }
+  .link-chevron span {
+    display: inline-block;
+    margin-left: 0.15em;
+    transition: transform 200ms var(--ease-standard);
+  }
+  .link-chevron:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+  .link-chevron:hover span {
+    transform: translateX(3px);
+  }
+}
+
+.hero-canvas {
+  opacity: 0;
+  transition: opacity 600ms var(--ease-standard);
+}
+.hero-canvas[data-ready] {
+  opacity: 1;
+}
+
+/* Mask reveal (see components/Reveal.tsx). Hidden only once JS has announced
+   itself, so the page is complete without it. */
+.reveal {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
+}
+.reveal-child {
+  display: block;
+}
+.js .reveal-child {
+  transform: translateY(105%);
+  transition: transform 700ms var(--ease-out-expo) var(--reveal-delay, 0s);
+}
+.js .reveal[data-shown] > .reveal-child {
+  transform: none;
+}
+
+/* How we work: the stage list dims everything but the current stage. */
+.stage .stage-title,
+.stage .stage-line {
+  color: var(--color-slate);
+  transition: color 300ms var(--ease-standard);
+}
+.stage .stage-n {
+  transition: color 300ms var(--ease-standard);
+}
+.stage.is-active .stage-title,
+.stage.is-active .stage-line {
+  color: var(--color-ink);
+}
+.stage.is-active .stage-n {
+  color: var(--color-signal);
+}
+html:not(.js) .stage .stage-title {
+  color: var(--color-ink);
+}
+
+/* The example list: verification lands once the rows are ranked. */
+.ranked-verify {
+  display: inline-flex;
+  transition: opacity 400ms var(--ease-standard), transform 400ms var(--ease-out-expo);
+}
+.ranked[data-ranked="false"] .ranked-verify {
+  opacity: 0;
+  transform: scale(0.85);
+}
+
+/* Cards that rise in, staggered, when they enter view (RevealObserver marks them). */
+.js .rise {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 600ms var(--ease-standard) var(--reveal-delay, 0s), transform 700ms var(--ease-out-expo) var(--reveal-delay, 0s);
+}
+.js .rise[data-shown] {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage .stage-title,
+  .stage .stage-line {
+    color: var(--color-ink);
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .reveal-child {
+    transform: none !important;
+  }
+  .rise {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
