@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/site";
 import { Suspense } from "react";
 import PageHead from "@/components/PageHead";
 import BlindTest from "@/components/BlindTest";
@@ -13,7 +14,7 @@ import Scheduling from "@/components/how/Scheduling";
 
 export const metadata: Metadata = {
   title: "How we work",
-  description: "You give us a role. We hand back people worth meeting, with the interviews already booked.",
+  ...pageMeta("/how-we-work", "How we work · Winnow", "You give us a role. We hand back people worth meeting, with the interviews already booked."),
 };
 
 const NEEDS = [
