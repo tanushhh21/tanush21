@@ -1,57 +1,37 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { useMotionValueEvent, useScroll } from "motion/react";
-import StepCard from "./StepCard";
+import { useEffect, useRef, useState } from "react";
+import { useMotionValueEvent, useScroll, type MotionValue } from "motion/react";
 import Reveal from "./Reveal";
 import { scroller } from "./SmoothScroll";
-import { useOnceInView } from "./how/useOnceInView";
+import { BOOKED, COL, LINES, ROWS, drawJourney, rowY, type Counts } from "@/lib/journey";
 
 const STEPS = [
   {
     n: "01",
     title: "Source",
-    line: "We find the right people, whether or not they have applied.",
-    happens: [
-      "Your role goes live on LinkedIn, Naukri and campus platforms.",
-      "We search databases and professional networks for people who fit.",
-      "Applicants and sourced candidates arrive in one pool.",
-    ],
-    you: "Share the role. One message is enough.",
+    kicker: "Inbound + outbound",
+    line: "Applicants come to you. The best people often don't. We run both on every role, so nobody worth meeting is missed.",
   },
   {
     n: "02",
     title: "Evaluate",
-    line: "Every profile is read against what the role needs, not matched on keywords.",
-    happens: [
-      "Each candidate is scored on your requirements.",
-      "We look past the CV for hidden signals.",
-      "Identity and credentials are verified before any interview.",
-    ],
-    you: "Nothing. We handle it.",
+    kicker: "Three filters, every candidate",
+    line: "Your requirements, the signals a CV leaves out, and verification. Most candidates fall away. That is the point.",
   },
   {
     n: "03",
     title: "Shortlist",
-    line: "A ranked shortlist, with the reasoning, and interviews already booked.",
-    happens: [
-      "See why each candidate ranks where they do.",
-      "Interviews are booked around your calendar.",
-      "Overrule any ranking, and the next shortlist improves.",
-    ],
-    you: "Interview, and make the offer.",
+    kicker: "Ranked, then booked",
+    line: "What reaches you is short and ranked, with the reasons behind every place and interviews already in your calendar.",
   },
 ];
-
-type Step = (typeof STEPS)[number];
-
-function Tick() {
-  return (
-    <svg viewBox="0 0 16 16" aria-hidden="true" className="mt-[0.2em] h-4 w-4 shrink-0 text-signal">
-      <path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
+// Where each step begins on the scroll, and where the stepper jumps to.
+const STARTS = [0, 0.34, 0.68];
+const JUMP = [0.22, 0.56, 0.95];
+// The still frame shown for each step when motion is reduced.
+const STILL = [0.3, 0.58, 1];
+const FILTERS = ["Your requirements", "Signals beyond the CV", "Verified"];
 
 function Mask({ state, delay = 0, children }: { state: number; delay?: number; children: React.ReactNode }) {
   // state < 0: already passed (masked out upwards); 0: current; > 0: still to come.
@@ -68,69 +48,208 @@ function Mask({ state, delay = 0, children }: { state: number; delay?: number; c
   );
 }
 
-/** What happens in a step, and the client's part in it. `wrap` lets the pinned layout mask each line. */
-function Details({ s, wrap = (_, c) => c }: { s: Step; wrap?: (i: number, c: React.ReactNode) => React.ReactNode }) {
+/** A figure label that is visible while --p is between `from` and `to`. */
+const win = (from: number, to: number) =>
+  ({ opacity: `clamp(0, min(calc((var(--p) - ${from}) * 25), calc((${to} - var(--p)) * 25)), 1)` }) as React.CSSProperties;
+
+function Dot({ className }: { className: string }) {
+  return <span aria-hidden="true" className={`h-2 w-2 shrink-0 rounded-full ${className}`} />;
+}
+
+/**
+ * The process, drawn in dots (see lib/journey.ts). Live, it follows `progress`
+ * with a little easing and idles while on screen; `still` draws one frame.
+ */
+function Figure({ progress, still }: { progress?: MotionValue<number>; still?: number }) {
+  const wrap = useRef<HTMLDivElement>(null);
+  const canvas = useRef<HTMLCanvasElement>(null);
+  const applied = useRef<HTMLSpanElement>(null);
+  const found = useRef<HTMLSpanElement>(null);
+  const through = useRef<(HTMLSpanElement | null)[]>([]);
+
+  useEffect(() => {
+    const el = wrap.current!;
+    const cv = canvas.current!;
+    const ctx = cv.getContext("2d")!;
+    let size = 0;
+    let raf = 0;
+    let shown = still ?? progress?.get() ?? 0;
+    let last: Counts | null = null;
+    const t0 = performance.now();
+
+    const paint = (p: number, time: number) => {
+      if (!size) return;
+      const k = drawJourney(ctx, size, p, time);
+      el.style.setProperty("--p", p.toFixed(4));
+      if (k.applied !== last?.applied) applied.current!.textContent = String(k.applied);
+      if (k.found !== last?.found) found.current!.textContent = String(k.found);
+      k.through.forEach((n, i) => {
+        if (n !== last?.through[i]) through.current[i]!.textContent = String(n);
+      });
+      last = k;
+    };
+    const resize = () => {
+      size = el.clientWidth;
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      cv.width = Math.round(size * dpr);
+      cv.height = Math.round(size * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      paint(shown, (performance.now() - t0) / 1000);
+    };
+    const ro = new ResizeObserver(resize);
+    ro.observe(el);
+    if (still !== undefined || !progress) return () => ro.disconnect();
+
+    const tick = (now: number) => {
+      const target = progress.get();
+      shown += (target - shown) * 0.16;
+      if (Math.abs(target - shown) < 0.0005) shown = target;
+      paint(shown, (now - t0) / 1000);
+      raf = requestAnimationFrame(tick);
+    };
+    const io = new IntersectionObserver(([e]) => {
+      cancelAnimationFrame(raf);
+      if (e.isIntersecting) raf = requestAnimationFrame(tick);
+    });
+    io.observe(el);
+    return () => {
+      ro.disconnect();
+      io.disconnect();
+      cancelAnimationFrame(raf);
+    };
+  }, [progress, still]);
+
+  return (
+    <div
+      ref={wrap}
+      className="relative aspect-square w-full text-[12.5px] leading-tight"
+      style={{ "--p": still ?? 0 } as React.CSSProperties}
+    >
+      <canvas ref={canvas} aria-hidden="true" className="absolute inset-0 h-full w-full" />
+
+      {/* Source */}
+      <div className="absolute left-0 top-0 grid gap-1.5" style={win(-1, 0.32)}>
+        <span className="flex items-center gap-2 text-ink">
+          <Dot className="bg-ink" />
+          Applied
+          <span ref={applied} className="font-mono tabular-nums text-slate">
+            0
+          </span>
+        </span>
+        <span className="flex items-center gap-2 text-signal">
+          <Dot className="bg-signal" />
+          Found, never applied
+          <span ref={found} className="font-mono tabular-nums">
+            0
+          </span>
+        </span>
+        <span className="flex items-center gap-2 text-slate">
+          <Dot className="bg-[#C3C8CF]" />
+          Not a match
+        </span>
+      </div>
+      <span className="absolute left-[42%] top-[71%] -translate-x-1/2 text-slate" style={win(0.08, 0.32)}>
+        One pool
+      </span>
+
+      {/* Evaluate */}
+      {FILTERS.map((f, i) => (
+        <div
+          key={f}
+          className="absolute inset-x-[8%] flex -translate-y-full justify-between pb-1.5"
+          style={{ top: `${LINES[i] * 100}%`, ...win(0.37, 0.66) }}
+        >
+          <span className="text-ink">{f}</span>
+          <span className="text-slate">
+            <span ref={(e) => void (through.current[i] = e)} className="font-mono tabular-nums text-ink">
+              0
+            </span>{" "}
+            through
+          </span>
+        </div>
+      ))}
+
+      {/* Shortlist */}
+      <span className="absolute top-[3%] text-slate" style={{ left: `${COL.bar0 * 100}%`, ...win(0.72, 2) }}>
+        Ranked by fit
+      </span>
+      <span
+        className="absolute top-[3%] -translate-x-1/2 text-slate"
+        style={{ left: `${COL.glyph * 100}%`, ...win(0.84, 2) }}
+      >
+        Interview
+      </span>
+      {Array.from({ length: ROWS }, (_, i) => (
+        <span
+          key={i}
+          className="absolute left-[3%] -translate-y-1/2 font-mono text-[11px] tabular-nums text-slate"
+          style={{ top: `${rowY(i) * 100}%`, ...win(0.68 + 0.32 * (0.12 + i * 0.025), 2) }}
+        >
+          {String(i + 1).padStart(2, "0")}
+        </span>
+      ))}
+      <div className="absolute inset-x-0 top-[90%] grid justify-items-center gap-1.5 text-center" style={win(0.9, 2)}>
+        <span className="text-ink">Top {BOOKED} booked into your calendar</span>
+        <span className="flex items-center gap-2 text-signal">
+          <Dot className="bg-signal" />
+          No. 1 never applied. We found them.
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function StepText({ s, state }: { s: (typeof STEPS)[number]; state: number }) {
   return (
     <>
-      <ul className="mt-7 grid gap-3">
-        {s.happens.map((h, i) => (
-          <li key={h}>
-            {wrap(
-              i + 2,
-              <span className="flex gap-3 text-[1.0625rem] leading-snug text-ink">
-                <Tick />
-                {h}
-              </span>,
-            )}
-          </li>
-        ))}
-      </ul>
-      <div className="mt-8 border-t border-hairline pt-5">
-        {wrap(
-          5,
-          <p className="text-[15px] text-slate">
-            Your part: <span className="font-medium text-ink">{s.you}</span>
-          </p>,
-        )}
-      </div>
+      <p className="text-[15px] font-medium text-signal">
+        <Mask state={state}>{s.kicker}</Mask>
+      </p>
+      <h2 className="display-lg mt-2 text-ink">
+        <Mask state={state} delay={40}>
+          {s.title}
+        </Mask>
+      </h2>
+      <p className="body-lg mt-4 max-w-[28rem]">
+        <Mask state={state} delay={90}>
+          {s.line}
+        </Mask>
+      </p>
     </>
   );
 }
 
 function Pinned() {
   const ref = useRef<HTMLDivElement>(null);
-  const card = useRef<HTMLDivElement>(null);
   const fill = useRef<HTMLSpanElement>(null);
   const [step, setStep] = useState(0);
-  const live = useOnceInView(card, 0.3);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
   useMotionValueEvent(scrollYProgress, "change", (p) => {
     fill.current!.style.transform = `scaleX(${p})`;
-    const next = Math.min(2, Math.max(0, Math.floor(p * 3)));
+    const next = p >= STARTS[2] ? 2 : p >= STARTS[1] ? 1 : 0;
     setStep((s) => (s === next ? s : next));
   });
 
-  // Scroll to the middle of a step's stretch of the pinned section.
   const go = (i: number) => {
     const el = ref.current!;
     const top = el.getBoundingClientRect().top + window.scrollY;
-    scroller.to(top + (el.offsetHeight - window.innerHeight) * ((i + 0.5) / STEPS.length));
+    scroller.to(top + (el.offsetHeight - window.innerHeight) * JUMP[i]);
   };
 
   return (
-    <div ref={ref} className="relative hidden h-[300vh] md:block motion-reduce:md:hidden">
-      <div className="sticky top-0 flex h-[100svh] items-center pt-14">
-        <div className="wrap grid grid-cols-[minmax(0,1fr)_minmax(0,27rem)] items-center gap-12 lg:gap-20">
-          <div>
+    <div ref={ref} className="relative h-[320vh] motion-reduce:hidden">
+      <div className="sticky top-0 flex h-[100svh] items-center pt-16 md:pt-14">
+        <div className="wrap grid w-full items-center gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,32rem)] md:gap-14 lg:gap-20">
+          <div className="order-2 md:order-1">
             <nav aria-label="Steps" className="w-fit">
-              <div className="flex gap-8">
+              <div className="flex gap-5 sm:gap-8">
                 {STEPS.map((s, i) => (
                   <button
                     key={s.n}
                     type="button"
                     onClick={() => go(i)}
                     aria-current={i === step ? "step" : undefined}
-                    className={`flex items-baseline gap-2 pb-3 text-[15px] font-medium transition-colors duration-300 ${
+                    className={`flex items-baseline gap-2 pb-3 text-[14px] font-medium transition-colors duration-300 sm:text-[15px] ${
                       i === step ? "text-ink" : "text-slate hover:text-ink"
                     }`}
                   >
@@ -143,32 +262,16 @@ function Pinned() {
                 <span ref={fill} className="block h-full origin-left bg-signal" style={{ transform: "scaleX(0)" }} />
               </span>
             </nav>
-
-            <div className="mt-10 grid">
+            <div className="mt-6 grid md:mt-10">
               {STEPS.map((s, i) => (
                 <div key={s.n} className="[grid-area:1/1]" aria-hidden={i !== step}>
-                  <h2 className="display-lg text-ink">
-                    <Mask state={i - step}>{s.title}</Mask>
-                  </h2>
-                  <p className="body-lg mt-4 max-w-[30rem]">
-                    <Mask state={i - step} delay={60}>
-                      {s.line}
-                    </Mask>
-                  </p>
-                  <Details
-                    s={s}
-                    wrap={(k, c) => (
-                      <Mask state={i - step} delay={60 + k * 40}>
-                        {c}
-                      </Mask>
-                    )}
-                  />
+                  <StepText s={s} state={i - step} />
                 </div>
               ))}
             </div>
           </div>
-          <div ref={card}>
-            <StepCard step={step} live={live} />
+          <div className="order-1 mx-auto w-full max-w-[min(100%,44svh)] md:order-2 md:max-w-[32rem]">
+            <Figure progress={scrollYProgress} />
           </div>
         </div>
       </div>
@@ -176,24 +279,23 @@ function Pinned() {
   );
 }
 
-function StackedStep({ s, i }: { s: Step; i: number }) {
-  const card = useRef<HTMLDivElement>(null);
-  const live = useOnceInView(card, 0.35);
+/** Reduced motion: each step with a still frame of the figure. */
+function StillSteps() {
   return (
-    <div className={i > 0 ? "mt-[clamp(5rem,12vh,8rem)]" : ""}>
-      <span className="label block">
-        {s.n} / 03
-      </span>
-      <h2 className="display-lg mt-4 text-ink">
-        <Reveal>{s.title}</Reveal>
-      </h2>
-      <p className="body-lg mt-4">
-        <Reveal delay={0.06}>{s.line}</Reveal>
-      </p>
-      <Details s={s} />
-      <div ref={card} className="mt-10">
-        <StepCard step={i} only={i} live={live} />
-      </div>
+    <div className="wrap hidden gap-20 pt-16 pb-[clamp(6rem,14vh,11rem)] motion-reduce:grid">
+      {STEPS.map((s, i) => (
+        <div key={s.n} className="grid items-center gap-10 md:grid-cols-2 md:gap-16">
+          <div>
+            <span className="label block">{s.n} / 03</span>
+            <div className="mt-4">
+              <StepText s={s} state={0} />
+            </div>
+          </div>
+          <div className="mx-auto w-full max-w-[28rem]">
+            <Figure still={STILL[i]} />
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -201,7 +303,7 @@ function StackedStep({ s, i }: { s: Step; i: number }) {
 export default function Pillars() {
   return (
     <section id="how" aria-labelledby="how-heading" className="relative bg-paper">
-      <div className="wrap pt-[clamp(6rem,14vh,11rem)] text-center md:pb-0">
+      <div className="wrap pt-[clamp(6rem,14vh,11rem)] text-center">
         <h2 id="how-heading" className="display-lg mx-auto max-w-[22ch] text-ink">
           <Reveal>Everything between the role and the interview.</Reveal>
         </h2>
@@ -215,11 +317,7 @@ export default function Pillars() {
         </div>
       </div>
       <Pinned />
-      <div className="wrap pt-20 pb-[clamp(6rem,14vh,11rem)] md:hidden motion-reduce:md:block">
-        {STEPS.map((s, i) => (
-          <StackedStep key={s.n} s={s} i={i} />
-        ))}
-      </div>
+      <StillSteps />
     </section>
   );
 }

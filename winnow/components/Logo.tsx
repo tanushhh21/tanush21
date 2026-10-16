@@ -23,7 +23,7 @@ export function Mark({ className = "", title }: { className?: string; title?: st
 }
 
 /** Mark and wordmark together. */
-export default function Logo({ className = "", size = 20 }: { className?: string; size?: number }) {
+export default function Logo({ className = "", size = 20 }: { className?: string; size?: number | string }) {
   return (
     <span className={`inline-flex items-center gap-[0.42em] text-ink ${className}`} style={{ fontSize: size }}>
       <Mark className="h-[0.86em] w-auto translate-y-[0.04em]" />

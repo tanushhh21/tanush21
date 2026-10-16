@@ -1,13 +1,15 @@
 import Hero from "@/components/Hero";
+import Worries from "@/components/Worries";
 import Pillars from "@/components/Pillars";
-import Close from "@/components/Close";
+import Contact from "@/components/Contact";
 
 export default function Home() {
   return (
     <main>
       <Hero />
+      <Worries />
       <Pillars />
-      <Close />
+      <Contact logo />
     </main>
   );
 }
