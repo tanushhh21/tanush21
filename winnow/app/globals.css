@@ -349,6 +349,13 @@ html:not(.js) .stage .stage-title {
   opacity: var(--a);
   transform: translateY(calc((1 - var(--a)) * 18px));
 }
+/* Phones on their side: a smaller question, so the worries fit around it. */
+@media (max-height: 560px) {
+  .worries-q {
+    font-size: clamp(1.5rem, 2vw + 0.75rem, 2rem);
+    max-width: 22ch;
+  }
+}
 /* Without JS, or with reduced motion: no scrubbing, just the introduction. */
 html:not(.js) .worries {
   --p: 1;
@@ -358,6 +365,56 @@ html:not(.js) .worries {
   .worries {
     --p: 1 !important;
     height: 100svh;
+  }
+}
+
+/* Home process: stacked on phones and tablets, side by side when the screen is
+   wide (or a phone is on its side). The figure never outgrows the screen. */
+.journey-grid {
+  display: grid;
+  align-items: center;
+  gap: 1.5rem;
+}
+.journey-fig {
+  order: -1;
+  width: min(100%, 40svh);
+  margin-inline: auto;
+}
+@media (min-width: 1024px), (min-width: 640px) and (max-height: 560px) {
+  .journey-grid {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: clamp(2rem, 5vw, 5rem);
+  }
+  .journey-fig {
+    order: 0;
+    width: min(32rem, calc(100svh - 8rem), 46vw);
+  }
+}
+/* A small figure (narrow phones) uses smaller, shorter labels. */
+.journey-figure {
+  container-type: inline-size;
+}
+.jl-short {
+  display: none;
+}
+@container (max-width: 300px) {
+  .journey-labels {
+    font-size: 11px;
+  }
+  .jl-long {
+    display: none;
+  }
+  .jl-short {
+    display: inline;
+  }
+}
+/* Short phones: a smaller figure and text, so each step fits on one screen. */
+@media (max-width: 639px) and (max-height: 640px) {
+  .journey-fig {
+    width: min(100%, 34svh);
+  }
+  .journey-line {
+    font-size: 15px;
   }
 }
 

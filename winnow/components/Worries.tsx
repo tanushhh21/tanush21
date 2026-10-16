@@ -82,12 +82,13 @@ export default function Worries() {
     <section aria-labelledby="worries-heading">
       <ScrollVar className="worries relative h-[340vh] bg-paper">
         <div className="sticky top-0 h-[100svh] overflow-hidden">
-          <div aria-hidden="true">
+          {/* Everything is laid out in the space below the nav. */}
+          <div aria-hidden="true" className="absolute inset-x-0 bottom-0 top-16">
             {WORRIES.map((w, i) => (
               <Phrase key={w.t} w={w} i={i} />
             ))}
           </div>
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-5">
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 top-16 flex items-center justify-center px-5">
             <h2 id="worries-heading" className="worries-q display-lg max-w-[16ch] text-center text-ink">
               What comes to mind when you think of hiring?
             </h2>
@@ -96,7 +97,7 @@ export default function Worries() {
             Complicated. Hard. Slow. Expensive. Will I find the right fit? The good ones never apply, and everyone
             who applied isn&rsquo;t good enough. Winnow takes these away.
           </p>
-          <div className="absolute inset-0 flex flex-col items-center justify-center px-5 text-center">
+          <div className="absolute inset-x-0 bottom-0 top-16 flex flex-col items-center justify-center px-5 text-center">
             <p className="worries-in eyebrow" style={intro(0.74)}>
               Introducing
             </p>
