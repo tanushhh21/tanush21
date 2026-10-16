@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { pageMeta } from "@/lib/site";
 import { Suspense } from "react";
 import PageHead from "@/components/PageHead";
-import BlindTest from "@/components/BlindTest";
+import Contact from "@/components/Contact";
 import Reveal from "@/components/Reveal";
 import StagesStory from "@/components/how/StagesStory";
 import BeyondApplicants from "@/components/how/BeyondApplicants";
@@ -168,7 +168,7 @@ export default function HowWeWork() {
         </div>
       </section>
 
-      <BlindTest />
+      <Contact />
     </main>
   );
 }

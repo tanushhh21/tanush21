@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { pageMeta } from "@/lib/site";
 import PageHead from "@/components/PageHead";
-import BlindTest from "@/components/BlindTest";
+import Contact from "@/components/Contact";
 import Reveal from "@/components/Reveal";
 
 export const metadata: Metadata = {
@@ -78,7 +78,7 @@ export default function Pricing() {
         </div>
       </section>
 
-      <BlindTest />
+      <Contact />
     </main>
   );
 }
