@@ -48,7 +48,7 @@ export default function Pricing() {
               </div>
               <div className="mt-10">
                 <a href="#talk" className="btn-primary">
-                  Talk to us
+                  Book a call
                 </a>
               </div>
             </div>

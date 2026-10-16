@@ -3,51 +3,29 @@
 import { useState } from "react";
 import { EMAIL, MAIL } from "@/lib/site";
 
-const INTENTS = [
-  {
-    id: "hire",
-    label: "Hire for a role",
-    subject: "Hiring inquiry",
-    roles: "Roles you are hiring for",
-    hint: "e.g. 5 SDE interns in Bengaluru",
-    note: "",
-  },
-  {
-    id: "trial",
-    label: "Test us first",
-    subject: "Trial on a past role",
-    roles: "Roles you have already filled",
-    hint: "e.g. Backend engineer, filled in March",
-    note: "Pick a role you have already filled. We rank its applicants without knowing who you hired, then show you whether your hire made our shortlist.",
-  },
-] as const;
-
-type Intent = (typeof INTENTS)[number]["id"];
-
 const field =
   "mt-1.5 block h-11 w-full rounded-xl border border-hairline bg-paper px-3.5 text-[16px] text-ink placeholder:text-slate/70 transition-[border-color,box-shadow] duration-200 hover:border-slate/40 focus:border-signal focus:shadow-[0_0_0_3px_rgb(27_77_255/0.14)] focus:outline-none";
+const label = "block text-[13.5px] font-medium text-ink";
 
 /**
- * A short inquiry form. There is no backend: submitting opens the visitor's
+ * A short call request. There is no backend: submitting opens the visitor's
  * email app with the details filled in, addressed to us.
  */
 export default function InquiryForm() {
-  const [intent, setIntent] = useState<Intent>("hire");
   const [sent, setSent] = useState(false);
-  const it = INTENTS.find((i) => i.id === intent)!;
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const d = new FormData(e.currentTarget);
     const get = (k: string) => String(d.get(k) ?? "").trim();
-    const from = get("company") || get("name");
     const body = [
       `Name: ${get("name")}`,
       `Email: ${get("email")}`,
+      `Phone: ${get("phone") || "-"}`,
       `Company: ${get("company")}`,
-      `${it.roles}: ${get("roles") || "-"}`,
+      `Hiring for: ${get("role") || "-"}`,
     ].join("\n");
-    const qs = `subject=${encodeURIComponent(`${it.subject} from ${from}`)}&body=${encodeURIComponent(body)}`;
+    const qs = `subject=${encodeURIComponent(`Call request: ${get("company") || get("name")}`)}&body=${encodeURIComponent(body)}`;
     window.location.href = `${MAIL}?${qs}`;
     setSent(true);
   }
@@ -63,7 +41,7 @@ export default function InquiryForm() {
           </span>
           <p className="mt-5 font-display text-[1.375rem] font-semibold tracking-[-0.02em] text-ink">Almost there.</p>
           <p className="mx-auto mt-2 max-w-[22rem] text-[15px] leading-relaxed text-slate">
-            Your email app has opened with your details filled in. Send it and we will be in touch.
+            Your email app has opened with your details filled in. Send it, and we will reply to set up the call.
           </p>
           <p className="mt-5 text-[14px] text-slate">
             Nothing opened? Write to{" "}
@@ -77,53 +55,33 @@ export default function InquiryForm() {
         </div>
       ) : (
         <form onSubmit={onSubmit}>
-          <fieldset>
-            <legend className="sr-only">What would you like to do?</legend>
-            <div className="grid grid-cols-2 gap-1 rounded-full bg-mist p-1">
-              {INTENTS.map((i) => (
-                <label
-                  key={i.id}
-                  className={`cursor-pointer rounded-full px-3 py-2 text-center text-[14px] font-medium transition-[background-color,color,box-shadow] duration-200 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-signal ${
-                    intent === i.id ? "bg-paper text-ink shadow-lift" : "text-slate hover:text-ink"
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="intent"
-                    value={i.id}
-                    checked={intent === i.id}
-                    onChange={() => setIntent(i.id)}
-                    className="sr-only"
-                  />
-                  {i.label}
-                </label>
-              ))}
-            </div>
-          </fieldset>
-          {it.note ? <p className="mt-4 text-[14px] leading-snug text-slate">{it.note}</p> : null}
-
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
-            <label className="block text-[13.5px] font-medium text-ink">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className={label}>
               Name
               <input name="name" required autoComplete="name" className={field} />
             </label>
-            <label className="block text-[13.5px] font-medium text-ink">
+            <label className={label}>
               Work email
               <input name="email" type="email" required autoComplete="email" className={field} />
             </label>
+            <label className={label}>
+              Company
+              <input name="company" required autoComplete="organization" className={field} />
+            </label>
+            <label className={label}>
+              Phone <span className="font-normal text-slate">(optional)</span>
+              <input name="phone" type="tel" autoComplete="tel" className={field} />
+            </label>
           </div>
-          <label className="mt-4 block text-[13.5px] font-medium text-ink">
-            Company
-            <input name="company" required autoComplete="organization" className={field} />
-          </label>
-          <label className="mt-4 block text-[13.5px] font-medium text-ink">
-            {it.roles} <span className="font-normal text-slate">(optional)</span>
-            <input name="roles" placeholder={it.hint} className={field} />
+          <label className={`${label} mt-4`}>
+            What are you hiring for? <span className="font-normal text-slate">(optional)</span>
+            <input name="role" placeholder="e.g. 5 SDE interns in Bengaluru" className={field} />
           </label>
 
           <button type="submit" className="btn-primary mt-7 w-full justify-center">
-            Send inquiry
+            Book a call
           </button>
+          <p className="mt-3 text-center text-[13px] text-slate">We will reply to find a time that suits you.</p>
         </form>
       )}
     </div>

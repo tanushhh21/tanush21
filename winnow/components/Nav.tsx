@@ -47,7 +47,7 @@ export default function Nav() {
             })}
           </ul>
           <a href="#talk" className="btn-primary hidden !px-4 !py-1.5 !text-[13.5px] sm:inline-flex">
-            Talk to us
+            Book a call
           </a>
         </div>
       </nav>

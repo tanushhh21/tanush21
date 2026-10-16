@@ -296,6 +296,71 @@ html:not(.js) .stage .stage-title {
   transform: scale(0.85);
 }
 
+/* Home: what comes to mind when you think of hiring. The section publishes
+   its scroll progress as --p (0 to 1); each worry reads its own window of it:
+   --a arrive, --s strike through, --b blow away (letter by letter, like chaff). */
+.worries {
+  --p: 0;
+}
+.worry {
+  --a: clamp(0, calc((var(--p) - var(--a0)) / 0.06), 1);
+  --s: clamp(0, calc((var(--p) - var(--s0)) / 0.05), 1);
+  --b: clamp(0, calc((var(--p) - var(--b0)) / 0.14), 1);
+  position: absolute;
+  left: var(--mx);
+  top: var(--my);
+  white-space: nowrap;
+  line-height: 1.1;
+  opacity: var(--a);
+  transform: translate(-50%, -50%) translateY(calc((1 - var(--a)) * 16px)) scale(calc(0.94 + 0.06 * var(--a)));
+}
+@media (min-width: 768px) {
+  .worry {
+    left: var(--x);
+    top: var(--y);
+  }
+}
+.worry-l {
+  --l: clamp(0, calc((var(--b) - var(--d)) * 2.4), 1);
+  display: inline-block;
+  white-space: pre;
+  opacity: calc(1 - var(--l));
+  transform: translate(calc(var(--l) * var(--lx)), calc(var(--l) * var(--ly))) rotate(calc(var(--l) * var(--lr)));
+}
+.worry-strike {
+  position: absolute;
+  left: -0.06em;
+  right: -0.06em;
+  top: 52%;
+  height: max(2px, 0.07em);
+  border-radius: 9999px;
+  background: var(--color-signal);
+  transform-origin: left;
+  transform: scaleX(var(--s));
+  opacity: calc(1 - var(--b) * 2.5);
+}
+.worries-q {
+  --q: clamp(0, calc((var(--p) - 0.6) / 0.1), 1);
+  opacity: calc(1 - var(--q));
+  transform: translateY(calc(var(--q) * -28px)) scale(calc(1 - var(--q) * 0.04));
+}
+.worries-in {
+  --a: clamp(0, calc((var(--p) - var(--a0)) / 0.07), 1);
+  opacity: var(--a);
+  transform: translateY(calc((1 - var(--a)) * 18px));
+}
+/* Without JS, or with reduced motion: no scrubbing, just the introduction. */
+html:not(.js) .worries {
+  --p: 1;
+  height: 100svh;
+}
+@media (prefers-reduced-motion: reduce) {
+  .worries {
+    --p: 1 !important;
+    height: 100svh;
+  }
+}
+
 /* How we work: the analysis card. Bars grow once it is in view, text swaps
    in when the candidate changes, and a hairline counts down to the next one. */
 .js [data-pending] .an-bar {
