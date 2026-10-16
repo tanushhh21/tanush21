@@ -32,6 +32,8 @@ const JUMP = [0.22, 0.56, 0.95];
 // The still frame shown for each step when motion is reduced.
 const STILL = [0.3, 0.58, 1];
 const FILTERS = ["Your requirements", "Signals beyond the CV", "Verified"];
+// Shorter labels for when the figure is small (narrow phones).
+const FILTERS_SHORT = ["Requirements", "Beyond the CV", "Verified"];
 
 function Mask({ state, delay = 0, children }: { state: number; delay?: number; children: React.ReactNode }) {
   // state < 0: already passed (masked out upwards); 0: current; > 0: still to come.
@@ -122,78 +124,84 @@ function Figure({ progress, still }: { progress?: MotionValue<number>; still?: n
   return (
     <div
       ref={wrap}
-      className="relative aspect-square w-full text-[12.5px] leading-tight"
+      className="journey-figure relative aspect-square w-full"
       style={{ "--p": still ?? 0 } as React.CSSProperties}
     >
       <canvas ref={canvas} aria-hidden="true" className="absolute inset-0 h-full w-full" />
-
-      {/* Source */}
-      <div className="absolute left-0 top-0 grid gap-1.5" style={win(-1, 0.32)}>
-        <span className="flex items-center gap-2 text-ink">
-          <Dot className="bg-ink" />
-          Applied
-          <span ref={applied} className="font-mono tabular-nums text-slate">
-            0
-          </span>
-        </span>
-        <span className="flex items-center gap-2 text-signal">
-          <Dot className="bg-signal" />
-          Found, never applied
-          <span ref={found} className="font-mono tabular-nums">
-            0
-          </span>
-        </span>
-        <span className="flex items-center gap-2 text-slate">
-          <Dot className="bg-[#C3C8CF]" />
-          Not a match
-        </span>
-      </div>
-      <span className="absolute left-[42%] top-[71%] -translate-x-1/2 text-slate" style={win(0.08, 0.32)}>
-        One pool
-      </span>
-
-      {/* Evaluate */}
-      {FILTERS.map((f, i) => (
-        <div
-          key={f}
-          className="absolute inset-x-[8%] flex -translate-y-full justify-between pb-1.5"
-          style={{ top: `${LINES[i] * 100}%`, ...win(0.37, 0.66) }}
-        >
-          <span className="text-ink">{f}</span>
-          <span className="text-slate">
-            <span ref={(e) => void (through.current[i] = e)} className="font-mono tabular-nums text-ink">
+      <div className="journey-labels absolute inset-0 text-[12.5px] leading-tight">
+        {/* Source */}
+        <div className="absolute left-0 top-0 grid gap-1.5" style={win(-1, 0.32)}>
+          <span className="flex items-center gap-2 text-ink">
+            <Dot className="bg-ink" />
+            Applied
+            <span ref={applied} className="font-mono tabular-nums text-slate">
               0
-            </span>{" "}
-            through
+            </span>
+          </span>
+          <span className="flex items-center gap-2 text-signal">
+            <Dot className="bg-signal" />
+            Found, never applied
+            <span ref={found} className="font-mono tabular-nums">
+              0
+            </span>
+          </span>
+          <span className="flex items-center gap-2 text-slate">
+            <Dot className="bg-[#C3C8CF]" />
+            Not a match
           </span>
         </div>
-      ))}
+        <span className="absolute left-[42%] top-[71%] -translate-x-1/2 text-slate" style={win(0.08, 0.32)}>
+          One pool
+        </span>
 
-      {/* Shortlist */}
-      <span className="absolute top-[3%] text-slate" style={{ left: `${COL.bar0 * 100}%`, ...win(0.72, 2) }}>
-        Ranked by fit
-      </span>
-      <span
-        className="absolute top-[3%] -translate-x-1/2 text-slate"
-        style={{ left: `${COL.glyph * 100}%`, ...win(0.84, 2) }}
-      >
-        Interview
-      </span>
-      {Array.from({ length: ROWS }, (_, i) => (
+        {/* Evaluate */}
+        {FILTERS.map((f, i) => (
+          <div
+            key={f}
+            className="absolute inset-x-[8%] flex -translate-y-full justify-between pb-1.5"
+            style={{ top: `${LINES[i] * 100}%`, ...win(0.37, 0.66) }}
+          >
+            <span className="text-ink">
+              <span className="jl-long">{f}</span>
+              <span className="jl-short">{FILTERS_SHORT[i]}</span>
+            </span>
+            <span className="text-slate">
+              <span ref={(e) => void (through.current[i] = e)} className="font-mono tabular-nums text-ink">
+                0
+              </span>
+              <span className="jl-long"> through</span>
+            </span>
+          </div>
+        ))}
+
+        {/* Shortlist */}
+        <span className="absolute top-[3%] text-slate" style={{ left: `${COL.bar0 * 100}%`, ...win(0.72, 2) }}>
+          Ranked by fit
+        </span>
         <span
-          key={i}
-          className="absolute left-[3%] -translate-y-1/2 font-mono text-[11px] tabular-nums text-slate"
-          style={{ top: `${rowY(i) * 100}%`, ...win(0.68 + 0.32 * (0.12 + i * 0.025), 2) }}
+          className="absolute top-[3%] -translate-x-1/2 text-slate"
+          style={{ left: `${COL.glyph * 100}%`, ...win(0.84, 2) }}
         >
-          {String(i + 1).padStart(2, "0")}
+          Interview
         </span>
-      ))}
-      <div className="absolute inset-x-0 top-[90%] grid justify-items-center gap-1.5 text-center" style={win(0.9, 2)}>
-        <span className="text-ink">Top {BOOKED} booked into your calendar</span>
-        <span className="flex items-center gap-2 text-signal">
-          <Dot className="bg-signal" />
-          No. 1 never applied. We found them.
-        </span>
+        {Array.from({ length: ROWS }, (_, i) => (
+          <span
+            key={i}
+            className="absolute left-[3%] -translate-y-1/2 font-mono text-[11px] tabular-nums text-slate"
+            style={{ top: `${rowY(i) * 100}%`, ...win(0.68 + 0.32 * (0.12 + i * 0.025), 2) }}
+          >
+            {String(i + 1).padStart(2, "0")}
+          </span>
+        ))}
+        <div className="absolute inset-x-0 top-[90%] grid justify-items-center gap-1.5 text-center" style={win(0.9, 2)}>
+          <span className="text-ink">
+            Top {BOOKED} booked<span className="jl-long"> into your calendar</span>
+          </span>
+          <span className="flex items-center gap-2 text-signal">
+            <Dot className="bg-signal" />
+            No. 1 never applied.<span className="jl-long"> We found them.</span>
+          </span>
+        </div>
       </div>
     </div>
   );
@@ -210,7 +218,7 @@ function StepText({ s, state }: { s: (typeof STEPS)[number]; state: number }) {
           {s.title}
         </Mask>
       </h2>
-      <p className="body-lg mt-4 max-w-[28rem]">
+      <p className="journey-line body-lg mt-4 max-w-[28rem]">
         <Mask state={state} delay={90}>
           {s.line}
         </Mask>
@@ -238,9 +246,9 @@ function Pinned() {
 
   return (
     <div ref={ref} className="relative h-[320vh] motion-reduce:hidden">
-      <div className="sticky top-0 flex h-[100svh] items-center pt-16 md:pt-14">
-        <div className="wrap grid w-full items-center gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,32rem)] md:gap-14 lg:gap-20">
-          <div className="order-2 md:order-1">
+      <div className="sticky top-0 flex h-[100svh] items-center pt-16">
+        <div className="journey-grid wrap w-full">
+          <div>
             <nav aria-label="Steps" className="w-fit">
               <div className="flex gap-5 sm:gap-8">
                 {STEPS.map((s, i) => (
@@ -270,7 +278,7 @@ function Pinned() {
               ))}
             </div>
           </div>
-          <div className="order-1 mx-auto w-full max-w-[min(100%,44svh)] md:order-2 md:max-w-[32rem]">
+          <div className="journey-fig">
             <Figure progress={scrollYProgress} />
           </div>
         </div>

@@ -339,9 +339,9 @@ export default function ChatDemo() {
       <div className="flex items-center justify-between border-b border-hairline px-5 py-3.5">
         <div className="flex items-center gap-2.5">
           <Mark className="h-3.5 w-auto text-ink" />
-          <span className="font-display text-[15px] font-semibold text-ink">Winnow</span>
+          <span className="font-display text-[15px] font-semibold text-ink max-[379px]:hidden">Winnow</span>
         </div>
-        <span className="flex items-center gap-2 text-[13px] text-slate">
+        <span className="flex items-center gap-2 whitespace-nowrap text-[13px] text-slate">
           <span
             className={`h-2 w-2 rounded-full transition-colors duration-300 ${
               status === "Working in the background" ? "animate-pulse bg-signal" : status === "Shortlist ready" ? "bg-ink" : "bg-hairline"
@@ -355,7 +355,7 @@ export default function ChatDemo() {
           arrives while the stack slides up to keep the newest in view. */}
       <div
         ref={viewRef}
-        className="relative h-[30rem] overflow-hidden transition-opacity duration-500 sm:h-[32rem]"
+        className="relative h-[min(30rem,calc(100svh-9rem))] overflow-hidden transition-opacity duration-500 sm:h-[min(32rem,calc(100svh-9rem))]"
         style={{ opacity: fade ? 0 : 1 }}
         aria-hidden="true"
       >

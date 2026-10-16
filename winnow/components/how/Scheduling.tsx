@@ -76,7 +76,7 @@ export default function Scheduling() {
         io.disconnect();
         STEPS.forEach((ms, i) => timers.push(window.setTimeout(() => setStep(i), ms)));
       },
-      { threshold: 0.35 },
+      { threshold: 0.2 },
     );
     io.observe(ref.current!);
     return () => {
@@ -95,9 +95,9 @@ export default function Scheduling() {
       <div className="flex items-center justify-between border-b border-hairline px-5 py-3.5">
         <div className="flex items-center gap-2.5">
           <Mark className="h-3.5 w-auto text-ink" />
-          <span className="font-display text-[15px] font-semibold text-ink">Scheduling</span>
+          <span className="font-display text-[15px] font-semibold text-ink max-[379px]:hidden">Scheduling</span>
         </div>
-        <span className="flex items-center gap-2 text-[13px] text-slate" aria-hidden="true">
+        <span className="flex items-center gap-2 whitespace-nowrap text-[13px] text-slate" aria-hidden="true">
           <span
             className={`h-2 w-2 rounded-full transition-colors duration-300 ${
               done ? "bg-ink" : step >= 1 ? "animate-pulse bg-signal" : "bg-hairline"

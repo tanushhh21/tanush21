@@ -11,13 +11,13 @@ export default function Footer() {
         <ul className="flex items-center gap-6 text-[13.5px] text-slate">
           {TABS.map((t) => (
             <li key={t.href}>
-              <a href={t.href} className="hover:text-ink">
+              <a href={t.href} className="inline-block py-2 hover:text-ink">
                 {t.label}
               </a>
             </li>
           ))}
           <li>
-            <a href={MAIL} className="hover:text-ink">
+            <a href={MAIL} className="inline-block py-2 hover:text-ink">
               Contact
             </a>
           </li>
