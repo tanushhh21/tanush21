@@ -11,12 +11,12 @@ export default function Close() {
           <Logo size={40} />
         </Reveal>
         <h2 id="close-heading" className="display-lg mt-10 text-ink">
-          <Reveal delay={0.06}>Prove it before you commit.</Reveal>
+          <Reveal delay={0.06}>Tell us about your next hire.</Reveal>
         </h2>
         <p className="body-lg mt-5 max-w-[30rem]">
           <Reveal delay={0.12}>
-            Share ten roles you have already filled. We rank each applicant pool without knowing who you hired, then
-            show you where your hire placed.
+            Share the role and we&rsquo;ll take it from there. Not sure yet? Test us on a role you&rsquo;ve already
+            filled.
           </Reveal>
         </p>
         <InquiryForm />

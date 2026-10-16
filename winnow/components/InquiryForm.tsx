@@ -10,13 +10,15 @@ const INTENTS = [
     subject: "Hiring inquiry",
     roles: "Roles you are hiring for",
     hint: "e.g. 5 SDE interns in Bengaluru",
+    note: "",
   },
   {
-    id: "blind",
-    label: "Run a blind test",
-    subject: "Blind test request",
+    id: "trial",
+    label: "Test us first",
+    subject: "Trial on a past role",
     roles: "Roles you have already filled",
-    hint: "e.g. 10 engineering roles from the last year",
+    hint: "e.g. Backend engineer, filled in March",
+    note: "Pick a role you have already filled. We rank its applicants without knowing who you hired, then show you whether your hire made our shortlist.",
   },
 ] as const;
 
@@ -98,6 +100,7 @@ export default function InquiryForm() {
               ))}
             </div>
           </fieldset>
+          {it.note ? <p className="mt-4 text-[14px] leading-snug text-slate">{it.note}</p> : null}
 
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
             <label className="block text-[13.5px] font-medium text-ink">
