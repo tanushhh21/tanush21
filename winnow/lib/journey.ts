@@ -9,7 +9,7 @@
  *   Evaluate  (p 0.34 to 0.68)  the pool drops through three filters. Most
  *             dots are deflected and blow away like chaff; ten get through.
  *   Shortlist (p 0.68 to 1)  the ten line up by rank, scores fill, and the
- *             top five get an interview booked.
+ *             five you pick get their interviews booked.
  *
  * All coordinates are in a unit square; the canvas maps them to pixels.
  */

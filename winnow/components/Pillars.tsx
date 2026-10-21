@@ -22,8 +22,8 @@ const STEPS = [
   {
     n: "03",
     title: "Shortlist",
-    kicker: "Ranked, then booked",
-    line: "What reaches you is short and ranked, with the reasons behind every place and interviews already in your calendar.",
+    kicker: "You choose, we schedule",
+    line: "A short, ranked list with a detailed report on why each candidate fits. Pick who you want to meet, and we book the interviews and handle the back-and-forth.",
   },
 ];
 // Where each step begins on the scroll, and where the stepper jumps to.
@@ -195,7 +195,8 @@ function Figure({ progress, still }: { progress?: MotionValue<number>; still?: n
         ))}
         <div className="absolute inset-x-0 top-[90%] grid justify-items-center gap-1.5 text-center" style={win(0.9, 2)}>
           <span className="text-ink">
-            Top {BOOKED} booked<span className="jl-long"> into your calendar</span>
+            <span className="jl-long">You picked {BOOKED}. We booked the interviews.</span>
+            <span className="jl-short">{BOOKED} picked, all booked</span>
           </span>
           <span className="flex items-center gap-2 text-signal">
             <Dot className="bg-signal" />
@@ -316,7 +317,7 @@ export default function Pillars() {
           <Reveal>Everything between the role and the interview.</Reveal>
         </h2>
         <p className="body-lg mx-auto mt-5 max-w-[32rem]">
-          <Reveal delay={0.06}>We source, evaluate and shortlist. You step in to interview and make the offer.</Reveal>
+          <Reveal delay={0.06}>We source, evaluate and shortlist. You pick who to meet, and we handle the scheduling.</Reveal>
         </p>
         <div className="mt-8 flex justify-center">
           <a href="/how-we-work" className="btn-primary">
