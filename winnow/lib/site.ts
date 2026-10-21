@@ -11,8 +11,7 @@ export const MAIL = `mailto:${EMAIL}`;
 // back to opening the visitor's email app.
 export const WEB3FORMS_KEY: string = process.env.NEXT_PUBLIC_WEB3FORMS_KEY || "b1d34aa4-79d4-42c4-8df2-9c69151798cb";
 
-// The live address. Switch to https://getwinnow.in once that domain resolves.
-export const SITE_URL = "https://try-winnow.vercel.app";
+export const SITE_URL = "https://getwinnow.in";
 
 /** Canonical and Open Graph tags for a page, so links and previews use the site address. */
 export function pageMeta(path: string, title: string, description: string): Metadata {
