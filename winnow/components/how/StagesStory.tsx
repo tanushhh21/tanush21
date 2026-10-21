@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useScroll } from "motion/react";
 import Reveal from "../Reveal";
 
 /**
- * The seven stages as a scroll story. The list scrolls normally; beside it a
- * pinned drawing of the same few dots shows each stage, morphing from one to
- * the next as you read down.
+ * The seven stages as a scroll story. The list scrolls normally; a pinned
+ * drawing of the same few dots shows each stage, morphing from one to the next
+ * as you read down. It sits beside the list on wide screens, and in a short
+ * strip under the nav on phones.
  */
 
 export const STAGES = [
@@ -130,6 +130,9 @@ const INK = "#0A0C0F";
 const SIGNAL = "#1B4DFF";
 const HAIR = "#E8EAED";
 
+// Dot sizes are tuned for a ~400px drawing; smaller drawings scale them down, gently.
+const scaleFor = (S: number) => Math.min(1, Math.sqrt(S / 380));
+
 function drawDecor(g: CanvasRenderingContext2D, stage: number, w: number, local: number, S: number) {
   if (w < 0.01) return;
   g.save();
@@ -140,7 +143,7 @@ function drawDecor(g: CanvasRenderingContext2D, stage: number, w: number, local:
   if (stage === 0) {
     // The page the brief is written on.
     g.beginPath();
-    g.roundRect(px(0.22), px(0.24), px(0.56), px(0.54), 14);
+    g.roundRect(px(0.22), px(0.24), px(0.56), px(0.54), 14 * scaleFor(S));
     g.stroke();
   } else if (stage === 1) {
     for (let n = 0; n < 6; n++) {
@@ -162,7 +165,7 @@ function drawDecor(g: CanvasRenderingContext2D, stage: number, w: number, local:
   } else if (stage === 5) {
     // A bar per name: the score.
     g.strokeStyle = HAIR;
-    g.lineWidth = 6;
+    g.lineWidth = 6 * scaleFor(S);
     g.lineCap = "round";
     for (let k = 0; k < 10; k++) {
       const len = 0.42 - k * 0.026;
@@ -198,6 +201,7 @@ function render(g: CanvasRenderingContext2D, S: number, sp: number) {
   drawDecor(g, s + 1, f, 0, S);
   const A = LAYOUTS[s];
   const B = LAYOUTS[s + 1];
+  const k = scaleFor(S);
   // During Evaluate, dots darken as the line passes them.
   const scanX = s === 3 ? mix(0.12, 0.88, smooth(0, 0.6, t)) : -1;
   for (let i = 0; i < N; i++) {
@@ -206,7 +210,7 @@ function render(g: CanvasRenderingContext2D, S: number, sp: number) {
     const e = smooth(0, 1, clamp01((f - (i % 6) * 0.02) / 0.9));
     const x = mix(a.x, b.x, e) * S;
     const y = mix(a.y, b.y, e) * S;
-    const r = mix(a.r, b.r, e);
+    const r = mix(a.r, b.r, e) * k;
     let alpha = mix(a.a, b.a, e);
     if (scanX > 0 && a.x < scanX) alpha = Math.min(1, alpha + 0.25 * (1 - f));
     const c = mix(a.c, b.c, e);
@@ -226,22 +230,43 @@ function render(g: CanvasRenderingContext2D, S: number, sp: number) {
 
 // ---- The list --------------------------------------------------------------
 
+// Where the reader's eye is: mid-screen beside the list, or just below the strip on phones.
+const NAV = 64;
+const readingLine = (wide: boolean, strip: number) => {
+  const top = NAV + strip;
+  return wide ? window.innerHeight * 0.5 : top + (window.innerHeight - top) * 0.4;
+};
+
 export default function StagesStory() {
   const listRef = useRef<HTMLOListElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [active, setActive] = useState(0);
-  const { scrollYProgress } = useScroll({ target: listRef, offset: ["start center", "end end"] });
 
   useEffect(() => {
     const canvas = canvasRef.current!;
+    const rows = Array.from(listRef.current!.children) as HTMLElement[];
     const g = canvas.getContext("2d")!;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const wide = window.matchMedia("(min-width: 768px)");
     let S = 0;
     let raf = 0;
+    // The stage as a continuous index: whole at a row's centre, fractional between rows.
+    const position = () => {
+      if (reduce) return LAYOUTS.length - 1;
+      const y = readingLine(wide.matches, canvas.parentElement!.offsetHeight);
+      const mid = rows.map((r) => {
+        const b = r.getBoundingClientRect();
+        return b.top + b.height / 2;
+      });
+      if (y <= mid[0]) return 0;
+      for (let i = 0; i < mid.length - 1; i++) {
+        if (y < mid[i + 1]) return i + (y - mid[i]) / (mid[i + 1] - mid[i]);
+      }
+      return mid.length - 1;
+    };
     const draw = () => {
       raf = 0;
-      const p = reduce ? 1 : clamp01(scrollYProgress.get());
-      const sp = p * (LAYOUTS.length - 1);
+      const sp = position();
       g.setTransform(window.devicePixelRatio || 1, 0, 0, window.devicePixelRatio || 1, 0, 0);
       render(g, S, sp);
       const s = Math.floor(sp);
@@ -259,22 +284,25 @@ export default function StagesStory() {
     };
     const ro = new ResizeObserver(resize);
     ro.observe(canvas);
-    const unsub = scrollYProgress.on("change", kick);
+    window.addEventListener("scroll", kick, { passive: true });
+    window.addEventListener("resize", kick);
     return () => {
       cancelAnimationFrame(raf);
       ro.disconnect();
-      unsub();
+      window.removeEventListener("scroll", kick);
+      window.removeEventListener("resize", kick);
     };
-  }, [scrollYProgress]);
+  }, []);
 
   const rowState = (i: number) => (i === active ? "is-active" : i < active ? "is-past" : "");
 
   return (
     <section aria-label="Stages" className="relative">
-      <div className="wrap grid gap-x-16 md:grid-cols-[minmax(0,1fr)_minmax(0,26rem)]">
+      {/* Not a grid on phones, so the strip stays pinned for the whole list. */}
+      <div className="wrap md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] md:gap-x-16">
         {/* The drawing: pinned beside the list on wide screens, under the nav on phones. */}
-        <div className="sticky top-0 hidden h-[100svh] items-center md:order-2 md:flex motion-reduce:hidden">
-          <canvas ref={canvasRef} aria-hidden="true" className="mx-auto block aspect-square w-full" />
+        <div className="sticky top-16 z-10 -mx-5 flex h-44 items-center max-md:[@media(max-height:700px)]:h-32 justify-center border-b border-hairline bg-paper sm:-mx-6 md:order-2 md:top-0 md:mx-0 md:h-[100svh] md:border-0 md:bg-transparent motion-reduce:hidden">
+          <canvas ref={canvasRef} aria-hidden="true" className="block size-40 max-md:[@media(max-height:700px)]:size-28 md:aspect-square md:size-auto md:w-full" />
         </div>
 
         <ol ref={listRef} className="stages relative md:order-1 md:py-[18vh]">
