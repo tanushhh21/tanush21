@@ -1,7 +1,6 @@
 import Reveal from "./Reveal";
 import Logo from "./Logo";
 import InquiryForm from "./InquiryForm";
-import { EMAIL, MAIL } from "@/lib/site";
 
 /** The section every page closes on: book a call so we can run a hire for you. */
 export default function Contact({ logo = false }: { logo?: boolean }) {
@@ -24,12 +23,6 @@ export default function Contact({ logo = false }: { logo?: boolean }) {
           </Reveal>
         </p>
         <InquiryForm />
-        <p className="mt-8 text-[15px] text-slate">
-          Or email us at{" "}
-          <a href={MAIL} className="link-underline text-ink">
-            {EMAIL}
-          </a>
-        </p>
       </div>
     </section>
   );
