@@ -4,9 +4,9 @@ import { useEffect, useRef } from "react";
 import { easeOut, prefersReducedMotion, useOnceInView } from "./useOnceInView";
 
 const ROWS = [
-  { name: "Candidate A", source: "Sourced", score: 92, why: "Built payment infrastructure at scale.", met: ["Go", "Postgres", "On-call"], miss: [] as string[] },
-  { name: "Candidate B", source: "Inbound", score: 88, why: "Deep experience with distributed systems.", met: ["Go", "Kafka"], miss: ["On-call"] },
-  { name: "Candidate C", source: "Inbound", score: 81, why: "Promoted to tech lead within three years.", met: ["Postgres", "On-call"], miss: ["Go"] },
+  { id: "a", name: "Candidate A", source: "Sourced", score: 92, why: "Built payment infrastructure at scale.", met: ["Go", "Postgres", "On-call"], miss: [] as string[] },
+  { id: "b", name: "Candidate B", source: "Inbound", score: 88, why: "Deep experience with distributed systems.", met: ["Go", "Kafka"], miss: ["On-call"] },
+  { id: "c", name: "Candidate C", source: "Inbound", score: 81, why: "Promoted to tech lead within three years.", met: ["Postgres", "On-call"], miss: ["Go"] },
 ];
 // Where each row sits before ranking: the order they arrived in.
 const ARRIVAL = [2, 0, 1];
@@ -110,6 +110,14 @@ export default function RankedList() {
                   </Pill>
                 ))}
               </div>
+              {/* Opens this candidate's report in the section below (see Analysis). */}
+              <a
+                href={`#report-${r.id}`}
+                onClick={() => window.dispatchEvent(new CustomEvent("open-report", { detail: r.id }))}
+                className="link-chevron mt-3 inline-block !text-[14px]"
+              >
+                See detailed report <span aria-hidden="true">›</span>
+              </a>
             </div>
             <p className="font-mono text-[1.75rem] font-medium tabular-nums tracking-[-0.04em] text-ink sm:text-right">
               <span

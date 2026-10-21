@@ -111,7 +111,7 @@ export default function Worries() {
               Hiring, without the hard parts.
             </p>
             <p className="worries-in body-lg mt-4 max-w-[34rem]" style={intro(0.86)}>
-              Winnow finds the right people, checks every one of them and books the interviews. You make the call.
+              Winnow finds the right people and checks every one of them. You pick who to meet, and we take care of the scheduling.
             </p>
           </div>
         </div>

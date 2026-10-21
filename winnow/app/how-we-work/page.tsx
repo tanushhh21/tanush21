@@ -14,7 +14,7 @@ import Scheduling from "@/components/how/Scheduling";
 
 export const metadata: Metadata = {
   title: "How we work",
-  ...pageMeta("/how-we-work", "How we work · Winnow", "You give us a role. We hand back people worth meeting, with the interviews already booked."),
+  ...pageMeta("/how-we-work", "How we work · Winnow", "You give us a role. We hand back people worth meeting, then book the interviews you choose."),
 };
 
 const NEEDS = [
@@ -30,7 +30,7 @@ export default function HowWeWork() {
       <PageHead
         label="How we work"
         title="You share a role. We deliver a shortlist worth interviewing."
-        sub="With interviews already scheduled."
+        sub="You choose who to meet. We schedule the interviews."
       />
 
       <section aria-labelledby="demo-heading" className="pt-14 pb-[clamp(5rem,12vh,9rem)] sm:pt-20">
@@ -42,17 +42,19 @@ export default function HowWeWork() {
             <p className="body-lg mt-5">
               <Reveal delay={0.06}>
                 Describe the role or share a job description. Winnow posts it, finds candidates, screens and verifies
-                them, and books interviews, with every update in the same chat.
+                them, and sends you a ranked shortlist, with every update in the same chat. Pick who to meet, and
+                Winnow books the interviews.
               </Reveal>
             </p>
             <p className="mt-6 font-display text-[clamp(1.25rem,1.8vw,1.5rem)] font-semibold tracking-[-0.02em] text-ink">
-              <Reveal delay={0.12}>Your part: one message and one click.</Reveal>
+              <Reveal delay={0.12}>Your part: one message, and choosing who to meet.</Reveal>
             </p>
             <p className="sr-only">
               Example conversation: a hiring manager asks to hire SDE interns and uploads a job description. Winnow
               proposes a plan, which is approved with one click. Winnow then posts the role on LinkedIn, Naukri,
               Internshala and Unstop, shares it with campus placement cells, finds candidates who had not applied,
-              screens and verifies them, and schedules interviews with twelve candidates.
+              screens and verifies them, and shares a ranked shortlist of twelve candidates. The hiring manager picks
+              who to meet, and Winnow schedules those interviews.
             </p>
           </div>
           <Suspense>
@@ -111,8 +113,8 @@ export default function HowWeWork() {
           </h2>
           <p className="body-lg mx-auto mt-5 max-w-[34rem] text-center">
             <Reveal delay={0.06}>
-              Each candidate comes with a full analysis: how they measure against every requirement, the evidence
-              behind the score, and why they rank where they do.
+              Every shortlisted candidate comes with a detailed report: why they fit, how they measure against each
+              requirement, the evidence behind it, and practical details like notice period and pay.
             </Reveal>
           </p>
           <Suspense>
@@ -128,12 +130,12 @@ export default function HowWeWork() {
           </h2>
           <p className="body-lg mx-auto mt-5 max-w-[34rem] text-center">
             <Reveal delay={0.06}>
-              We check your availability, agree a time with each candidate, send the invites and follow up with anyone
-              who goes quiet.
+              Once you pick who to meet, we check your availability, agree a time with each candidate, send the
+              invites and handle every reschedule and follow-up.
             </Reveal>
           </p>
           <p className="sr-only">
-            Example: Winnow reads your calendar and finds five open slots. It offers Priya two of them, she picks
+            Example: after you pick who to interview, Winnow reads your calendar and finds five open slots. It offers Priya two of them, she picks
             Wednesday at 15:00, and the interview is confirmed with an invite and a reminder. Two more interviews are
             booked, and when Kabir does not reply for a day, Winnow follows up until he confirms Friday at 15:00.
           </p>

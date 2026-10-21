@@ -17,7 +17,7 @@ export const STAGES = [
   { title: "Evaluate", line: "We look past the CV for hidden signals, and assess every profile against your requirements." },
   { title: "Verify", line: "We verify identity and credentials before any interview." },
   { title: "Shortlist", line: "You receive a ranked list with the reasoning behind each candidate." },
-  { title: "Schedule", line: "We check your calendar, book the interviews and follow up with every candidate." },
+  { title: "Schedule", line: "You choose who to meet. We book the interviews around your calendar and handle the back-and-forth." },
 ];
 
 // ---- The drawing -----------------------------------------------------------

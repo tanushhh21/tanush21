@@ -53,7 +53,7 @@ const UPDATES: Update[] = [
   { text: "Applications received", day: "Days 1–4", count: 312, spin: 1300 },
   { text: "Screening every profile against the JD", done: "Every profile screened against the JD", day: "Day 5", spin: 900 },
   { text: "Verifying top candidates", done: "Top 30 candidates verified", day: "Day 5", spin: 700 },
-  { text: "Scheduling interviews", done: "Interviews scheduled with 12 candidates", day: "Day 6", spin: 800, signal: true },
+  { text: "Ranking the shortlist", done: "Shortlist ranked: 12 candidates", day: "Day 6", spin: 800, signal: true },
 ];
 const updateAt: number[] = [];
 {
@@ -312,7 +312,10 @@ export default function ChatDemo() {
       at: T.done,
       node: (
         <div className="w-fit max-w-[88%] rounded-[18px] rounded-bl-md bg-mist px-4 py-3">
-          <p className="text-[15px] text-ink">Your shortlist is ready: 12 candidates, with interviews on Thursday and Friday.</p>
+          <p className="text-[15px] text-ink">
+            Your shortlist is ready: 12 candidates, with a detailed report on each. Pick who you&rsquo;d like to meet, and
+            I&rsquo;ll schedule the interviews and handle the back-and-forth.
+          </p>
           <span className="mt-2.5 inline-flex rounded-full bg-ink px-3.5 py-1.5 text-[13.5px] font-medium text-paper">View shortlist</span>
         </div>
       ),

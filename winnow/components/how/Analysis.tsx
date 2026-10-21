@@ -17,8 +17,12 @@ const CANDIDATES = [
       "Built and ran a payments service handling two million transactions a day.",
       "Two years on the on-call rota, and led the team's incident reviews.",
     ],
-    why: "Meets every core requirement, with the strongest record of running systems in production.",
-    ask: "How would you shard the ledger if volume grew tenfold?",
+    why: "Meets every core requirement, with the strongest record of running systems in production. Has owned a payments workload of the size this role takes on.",
+    practical: [
+      ["Location", "Bengaluru"],
+      ["Notice period", "30 days"],
+      ["Expected CTC", "Within your budget"],
+    ],
   },
   {
     id: "b",
@@ -30,8 +34,12 @@ const CANDIDATES = [
       "Designed an event pipeline on Kafka that runs across three regions.",
       "No production on-call experience in any role so far.",
     ],
-    why: "The strongest on distributed systems, but has never owned on-call. That gap places them below A.",
-    ask: "Walk us through a production incident you helped resolve.",
+    why: "The strongest on distributed systems in the pool. Has never owned on-call, which is a core part of this role, so ranks below A.",
+    practical: [
+      ["Location", "Pune, open to relocating"],
+      ["Notice period", "60 days"],
+      ["Expected CTC", "Within your budget"],
+    ],
   },
   {
     id: "c",
@@ -43,17 +51,23 @@ const CANDIDATES = [
       "Promoted to tech lead within three years, managing four engineers.",
       "Most backend work is in Java. Go appears only in side projects.",
     ],
-    why: "Strong ownership and leadership. Go is a core requirement for this role, and it is the main gap.",
-    ask: "How quickly have you become productive in a new language before?",
+    why: "Strong ownership and the fastest growth in the pool. Go is a core requirement for this role and the main gap, which places them third.",
+    practical: [
+      ["Location", "Bengaluru"],
+      ["Notice period", "15 days left on notice"],
+      ["Expected CTC", "8% above your budget"],
+    ],
   },
 ];
 
 const GAP = 60;
+const CHECKS = ["Identity", "Employment", "Degree"];
 
 /**
- * The analysis behind each ranking. Bars morph between candidates; the text
- * for every candidate shares one grid cell, so switching never moves the page.
- * It steps through the candidates on its own until the visitor picks one.
+ * The detailed report behind each shortlisted candidate. Bars morph between
+ * candidates; the text for every candidate shares one grid cell, so switching
+ * never moves the page. It steps through the candidates on its own until the
+ * visitor picks one, or opens a report from the ranked list (#report-a etc.).
  */
 export default function Analysis() {
   const ref = useRef<HTMLDivElement>(null);
@@ -74,7 +88,7 @@ export default function Analysis() {
         setVisible(e.isIntersecting);
         if (e.isIntersecting) setShown(true);
       },
-      { threshold: 0.35 },
+      { threshold: 0.2 },
     );
     io.observe(el);
     return () => io.disconnect();
@@ -91,15 +105,35 @@ export default function Analysis() {
     setActive(i);
   };
 
+  useEffect(() => {
+    const open = (id: string) => {
+      const i = CANDIDATES.findIndex((k) => k.id === id);
+      if (i >= 0) pick(i);
+    };
+    const fromHash = () => open(window.location.hash.match(/^#report-(\w)$/)?.[1] ?? "");
+    const fromLink = (e: Event) => open((e as CustomEvent<string>).detail);
+    fromHash();
+    window.addEventListener("hashchange", fromHash);
+    window.addEventListener("open-report", fromLink);
+    return () => {
+      window.removeEventListener("hashchange", fromHash);
+      window.removeEventListener("open-report", fromLink);
+    };
+  }, []);
+
   const c = CANDIDATES[active];
 
   return (
     <div
       ref={ref}
       data-pending={shown ? undefined : ""}
-      className="mx-auto mt-14 max-w-[60rem] overflow-hidden rounded-[22px] border border-hairline bg-paper text-left shadow-lift"
+      className="relative mx-auto mt-14 max-w-[60rem] rounded-[22px] border border-hairline bg-paper text-left shadow-lift"
     >
-      <div role="tablist" aria-label="Candidates" className="grid grid-cols-3 gap-1 border-b border-hairline p-2 sm:flex sm:p-2.5">
+      {/* Link targets, set above the card so it is not hidden under the nav. */}
+      {CANDIDATES.map((k) => (
+        <span key={k.id} id={`report-${k.id}`} aria-hidden="true" className="absolute -top-24" />
+      ))}
+      <div role="tablist" aria-label="Candidates" className="grid grid-cols-3 gap-1 rounded-t-[22px] border-b border-hairline p-2 sm:flex sm:p-2.5">
         {CANDIDATES.map((k, i) => (
           <button
             key={k.id}
@@ -130,12 +164,11 @@ export default function Analysis() {
         <div className="border-b border-hairline p-6 sm:p-8 md:border-b-0 md:border-r">
           <div key={c.id} className="an-swap flex items-start justify-between gap-4">
             <div>
-              <p className="text-[17px] font-medium text-ink">{c.name}</p>
+              <p className="label">Detailed report</p>
+              <p className="mt-2 text-[17px] font-medium text-ink">{c.name}</p>
               <p className="mt-1.5 flex flex-wrap items-center gap-1.5 text-[12.5px]">
                 <span className="rounded-full border border-hairline px-2.5 py-0.5 text-ink">{c.source}</span>
-                <span className="rounded-full border border-signal/30 bg-signal/[0.06] px-2.5 py-0.5 text-signal">
-                  Identity and employment verified
-                </span>
+                <span className="rounded-full border border-signal/30 bg-signal/[0.06] px-2.5 py-0.5 text-signal">Verified</span>
               </p>
             </div>
             <div className="shrink-0 text-right">
@@ -171,7 +204,7 @@ export default function Analysis() {
           </ul>
         </div>
 
-        <div className="grid bg-mist/60 p-6 sm:p-8">
+        <div className="grid rounded-b-[22px] bg-mist/60 p-6 sm:p-8 md:rounded-bl-none md:rounded-br-[22px]">
           {CANDIDATES.map((k, i) => (
             <div
               key={k.id}
@@ -180,7 +213,9 @@ export default function Analysis() {
                 i === active ? "visible translate-y-0 opacity-100" : "invisible translate-y-1.5 opacity-0"
               }`}
             >
-              <p className="eyebrow !text-[15px]">Evidence</p>
+              <p className="eyebrow !text-[15px]">Why they fit</p>
+              <p className="mt-2 text-[14.5px] leading-snug text-ink">{k.why}</p>
+              <p className="eyebrow mt-7 !text-[15px]">Evidence</p>
               <ul className="mt-3 grid gap-2.5">
                 {k.evidence.map((e) => (
                   <li key={e} className="flex gap-3 text-[14.5px] leading-snug text-ink">
@@ -189,10 +224,26 @@ export default function Analysis() {
                   </li>
                 ))}
               </ul>
-              <p className="eyebrow mt-7 !text-[15px]">Why this rank</p>
-              <p className="mt-2 text-[14.5px] leading-snug text-ink">{k.why}</p>
-              <p className="eyebrow mt-7 !text-[15px]">Worth asking in the interview</p>
-              <p className="mt-2 text-[14.5px] leading-snug text-ink">&ldquo;{k.ask}&rdquo;</p>
+              <p className="eyebrow mt-7 !text-[15px]">Practical fit</p>
+              <dl className="mt-3 grid gap-2 text-[14px]">
+                {k.practical.map(([term, value]) => (
+                  <div key={term} className="flex items-baseline justify-between gap-4 border-b border-hairline pb-2 last:border-b-0">
+                    <dt className="text-slate">{term}</dt>
+                    <dd className="text-right text-ink">{value}</dd>
+                  </div>
+                ))}
+              </dl>
+              <p className="eyebrow mt-7 !text-[15px]">Verified</p>
+              <p className="mt-3 flex flex-wrap gap-1.5 text-[12.5px]">
+                {CHECKS.map((ch) => (
+                  <span key={ch} className="inline-flex items-center gap-1 rounded-full border border-signal/30 bg-signal/[0.06] px-2.5 py-0.5 text-signal">
+                    <svg viewBox="0 0 16 16" aria-hidden="true" className="h-3 w-3">
+                      <path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    {ch}
+                  </span>
+                ))}
+              </p>
             </div>
           ))}
         </div>
