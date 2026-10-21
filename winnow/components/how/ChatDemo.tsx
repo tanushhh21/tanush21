@@ -218,7 +218,7 @@ export default function ChatDemo() {
       at: 0,
       node: (
         <p className="w-fit max-w-[85%] rounded-[18px] rounded-bl-md bg-mist px-4 py-2.5 text-[15px] text-ink">
-          Hi, I&rsquo;m Winnow. Who are you hiring?
+          Hi, I&rsquo;m Winnow. What role are you hiring for?
         </p>
       ),
     },
