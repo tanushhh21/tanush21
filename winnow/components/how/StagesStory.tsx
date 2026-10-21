@@ -273,13 +273,13 @@ export default function StagesStory() {
     <section aria-label="Stages" className="relative">
       <div className="wrap grid gap-x-16 md:grid-cols-[minmax(0,1fr)_minmax(0,26rem)]">
         {/* The drawing: pinned beside the list on wide screens, under the nav on phones. */}
-        <div className="sticky top-16 z-10 -mx-5 border-b border-hairline bg-paper/95 px-5 py-3 backdrop-blur-[8px] md:top-0 md:order-2 md:mx-0 md:flex md:h-[100svh] md:items-center md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none motion-reduce:hidden">
-          <canvas ref={canvasRef} aria-hidden="true" className="mx-auto block aspect-square w-[min(15rem,60vw)] md:w-full" />
+        <div className="sticky top-0 hidden h-[100svh] items-center md:order-2 md:flex motion-reduce:hidden">
+          <canvas ref={canvasRef} aria-hidden="true" className="mx-auto block aspect-square w-full" />
         </div>
 
         <ol ref={listRef} className="stages relative md:order-1 md:py-[18vh]">
           {STAGES.map((s, i) => (
-            <li key={s.title} className={`stage grid min-h-[38vh] grid-cols-[3rem_minmax(0,1fr)] content-center gap-x-4 md:min-h-[42vh] ${rowState(i)}`}>
+            <li key={s.title} className={`stage grid grid-cols-[3rem_minmax(0,1fr)] content-center gap-x-4 py-7 md:min-h-[42vh] md:py-0 ${rowState(i)}`}>
               <span className="stage-n label tabular-nums">{String(i + 1).padStart(2, "0")}</span>
               <div>
                 <h2 className="stage-title text-[clamp(1.75rem,3.2vw,2.75rem)] font-semibold tracking-[-0.03em]">
@@ -289,7 +289,7 @@ export default function StagesStory() {
               </div>
             </li>
           ))}
-          <li className={`stage grid min-h-[38vh] grid-cols-[3rem_minmax(0,1fr)] content-center gap-x-4 md:min-h-[42vh] ${rowState(7)}`}>
+          <li className={`stage grid grid-cols-[3rem_minmax(0,1fr)] content-center gap-x-4 py-7 md:min-h-[42vh] md:py-0 ${rowState(7)}`}>
             <span aria-hidden="true" className="mt-[0.6em] h-2.5 w-2.5 rounded-full bg-signal" />
             <div>
               <p className="font-display text-[clamp(1.75rem,3.2vw,2.75rem)] font-semibold tracking-[-0.03em] text-signal">

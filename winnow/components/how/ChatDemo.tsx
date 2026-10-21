@@ -191,7 +191,7 @@ export default function ChatDemo() {
           raf = 0;
         }
       },
-      { threshold: 0.3 },
+      { threshold: 0.15 },
     );
     io.observe(el);
     return () => {
@@ -214,6 +214,14 @@ export default function ChatDemo() {
   const thinking = (t >= T.dots1 && t < T.ask) || (t >= T.dots2 && t < T.plan);
 
   const items: { at: number; node: React.ReactNode }[] = [
+    {
+      at: 0,
+      node: (
+        <p className="w-fit max-w-[85%] rounded-[18px] rounded-bl-md bg-mist px-4 py-2.5 text-[15px] text-ink">
+          Hi, I&rsquo;m Winnow. Who are you hiring?
+        </p>
+      ),
+    },
     {
       at: T.send1,
       node: <p className="ml-auto w-fit max-w-[85%] rounded-[18px] rounded-br-md bg-ink px-4 py-2.5 text-[15px] text-paper">{ASK}</p>,
@@ -322,8 +330,8 @@ export default function ChatDemo() {
     },
   ];
 
-  // Slide the stack so the newest visible message (and the typing dots,
-  // when Winnow is replying) sits just above the bottom edge.
+  // Messages stack from the top; once they overflow, slide the stack so the
+  // newest one (and the typing dots, when Winnow is replying) stays in view.
   let offset = 0;
   if (geo) {
     let last = -1;
@@ -331,7 +339,7 @@ export default function ChatDemo() {
       if (t >= it.at) last = i;
     });
     const bottom = (last >= 0 ? geo.bottoms[last] : 0) + (thinking ? 56 : 0) + 20;
-    offset = geo.view - bottom;
+    offset = Math.min(0, geo.view - bottom);
   }
 
   return (
@@ -358,7 +366,7 @@ export default function ChatDemo() {
           arrives while the stack slides up to keep the newest in view. */}
       <div
         ref={viewRef}
-        className="relative h-[min(30rem,calc(100svh-9rem))] overflow-hidden transition-opacity duration-500 sm:h-[min(32rem,calc(100svh-9rem))]"
+        className="relative h-[min(26rem,calc(100svh-9rem))] overflow-hidden transition-opacity duration-500 sm:h-[min(32rem,calc(100svh-9rem))]"
         style={{ opacity: fade ? 0 : 1 }}
         aria-hidden="true"
       >

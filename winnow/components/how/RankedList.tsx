@@ -88,9 +88,9 @@ export default function RankedList() {
             ref={(el) => {
               rows.current[i] = el;
             }}
-            className="relative grid gap-3 border-b border-hairline bg-paper px-5 py-5 last:border-b-0 sm:grid-cols-[2.5rem_minmax(0,1fr)_auto] sm:items-center sm:gap-6 sm:px-7"
+            className="relative grid grid-cols-[1.75rem_minmax(0,1fr)_auto] items-start gap-x-3 border-b border-hairline bg-paper px-5 py-5 last:border-b-0 sm:grid-cols-[2.5rem_minmax(0,1fr)_auto] sm:items-center sm:gap-x-6 sm:px-7"
           >
-            <span className="label tabular-nums text-ink">{String(i + 1).padStart(2, "0")}</span>
+            <span className="label pt-1.5 tabular-nums text-ink sm:pt-0">{String(i + 1).padStart(2, "0")}</span>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <p className="text-[15.5px] font-medium text-ink">{r.name}</p>
@@ -114,12 +114,12 @@ export default function RankedList() {
               <a
                 href={`#report-${r.id}`}
                 onClick={() => window.dispatchEvent(new CustomEvent("open-report", { detail: r.id }))}
-                className="link-chevron mt-3 inline-block !text-[14px]"
+                className="link-chevron mt-1.5 -mb-1.5 inline-block py-1.5 !text-[14px]"
               >
                 See detailed report <span aria-hidden="true">›</span>
               </a>
             </div>
-            <p className="font-mono text-[1.75rem] font-medium tabular-nums tracking-[-0.04em] text-ink sm:text-right">
+            <p className="min-w-[2ch] text-right font-mono text-[1.5rem] font-medium leading-none tabular-nums tracking-[-0.04em] text-ink sm:text-[1.75rem]">
               <span
                 ref={(el) => {
                   scores.current[i] = el;

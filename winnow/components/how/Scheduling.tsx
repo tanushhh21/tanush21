@@ -64,23 +64,52 @@ const fade = (on: boolean) =>
  */
 export default function Scheduling() {
   const ref = useRef<HTMLDivElement>(null);
+  const msgs = useRef<HTMLDivElement>(null);
   const [step, setStep] = useState(FINAL);
 
+  // The calendar part (reading the week, finding open slots) starts when the
+  // card comes into view. The conversation waits until its own panel is on
+  // screen too: on phones it sits below the calendar.
   useEffect(() => {
     if (prefersReducedMotion()) return;
     setStep(0);
     const timers: number[] = [];
-    const io = new IntersectionObserver(
+    const at = (ms: number, fn: () => void) => timers.push(window.setTimeout(fn, ms));
+    let calendarDone = false;
+    let msgsSeen = false;
+    let talking = false;
+    const talk = () => {
+      if (talking || !calendarDone || !msgsSeen) return;
+      talking = true;
+      for (let i = 3; i < STEPS.length; i++) at(STEPS[i] - STEPS[3] + 300, () => setStep(i));
+    };
+    const card = new IntersectionObserver(
       ([e]) => {
         if (!e.isIntersecting) return;
-        io.disconnect();
-        STEPS.forEach((ms, i) => timers.push(window.setTimeout(() => setStep(i), ms)));
+        card.disconnect();
+        at(STEPS[1], () => setStep(1));
+        at(STEPS[2], () => {
+          setStep(2);
+          calendarDone = true;
+          talk();
+        });
       },
       { threshold: 0.2 },
     );
-    io.observe(ref.current!);
+    const panel = new IntersectionObserver(
+      ([e]) => {
+        if (!e.isIntersecting) return;
+        panel.disconnect();
+        msgsSeen = true;
+        talk();
+      },
+      { threshold: 0.3 },
+    );
+    card.observe(ref.current!);
+    panel.observe(msgs.current!);
     return () => {
-      io.disconnect();
+      card.disconnect();
+      panel.disconnect();
       timers.forEach(clearTimeout);
     };
   }, []);
@@ -179,7 +208,7 @@ export default function Scheduling() {
         </div>
 
         {/* Messages with candidates */}
-        <div className="flex flex-col p-4 sm:p-6">
+        <div ref={msgs} className="flex flex-col p-4 sm:p-6">
           <p className="eyebrow !text-[15px]">Messages with candidates</p>
           <div className="mt-4 grid gap-3 text-[14px] leading-snug">
             <p className={`text-[12.5px] text-slate ${fade(step >= 3)}`}>To Priya S. · SDE Intern</p>
