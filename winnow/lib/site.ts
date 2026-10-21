@@ -6,10 +6,10 @@ export const TABS = [
 ];
 export const EMAIL = "kalhan.tanush@gmail.com";
 export const MAIL = `mailto:${EMAIL}`;
-// Web3Forms access key (public by design), set in Vercel as
-// NEXT_PUBLIC_WEB3FORMS_KEY: call requests are emailed straight to EMAIL.
-// Without it the form falls back to opening the visitor's email app.
-export const WEB3FORMS_KEY: string = process.env.NEXT_PUBLIC_WEB3FORMS_KEY ?? "";
+// Web3Forms access key (public by design: it can only send to our inbox).
+// Call requests are emailed straight to EMAIL. Without a key, the form falls
+// back to opening the visitor's email app.
+export const WEB3FORMS_KEY: string = process.env.NEXT_PUBLIC_WEB3FORMS_KEY || "b1d34aa4-79d4-42c4-8df2-9c69151798cb";
 
 // The live address. Switch to https://getwinnow.in once that domain resolves.
 export const SITE_URL = "https://try-winnow.vercel.app";
