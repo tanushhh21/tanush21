@@ -437,6 +437,11 @@ html:not(.js) .worries {
 .an-timer {
   animation: an-timer 6000ms linear both;
 }
+/* The glimpse of the rest of the report fades out towards "View full report". */
+.an-more {
+  -webkit-mask-image: linear-gradient(to bottom, #000 30%, transparent);
+  mask-image: linear-gradient(to bottom, #000 30%, transparent);
+}
 
 /* Cards that rise in, staggered, when they enter view (RevealObserver marks them). */
 .js .rise {
