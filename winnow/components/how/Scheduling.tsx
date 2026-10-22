@@ -213,7 +213,7 @@ export default function Scheduling() {
           <div className="mt-4 grid gap-3 text-[14px] leading-snug">
             <p className={`text-[12.5px] text-slate ${fade(step >= 3)}`}>To Priya S. · SDE Intern</p>
             <p className={`ml-auto w-fit max-w-[90%] rounded-[18px] rounded-br-md bg-ink px-4 py-2.5 text-paper ${fade(step >= 3)}`}>
-              Hi Priya, Acme would like to interview you for the SDE Intern role. Would Tuesday at 11:00 or Wednesday at
+              Hi Priya, you&rsquo;ve been shortlisted for the SDE Intern role. Would Tuesday at 11:00 or Wednesday at
               15:00 suit you for a 45-minute interview?
             </p>
             <div className="grid">
