@@ -23,6 +23,7 @@ const CANDIDATES = [
       ["Notice period", "30 days"],
       ["Expected CTC", "Within your budget"],
     ],
+    more: ["4 roles over 6 years", "A payments design doc and two repositories", "First on the shortlist for production experience"],
   },
   {
     id: "b",
@@ -40,6 +41,7 @@ const CANDIDATES = [
       ["Notice period", "60 days"],
       ["Expected CTC", "Within your budget"],
     ],
+    more: ["3 roles over 5 years", "A Kafka pipeline repository and a conference talk", "First on the shortlist for distributed systems"],
   },
   {
     id: "c",
@@ -57,11 +59,16 @@ const CANDIDATES = [
       ["Notice period", "15 days left on notice"],
       ["Expected CTC", "8% above your budget"],
     ],
+    more: ["2 roles over 4 years", "Java services and the reviews they led as tech lead", "Fastest growth on the shortlist"],
   },
 ];
 
 const GAP = 60;
 const CHECKS = ["Identity", "Employment", "Degree"];
+// The rest of the report, shown only as a glimpse. Each candidate has a line for the
+// first three sections; verification reads the same for everyone.
+const MORE = ["Career timeline", "Work reviewed", "How they compare", "Verification details"];
+const VERIFIED_FROM = "Identity, employment and degree, with sources";
 
 /**
  * The detailed report behind each shortlisted candidate. Bars morph between
@@ -75,6 +82,7 @@ export default function Analysis() {
   const [shown, setShown] = useState(false);
   const [auto, setAuto] = useState(true);
   const [visible, setVisible] = useState(false);
+  const [asked, setAsked] = useState(false);
 
   useEffect(() => {
     const el = ref.current!;
@@ -204,7 +212,7 @@ export default function Analysis() {
           </ul>
         </div>
 
-        <div className="grid rounded-b-[22px] bg-mist/60 p-6 sm:p-8 md:rounded-bl-none md:rounded-br-[22px]">
+        <div className="grid bg-mist/60 p-6 sm:p-8">
           {CANDIDATES.map((k, i) => (
             <div
               key={k.id}
@@ -246,6 +254,41 @@ export default function Analysis() {
               </p>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* The rest of the report, as a glimpse that fades out. */}
+      <div className="rounded-b-[22px] border-t border-hairline px-6 pb-6 pt-6 sm:px-8 sm:pb-7">
+        <div key={c.id} aria-hidden="true" className="an-swap an-more grid h-44 gap-x-10 gap-y-6 overflow-hidden sm:h-[8.5rem] sm:grid-cols-2">
+          {MORE.map((m, i) => (
+            <div key={m}>
+              <p className="eyebrow !text-[15px]">{m}</p>
+              <p className="mt-1.5 text-[14px] leading-snug text-ink">{c.more[i] ?? VERIFIED_FROM}</p>
+              <span className="mt-3 block h-2 rounded-full bg-mist" />
+              <span className="mt-2 block h-2 w-3/4 rounded-full bg-mist" />
+            </div>
+          ))}
+        </div>
+        <div aria-live="polite" className="mt-2 flex min-h-14 items-center justify-center text-center sm:min-h-11">
+          {asked ? (
+            <p className="text-[14px] text-slate">
+              Full reports come with every shortlist.{" "}
+              <a href="#talk" className="link-chevron inline-block py-1.5 !text-[14px]">
+                Book a call <span aria-hidden="true">›</span>
+              </a>
+            </p>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                setAuto(false);
+                setAsked(true);
+              }}
+              className="inline-flex items-center gap-1.5 rounded-full border border-hairline bg-paper px-5 py-2.5 text-[14px] font-medium text-ink shadow-[0_1px_2px_rgb(10_12_15/0.06)] transition-colors duration-200 hover:border-ink/25"
+            >
+              View full report <span aria-hidden="true">›</span>
+            </button>
+          )}
         </div>
       </div>
     </div>
