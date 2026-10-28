@@ -152,7 +152,7 @@ export async function applyRetention() {
             and(
               isNull(persons.retainUntil),
               // Their latest application is older than the window that applies to them.
-              sql`not exists (select 1 from ${applications} a where a.person_id = ${persons.id} and a.created_at > case when ${persons.consent} = 'given' then ${cutoff("talent_pool")}::timestamptz else ${cutoff("applications")}::timestamptz end)`,
+              sql`not exists (select 1 from ${applications} a where a.person_id = ${persons.id} and a.created_at > case when ${persons.consent} = 'given' then ${cutoff("talent_pool").toISOString()}::timestamptz else ${cutoff("applications").toISOString()}::timestamptz end)`,
               lt(persons.createdAt, cutoff("applications")),
             ),
           ),

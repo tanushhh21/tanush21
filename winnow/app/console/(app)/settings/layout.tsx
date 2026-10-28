@@ -9,6 +9,7 @@ const SECTIONS = [
   ["privacy", "Data and privacy"],
   ["notifications", "Notifications"],
   ["billing", "Billing"],
+  ["account", "Your account"],
 ];
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {

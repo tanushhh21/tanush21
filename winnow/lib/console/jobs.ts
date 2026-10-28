@@ -5,7 +5,7 @@
  * (via after()) and whenever an open role page polls for progress.
  */
 import { and, eq, inArray, ne, sql } from "drizzle-orm";
-import { db } from "@/lib/db";
+import { db, rowsOf } from "@/lib/db";
 import {
   applicationFacts,
   applications,
@@ -57,7 +57,7 @@ async function claim(n: number) {
       for update skip locked
     )
     returning *`);
-  return (rows.rows as Record<string, unknown>[]).map((r) => ({
+  return rowsOf(rows).map((r) => ({
     id: String(r.id),
     kind: r.kind as JobKind,
     orgId: r.org_id as string | null,
@@ -298,7 +298,24 @@ async function scoreJob(job: Job) {
   if (!only) await db.delete(verdicts).where(eq(verdicts.evaluationId, ev.id));
   else await db.delete(verdicts).where(and(eq(verdicts.evaluationId, ev.id), inArray(verdicts.requirementKey, only)));
   const valid = new Set(forAi.map((q) => q.key));
-  const fresh = result.verdicts.filter((v) => valid.has(v.key));
+  // Evidence must be real: a "met" or "partly" whose quote is not in the CV
+  // (a model slip, or a CV trying to instruct the model) counts as unknown.
+  const norm = (t: string) =>
+    t
+      .toLowerCase()
+      .replace(/[\u2018\u2019]/g, "'")
+      .replace(/[\u201c\u201d]/g, '"')
+      .replace(/[\u2013\u2014]/g, "-")
+      .replace(/\s+/g, " ")
+      .trim();
+  const hay = norm(text);
+  const fresh = result.verdicts
+    .filter((v) => valid.has(v.key))
+    .map((v) =>
+      (v.verdict === "met" || v.verdict === "partial") && (!v.quote || !hay.includes(norm(v.quote)))
+        ? { ...v, verdict: "unknown" as const, quote: null, rationale: `Not counted: the quoted evidence is not in the CV. ${v.rationale}` }
+        : v,
+    );
   if (fresh.length)
     await db.insert(verdicts).values(
       fresh.map((v) => ({

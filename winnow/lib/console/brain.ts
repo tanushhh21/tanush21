@@ -3,7 +3,7 @@
  * its provenance and confidence. It is given to the AI as context.
  */
 import { and, eq, sql } from "drizzle-orm";
-import { db } from "@/lib/db";
+import { db, rowsOf } from "@/lib/db";
 import { companyFacts, roles, type FactGroup } from "@/lib/db/schema";
 
 export const GROUPS: { key: FactGroup; label: string }[] = [
@@ -54,7 +54,7 @@ export async function inferBeliefs(orgId: string) {
     from application a
     left join application_fact f on f.application_id = a.id and f.field in ('expected_ctc', 'notice_period_days')
     where a.org_id = ${orgId} and a.decision in ('dropped', 'shortlisted')`);
-  const rows = (decided.rows ?? decided) as { code: string | null; decision: string; field: string | null; num: number | null }[];
+  const rows = rowsOf<{ code: string | null; decision: string; field: string | null; num: number | null }>(decided);
   const ctcDropped = rows.filter((r) => r.code === "comp_misaligned" && r.field === "expected_ctc" && r.num).map((r) => Number(r.num));
   const ctcShort = rows.filter((r) => r.decision === "shortlisted" && r.field === "expected_ctc" && r.num).map((r) => Number(r.num));
   if (ctcDropped.length >= 3) {
@@ -98,7 +98,7 @@ export async function inferBeliefs(orgId: string) {
     where r.org_id = ${orgId} and length(k) > 1 and lower(k) <> all(${GENERIC})
     group by lower(k) having count(distinct v.role_id) >= 2
     order by n desc limit 5`);
-  const kw = (words.rows ?? words) as { k: string; n: number }[];
+  const kw = rowsOf<{ k: string; n: number }>(words);
   if (kw.length >= 2)
     out.push({
       key: "stack_common",
@@ -113,7 +113,7 @@ export async function inferBeliefs(orgId: string) {
     from audit_log
     where org_id = ${orgId} and action = 'decision.dropped' and detail->>'stage' in ('interviewing', 'offer')
     group by 1 order by n desc`);
-  const lateRows = (late.rows ?? late) as { code: string; n: number }[];
+  const lateRows = rowsOf<{ code: string; n: number }>(late);
   const lateTotal = lateRows.reduce((n, r) => n + r.n, 0);
   if (lateTotal >= 3 && lateRows[0])
     out.push({

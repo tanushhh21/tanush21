@@ -9,7 +9,7 @@ const LEVEL = { hiring_manager: "Hiring manager", ta: "TA", admin: "Admin", oper
 export default async function Orgs({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
   const user = await requireUser();
   const list = await getOrgs(user.id, user.isOperator);
-  if (list.length === 0) redirect(user.isOperator ? "/console/operator" : "/console/no-access");
+  if (list.length === 0) redirect(user.isOperator ? "/console/operator" : "/console/welcome");
   const { next } = await searchParams;
   return (
     <main className="flex min-h-svh items-center justify-center bg-mist px-5 py-16">

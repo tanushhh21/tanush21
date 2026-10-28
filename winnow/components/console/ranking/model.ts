@@ -245,7 +245,11 @@ export function sortRows(rows: Row[], s: Sort) {
 // ---- Export ---------------------------------------------------------------------
 
 export function toCsv(rows: Row[], columns: ColumnId[], reqs: Req[]) {
-  const esc = (v: string) => (/[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
+  // A leading = + - @ would run as a formula in a spreadsheet.
+  const esc = (raw: string) => {
+    const v = /^[=+\-@]/.test(raw) ? `'${raw}` : raw;
+    return /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
+  };
   const head = columns.map((c) => esc(columnLabel(c, reqs)));
   return [head.join(","), ...rows.map((r) => columns.map((c) => esc(cellText(r, c, reqs))).join(","))].join("\n");
 }
