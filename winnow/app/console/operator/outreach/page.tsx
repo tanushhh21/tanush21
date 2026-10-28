@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { outreachQueue } from "@/lib/console/data/operator";
-import { saveOutreach } from "@/lib/console/actions/operator";
+import { outreachDiscard, outreachSent, saveOutreach } from "@/lib/console/actions/operator";
 import { Card, Empty, PageHeader, areaClass, buttonClass } from "@/components/console/ui";
 import Flash from "@/components/console/operator/Flash";
 
@@ -34,13 +34,13 @@ export default async function Outreach({ searchParams }: { searchParams: Promise
             </p>
             <textarea name="draft" aria-label={`Message to ${o.toName}`} defaultValue={o.draft} className={`${areaClass} min-h-24`} />
             <div className="flex flex-wrap gap-2">
-              <button type="submit" name="op" value="sent" className={buttonClass("primary", "sm")}>
+              <button type="submit" formAction={outreachSent} className={buttonClass("primary", "sm")}>
                 I sent it
               </button>
-              <button type="submit" name="op" value="save" className={buttonClass("secondary", "sm")}>
+              <button type="submit" className={buttonClass("secondary", "sm")}>
                 Save draft
               </button>
-              <button type="submit" name="op" value="discard" className={buttonClass("ghost", "sm")}>
+              <button type="submit" formAction={outreachDiscard} className={buttonClass("ghost", "sm")}>
                 Discard
               </button>
             </div>

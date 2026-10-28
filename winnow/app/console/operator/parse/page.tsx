@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { parseFailures } from "@/lib/console/data/operator";
-import { fixParse } from "@/lib/console/actions/operator";
+import { fixParse, parseUnfixable } from "@/lib/console/actions/operator";
 import { Card, Empty, PageHeader, areaClass, buttonClass, fieldClass } from "@/components/console/ui";
 import Flash from "@/components/console/operator/Flash";
 
@@ -26,11 +26,11 @@ export default async function Parse({ searchParams }: { searchParams: Promise<{ 
               <input type="file" name="file" accept=".pdf,.docx,.txt,.md" aria-label="A readable file" className="text-[13px]" />
               <textarea name="text" aria-label="Or the CV text" placeholder="Or paste the CV text" className={`${areaClass} min-h-20`} />
               <div className="flex flex-wrap items-center gap-2">
-                <button type="submit" name="op" value="fix" className={buttonClass("primary", "sm")}>
+                <button type="submit" className={buttonClass("primary", "sm")}>
                   Read it again
                 </button>
                 <input name="note" placeholder="Why it cannot be fixed" aria-label="Why it cannot be fixed" className={`${fieldClass} h-8 sm:w-64`} />
-                <button type="submit" name="op" value="unfixable" className={buttonClass("ghost", "sm")}>
+                <button type="submit" formAction={parseUnfixable} className={buttonClass("ghost", "sm")}>
                   Cannot be fixed
                 </button>
               </div>

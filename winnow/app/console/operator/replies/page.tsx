@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { outreachQueue, sentOutreach } from "@/lib/console/data/operator";
-import { processReply, recordReply } from "@/lib/console/actions/operator";
+import { recordReply, replyInterested, replyLater, replyNo } from "@/lib/console/actions/operator";
 import { Card, CardHead, Empty, Field, PageHeader, areaClass, buttonClass, fieldClass } from "@/components/console/ui";
 import Flash from "@/components/console/operator/Flash";
 
@@ -19,7 +19,7 @@ export default async function Replies({ searchParams }: { searchParams: Promise<
           <CardHead title={`${o.toName} replied`} meta={`${org} · ${role} · ${o.channel}`} />
           <div className="grid gap-3 px-4 py-4 sm:px-5">
             <blockquote className="whitespace-pre-wrap rounded-[10px] bg-mist px-3 py-2 text-[13.5px]">{o.reply}</blockquote>
-            <form action={processReply} className="grid gap-2">
+            <form action={replyInterested} className="grid gap-2">
               <input type="hidden" name="id" value={o.id} />
               <Field label="Their CV or profile, pasted" hint="Needed to add them: Winnow reads and scores it against the role.">
                 <textarea name="profile" className={`${areaClass} min-h-24`} />
@@ -28,13 +28,13 @@ export default async function Replies({ searchParams }: { searchParams: Promise<
                 <input name="email" type="email" className={`${fieldClass} sm:w-72`} />
               </Field>
               <div className="flex flex-wrap gap-2">
-                <button type="submit" name="outcome" value="interested" className={buttonClass("primary", "sm")}>
+                <button type="submit" formAction={replyInterested} className={buttonClass("primary", "sm")}>
                   Interested: add to the role
                 </button>
-                <button type="submit" name="outcome" value="later" className={buttonClass("secondary", "sm")}>
+                <button type="submit" formAction={replyLater} className={buttonClass("secondary", "sm")}>
                   Later
                 </button>
-                <button type="submit" name="outcome" value="no" className={buttonClass("ghost", "sm")}>
+                <button type="submit" formAction={replyNo} className={buttonClass("ghost", "sm")}>
                   Not interested
                 </button>
               </div>

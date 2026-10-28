@@ -257,3 +257,34 @@ export async function resolveMerge(form: FormData) {
   await audit({ orgId: m!.orgId, actorId: u.id, action: "person.merge", entity: "person", entityId: a!.id, detail: { merged: b!.id, reason: m!.reason } });
   done("merges", `Merged into ${a!.name}`);
 }
+
+// One action per button: a submit button's own name and value do not reach a
+// server action, so each choice is its own entry point.
+const as = (key: string, value: string, fn: (f: FormData) => Promise<unknown>) => async (form: FormData) => {
+  form.set(key, value);
+  await fn(form);
+};
+export async function outreachSent(form: FormData) {
+  await as("op", "sent", saveOutreach)(form);
+}
+export async function outreachDiscard(form: FormData) {
+  await as("op", "discard", saveOutreach)(form);
+}
+export async function replyInterested(form: FormData) {
+  await as("outcome", "interested", processReply)(form);
+}
+export async function replyLater(form: FormData) {
+  await as("outcome", "later", processReply)(form);
+}
+export async function replyNo(form: FormData) {
+  await as("outcome", "no", processReply)(form);
+}
+export async function mergeSame(form: FormData) {
+  await as("op", "merge", resolveMerge)(form);
+}
+export async function mergeDistinct(form: FormData) {
+  await as("op", "distinct", resolveMerge)(form);
+}
+export async function parseUnfixable(form: FormData) {
+  await as("op", "unfixable", fixParse)(form);
+}

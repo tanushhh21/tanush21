@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { mergesToReview } from "@/lib/console/data/operator";
-import { resolveMerge } from "@/lib/console/actions/operator";
+import { mergeDistinct, mergeSame } from "@/lib/console/actions/operator";
 import { Card, CardHead, Empty, PageHeader, buttonClass } from "@/components/console/ui";
 import Flash from "@/components/console/operator/Flash";
 
@@ -43,12 +43,12 @@ export default async function Merges({ searchParams }: { searchParams: Promise<{
             <Person p={m.a!} />
             <Person p={m.b!} />
           </div>
-          <form action={resolveMerge} className="flex flex-wrap gap-2 px-4 pb-4 sm:px-5">
+          <form action={mergeDistinct} className="flex flex-wrap gap-2 px-4 pb-4 sm:px-5">
             <input type="hidden" name="id" value={m.id} />
-            <button type="submit" name="op" value="merge" className={buttonClass("primary", "sm")}>
+            <button type="submit" formAction={mergeSame} className={buttonClass("primary", "sm")}>
               Same person: merge
             </button>
-            <button type="submit" name="op" value="distinct" className={buttonClass("secondary", "sm")}>
+            <button type="submit" formAction={mergeDistinct} className={buttonClass("secondary", "sm")}>
               Different people
             </button>
           </form>
