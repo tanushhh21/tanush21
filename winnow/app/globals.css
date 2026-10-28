@@ -8,6 +8,10 @@
   --color-slate: #6b7280;
   --color-hairline: #e8eaed;
   --color-signal: #1b4dff;
+  /* Console status colours: used sparingly, always with a word or shape too. */
+  --color-alert: #b42318;
+  --color-caution: #b54708;
+  --color-ok: #067647;
 
   --font-sans: var(--font-funnel-sans), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-funnel), var(--font-funnel-sans), ui-sans-serif, sans-serif;
