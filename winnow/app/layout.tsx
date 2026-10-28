@@ -1,9 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Funnel_Display, Funnel_Sans, Geist_Mono } from "next/font/google";
-import SmoothScroll from "@/components/SmoothScroll";
-import RevealObserver from "@/components/RevealObserver";
-import Nav from "@/components/Nav";
-import Footer from "@/components/Footer";
 import { SITE_URL, pageMeta } from "@/lib/site";
 import "./globals.css";
 
@@ -49,13 +45,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Lets CSS hide not-yet-revealed content only when JS will reveal it. */}
         <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
       </head>
-      <body>
-        <SmoothScroll />
-        <Nav />
-        {children}
-        <Footer />
-        <RevealObserver />
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
