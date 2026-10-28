@@ -31,6 +31,7 @@ import { extract } from "./parse";
 import { readStoredFile } from "./storage";
 import { arithmetic, currentRequirements, rankRole } from "./scoring";
 import { logActivity } from "./log";
+import { notifyRole } from "./notify";
 import { touchRole } from "./roles";
 import { applyHardFilters } from "./filters";
 import { companyContext } from "./brain";
@@ -120,6 +121,8 @@ async function onFailure(job: Job, message: string) {
       message: job.kind === "rubric" ? `Could not build the rubric: ${message}` : `${job.kind === "parse" ? "Reading" : "Scoring"} failed: ${message}`,
       detail: { applicationId },
     });
+  if (job.roleId && (job.kind === "score" || job.kind === "rescore" || job.kind === "rubric"))
+    await notifyRole(job.roleId, "scoring_failed", job.kind === "rubric" ? "The rubric could not be built" : "Scoring failed for some candidates", `/console/roles/${job.roleId}/activity?show=failures`);
   if (job.roleId) await drainCheck(job.roleId);
 }
 
@@ -158,6 +161,11 @@ async function parseJob(job: Job) {
     .set({ parseStatus: "parsed", text: parsed.text || null, excluded: r.excluded_quotes })
     .where(eq(documents.id, doc.id));
 
+  await db
+    .update(applications)
+    .set({ protectedAttrs: { gender: r.protected_attributes?.gender ?? null, birthYear: r.protected_attributes?.birth_year ?? null } })
+    .where(eq(applications.id, app.id));
+
   // Facts read off the application, each stated or inferred, with its quote.
   await db.delete(applicationFacts).where(eq(applicationFacts.applicationId, app.id));
   const seen = new Set<string>();
@@ -171,6 +179,7 @@ async function parseJob(job: Job) {
     await db.insert(contradictions).values(
       r.contradictions.map((c) => ({ applicationId: app.id, kind: c.kind, quoteA: c.quote_a, sourceA: doc.filename, quoteB: c.quote_b, sourceB: doc.filename })),
     );
+  if (r.contradictions.length) await notifyRole(app.roleId, "contradiction", `Contradiction flagged on ${r.name || "a candidate"}`, `/console/c/${app.id}#contradictions`);
 
   // Linking to the person graph runs one at a time per company, so two CVs from
   // the same person read at the same moment still end up as one person.

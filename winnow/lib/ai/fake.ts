@@ -127,6 +127,17 @@ export function readApplication(cv: string) {
     links,
     facts,
     excluded_quotes: excluded,
+    protected_attributes: {
+      gender: (() => {
+        const g = cv.match(/^gender\s*:\s*(\w+)/im)?.[1]?.toLowerCase();
+        return g === "female" || g === "male" ? g : g ? ("non_binary" as const) : null;
+      })(),
+      birth_year: (() => {
+        const dob = cv.match(/(?:date of birth|dob)\s*:\s*.*?(19\d\d|20\d\d)/i)?.[1];
+        const age = facts.find((f) => f.field === "age")?.number;
+        return dob ? Number(dob) : age ? new Date().getFullYear() - age : null;
+      })(),
+    },
     contradictions,
   });
 }
@@ -179,4 +190,34 @@ export function chat(context: string, text: string) {
     return done({ intent: "write" as const, reply: `I'll add "${t}" as a requirement.`, changes: [{ op: "add" as const, key: null, text: t, weight: 3, must_have: false, keywords: [] }] });
   }
   return done({ intent: "read" as const, reply: `There are ${reqs.length} requirements on this role. ${context.match(/Candidates scored: \d+/)?.[0] ?? ""}`.trim(), changes: [] });
+}
+
+/** Org chat stand-in: answers the common questions straight from the context lines. */
+export function orgChat(context: string, text: string) {
+  const lower = text.toLowerCase();
+  const section = (name: string) => context.split(`## ${name}\n`)[1]?.split("\n## ")[0]?.trim() ?? "";
+  let reply: string;
+  if (/stall/.test(lower)) {
+    const stalled = section("Roles").split("\n").filter((l) => /status: stalled/.test(l));
+    reply = stalled.length ? `Stalled: ${stalled.map((l) => l.split(" | ")[0].replace(/^- /, "")).join(", ")}.` : "None of your roles is stalled.";
+  } else if (/reject|drop|compensation/.test(lower)) reply = section("Rejection reasons, last 90 days") || "No rejections recorded in the last 90 days.";
+  else if (/seen|before|applied/.test(lower)) reply = section("People matching the question") || "I could not find anyone by that name or email.";
+  else if (/source/.test(lower)) reply = section("Sources") || "No source data yet.";
+  else reply = `You have ${section("Roles").split("\n").filter(Boolean).length} roles. Ask which are stalled, who was rejected and why, whether someone applied before, or which source works.`;
+  return done({ intent: "read" as const, reply: reply.slice(0, 900), changes: [] });
+}
+
+/** Company brain stand-in: picks out obvious lines from job descriptions. */
+export function learnCompany(text: string) {
+  const lines = sentences(text);
+  const beliefs: { group: "what_you_build" | "stack" | "locations" | "operating_reality"; text: string; quote: string; confidence: number }[] = [];
+  const pick = (re: RegExp, group: (typeof beliefs)[number]["group"], say: (l: string) => string, confidence = 0.7) => {
+    const l = lines.find((x) => re.test(x));
+    if (l) beliefs.push({ group, text: say(l), quote: l, confidence });
+  };
+  pick(/\b(we build|we are building|our product|payments|platform)\b/i, "what_you_build", (l) => `From the job descriptions: ${l.replace(/\.$/, "")}.`);
+  pick(/\b(go|golang|postgres|postgresql|kafka|react|python|java)\b/i, "stack", (l) => `The stack includes what this line names: ${l.replace(/\.$/, "")}.`, 0.6);
+  pick(/\b(bengaluru|bangalore|mumbai|delhi|pune|hyderabad|remote|hybrid|office)\b/i, "locations", (l) => `Location and attendance: ${l.replace(/\.$/, "")}.`);
+  pick(/\b(on-call|on call|travel|shift|weekend)\b/i, "operating_reality", (l) => `Operating reality: ${l.replace(/\.$/, "")}.`, 0.5);
+  return done({ beliefs });
 }

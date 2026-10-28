@@ -121,6 +121,10 @@ export const ApplicationOut = z.object({
     }),
   ),
   excluded_quotes: z.array(z.string()),
+  protected_attributes: z.object({
+    gender: z.enum(["female", "male", "non_binary"]).nullable(),
+    birth_year: z.number().nullable(),
+  }),
   contradictions: z.array(
     z.object({
       kind: z.enum(["dates", "title", "employer", "education", "skills", "other"]),
@@ -141,6 +145,7 @@ facts: one entry per field you can fill. Fields: ${FACT_FIELDS.join(", ")}.
 - Skip a field rather than guess.
 
 excluded_quotes: every exact span that reveals ${EXCLUDED.join(", ")}. These are removed before the candidate is scored. Copy them exactly.
+protected_attributes: used only to check the screening for disparate impact, never shown to whoever scores. gender only when the CV states it outright (a "Gender:" line, or "Mr."/"Ms." before the name); never infer it from a name, photo or pronoun, and use null otherwise. birth_year only from a stated date of birth or age; otherwise null.
 contradictions: places where the CV disagrees with itself (overlapping full-time jobs, a degree finishing after a job that required it, a title that changes between sections). Quote both sides exactly and explain in one sentence. Do not flag ordinary things like overlapping internships during a degree.
 readable: false only if the text is not a CV or is too garbled to read.
 name: the candidate's name as written.`;
@@ -344,7 +349,35 @@ export async function roleChat(context: string, history: { role: "user" | "assis
 const ORG_CHAT = `You are Winnow's assistant on a company's home screen, talking to someone on its hiring team.
 Answer questions across all their roles from the data given: which roles are stalled, who was rejected and why, whether a person has applied before, which sources work. Be brief and specific, with names and numbers, and say plainly when the data does not say. You cannot change anything from here; if asked to, say which screen does it. Intent is always "read" and changes is always empty. Under 150 words. Plain British English.`;
 
-export async function orgChat(context: string, question: string) {
-  if (fakeAi()) return { data: { intent: "read" as const, reply: `From the data: ${context.split("\n").slice(0, 3).join(" ")}`, changes: [] }, costUsd: 0, model: "local-stand-in" };
-  return structured({ task: "Chat", schema: ChatOut, instructions: ORG_CHAT, context, input: question, effort: "medium", maxTokens: 4000 });
+export async function orgChat(context: string, history: { role: "user" | "assistant"; content: string }[]) {
+  if (fakeAi()) return fake.orgChat(context, history[history.length - 1]?.content ?? "");
+  const input = history.length > 1 ? history.map((m) => `${m.role === "user" ? "Them" : "You"}: ${m.content}`).join("\n\n") : history[0].content;
+  return structured({ task: "Chat", schema: ChatOut, instructions: ORG_CHAT, context, input, effort: "medium", maxTokens: 4000 });
+}
+
+// ---- Company brain: what the job descriptions say about the company ---------------
+
+export const BRAIN_GROUPS = ["what_you_build", "stage_scale", "stack", "team", "operating_reality", "compensation", "locations", "past_hires", "vocabulary"] as const;
+
+export const CompanyOut = z.object({
+  beliefs: z.array(
+    z.object({
+      group: z.enum(BRAIN_GROUPS),
+      text: z.string(),
+      quote: z.string(),
+      confidence: z.number(),
+    }),
+  ),
+});
+
+const COMPANY_INSTRUCTIONS = `You read a company's job descriptions and intake notes and write down what they reveal about the company itself, for a recruiting assistant that will use these beliefs as context on every future role.
+- One belief per fact, in one plain sentence about the company (not about a candidate): what it builds, its stage and scale, its stack, its team, how it operates (hours, travel, on-call, attendance), compensation, locations, and its own titles and level names.
+- quote: the exact words from the text the belief rests on, copied character for character.
+- confidence: 0 to 1. Use below 0.6 when you are reading between the lines.
+- Never record anything about protected attributes or preferences for them.
+- At most 15 beliefs. Skip anything generic that would be true of any company.`;
+
+export async function learnCompany(text: string) {
+  if (fakeAi()) return fake.learnCompany(text);
+  return structured({ task: "Reading about the company", schema: CompanyOut, instructions: COMPANY_INSTRUCTIONS, input: text.slice(0, 120_000), effort: "medium", maxTokens: 6000 });
 }

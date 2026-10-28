@@ -29,6 +29,10 @@ export async function GET(req: Request) {
   if (!run) return new Response("Unknown export.", { status: 400 });
   const out = await run(c, url.searchParams);
   if (!out) return new Response("Not allowed.", { status: 403 });
-  await audit({ orgId: c.org.id, actorId: c.user.id, action: `export.${what}`, entity: "org", entityId: c.org.id, detail: { rows: out.rows.length - 1 } });
+  await audit({ orgId: c.org.id, actorId: c.user.id, action: `export.${what}`, entity: "org", entityId: c.org.id, detail: { rows: Math.max(0, out.rows.length - 1) } });
+  if (out.json)
+    return new Response(JSON.stringify(out.json, null, 2), {
+      headers: { "Content-Type": "application/json; charset=utf-8", "Content-Disposition": `attachment; filename="${`${out.name} ${stamp}.json`.replace(/[^\w.-]/g, "_")}"`, "Cache-Control": "no-store" },
+    });
   return csvResponse(`${out.name} ${stamp}.csv`, csv(out.rows));
 }

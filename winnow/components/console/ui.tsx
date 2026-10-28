@@ -75,8 +75,12 @@ export function Badge({ tone = "neutral", className = "", children }: { tone?: B
   );
 }
 
-export function Card({ className = "", children }: { className?: string; children: React.ReactNode }) {
-  return <section className={`rounded-[14px] border border-hairline bg-paper ${className}`}>{children}</section>;
+export function Card({ className = "", id, children }: { className?: string; id?: string; children: React.ReactNode }) {
+  return (
+    <section id={id} className={`scroll-mt-20 rounded-[14px] border border-hairline bg-paper ${className}`}>
+      {children}
+    </section>
+  );
 }
 
 export function CardHead({ title, meta, action }: { title: React.ReactNode; meta?: React.ReactNode; action?: React.ReactNode }) {

@@ -12,6 +12,7 @@ import { putFile, storageConfigured } from "@/lib/console/storage";
 import { enqueue, pump } from "@/lib/console/jobs";
 import { touchRole } from "@/lib/console/roles";
 import { logActivity } from "@/lib/console/log";
+import { notifyRole } from "@/lib/console/notify";
 import { and, eq } from "drizzle-orm";
 
 export const maxDuration = 60;
@@ -65,5 +66,6 @@ export async function POST(req: Request) {
     after(() => pump(50_000));
   }
   await touchRole(role.id);
+  await notifyRole(role.id, "new_application", `New application on ${role.title}`, `/console/roles/${role.id}`, 1);
   return NextResponse.json({ applicationId: app.id });
 }

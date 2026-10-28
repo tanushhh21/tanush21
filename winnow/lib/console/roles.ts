@@ -23,6 +23,7 @@ export type RoleSummary = {
   title: string;
   hiringManager: string | null;
   hiringManagerId: string | null;
+  createdBy: string | null;
   state: string;
   daysOpen: number;
   targetDate: string | null;
@@ -128,6 +129,7 @@ export async function summarizeRoles(c: Ctx, opts: { includeClosed?: boolean; mi
       title: role.title,
       hiringManager: r.manager,
       hiringManagerId: role.hiringManagerId,
+      createdBy: role.createdBy,
       state: role.state,
       daysOpen: Math.floor((Date.now() - role.createdAt.getTime()) / DAY),
       targetDate: role.targetDate,

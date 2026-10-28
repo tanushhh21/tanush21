@@ -3,7 +3,7 @@
 import { after } from "next/server";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { applications, hardFilters, memberships, observations, refusedCriteria, requirements, roleAccess, roleSources, roles, rubricVersions, type SourceKind } from "@/lib/db/schema";
 import { assertCan, can, requireCtx, requireRole } from "@/lib/console/context";
@@ -248,7 +248,10 @@ export async function closeRole(form: FormData) {
     .set({ state: reason === "on_hold" ? "on_hold" : "closed", closeReason: reason, hiredApplicationId: picks[0]?.id ?? null, lastChangeAt: new Date() })
     .where(eq(roles.id, role.id));
   for (const p of picks) {
-    await db.update(applications).set({ stage: "hired", stageChangedAt: new Date() }).where(eq(applications.id, p.id));
+    await db
+      .update(applications)
+      .set({ stage: "hired", stageChangedAt: new Date(), acceptedAt: sql`coalesce(${applications.acceptedAt}, now())` })
+      .where(eq(applications.id, p.id));
     await db.insert(observations).values({ orgId: c.org.id, kind: "outcome", personId: p.personId, applicationId: p.id, roleId: role.id, payload: { hired: true, via: "close" }, createdBy: c.user.id });
   }
   const note = str(form, "note").slice(0, 1000);

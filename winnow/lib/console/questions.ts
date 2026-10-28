@@ -33,6 +33,7 @@ export async function sendFor(applicationId: string, actorId: string | null) {
   if (!app) throw new Error("Application not found.");
   const person = await db.query.persons.findFirst({ where: eq(persons.id, app.personId) });
   if (!person?.email) throw new Error(`No email address for ${person?.name ?? "this candidate"}.`);
+  if (person.consent === "withdrawn") throw new Error(`${person.name} withdrew consent, so Winnow will not contact them.`);
   const qs = await db.select().from(questions).where(and(eq(questions.applicationId, app.id), eq(questions.status, "drafted")));
   if (qs.length === 0) return 0;
   const s = await sender(app.roleId);

@@ -34,6 +34,7 @@ export async function sendAvailability(applicationId: string, interviewerId: str
     if (!can.manageSources(c) && c.user.id !== role.hiringManagerId) throw new Error("Only the TA team or the hiring manager can schedule.");
     if (role.state !== "open") throw new Error("This role is not open, so nothing is sent.");
     if (!person.email) throw new Error(`No email address for ${person.name}.`);
+    if (person.consent === "withdrawn") throw new Error(`${person.name} withdrew consent, so Winnow will not contact them.`);
     const slots: Slot[] = localSlots
       .filter(Boolean)
       .map((l) => fromIst(l))
@@ -122,13 +123,32 @@ export async function saveDebrief(interviewId: string, wouldHire: "strong_yes" |
 export async function setStage(applicationId: string, stage: "interviewing" | "offer" | "hired"): Promise<Result> {
   try {
     const { c, app, role, person } = await visibleApp(applicationId);
-    await db.update(applications).set({ stage, stageChangedAt: new Date() }).where(eq(applications.id, app.id));
+    await db
+      .update(applications)
+      .set({ stage, stageChangedAt: new Date(), ...(stage === "hired" ? { acceptedAt: app.acceptedAt ?? new Date() } : {}) })
+      .where(eq(applications.id, app.id));
     await audit({ orgId: c.org.id, actorId: c.user.id, action: `stage.${stage}`, entity: "application", entityId: app.id, roleId: role.id, applicationId: app.id, rubricVersion: role.rubricVersion });
     await logActivity({ orgId: c.org.id, roleId: role.id, kind: "stage", message: `${person.name}: ${stage}`, actorId: c.user.id });
     if (stage === "hired") await db.insert(observations).values({ orgId: c.org.id, kind: "outcome", personId: app.personId, applicationId: app.id, roleId: role.id, payload: { hired: true }, createdBy: c.user.id });
     await touchRole(role.id);
     revalidatePath(`/console/roles/${role.id}`, "layout");
     return { ok: true };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/** The day they actually joined: the only hire that counts in Analytics. */
+export async function markJoined(applicationId: string): Promise<Result> {
+  try {
+    const { c, app, role, person } = await visibleApp(applicationId);
+    if (app.stage !== "hired") throw new Error("Mark them hired first.");
+    await db.update(applications).set({ joinedAt: new Date() }).where(eq(applications.id, app.id));
+    await audit({ orgId: c.org.id, actorId: c.user.id, action: "stage.joined", entity: "application", entityId: app.id, roleId: role.id, applicationId: app.id });
+    await db.insert(observations).values({ orgId: c.org.id, kind: "outcome", personId: app.personId, applicationId: app.id, roleId: role.id, payload: { joined: true }, createdBy: c.user.id });
+    await logActivity({ orgId: c.org.id, roleId: role.id, kind: "stage", message: `${person.name} joined`, actorId: c.user.id });
+    revalidatePath(`/console/roles/${role.id}`, "layout");
+    return { ok: true, message: `${person.name} joined` };
   } catch (e) {
     return fail(e);
   }

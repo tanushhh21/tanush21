@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { bookDirect, markInterview, remindDebrief, saveDebrief, sendAvailability, setStage } from "@/lib/console/actions/interviews";
+import { bookDirect, markInterview, markJoined, remindDebrief, saveDebrief, sendAvailability, setStage } from "@/lib/console/actions/interviews";
 import { Badge, Button, Card, CardHead, Empty, Field, areaClass, fieldClass, smallFieldClass } from "@/components/console/ui";
 
 type Iv = {
@@ -30,7 +30,7 @@ export type Board = {
   focus: string | null;
   interviews: Iv[];
   waiting: { id: string; applicationId: string; name: string; sentAt: string; slots: number; expired: boolean }[];
-  candidates: { id: string; name: string; stage: string; hasEmail: boolean }[];
+  candidates: { id: string; name: string; stage: string; hasEmail: boolean; joined: boolean }[];
 };
 
 const HIRE: Record<Hire, string> = { strong_yes: "Strong yes", yes: "Yes", no: "No", strong_no: "Strong no" };
@@ -235,8 +235,13 @@ export default function InterviewBoard({ board }: { board: Board }) {
                     <Link href={`/console/c/${c.id}`} className="font-medium hover:underline">
                       {c.name}
                     </Link>
-                    {c.stage === "offer" ? <Badge tone="signal" className="ml-2">Offer out</Badge> : c.stage === "hired" ? <Badge tone="ok" className="ml-2">Hired</Badge> : null}
+                    {c.stage === "offer" ? <Badge tone="signal" className="ml-2">Offer out</Badge> : c.stage === "hired" ? <Badge tone="ok" className="ml-2">{c.joined ? "Joined" : "Hired"}</Badge> : null}
                   </p>
+                  {board.canSchedule && c.stage === "hired" && !c.joined ? (
+                    <Button size="sm" disabled={pending} onClick={() => run(() => markJoined(c.id))}>
+                      Mark joined
+                    </Button>
+                  ) : null}
                   {board.canSchedule && c.stage !== "hired" ? (
                     <div className="flex gap-1.5">
                       {c.stage !== "offer" ? (

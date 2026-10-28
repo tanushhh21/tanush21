@@ -137,7 +137,7 @@ export default async function RoleSettings({ params, searchParams }: { params: P
         </form>
       </Card>
 
-      <Card>
+      <Card id="sources">
         <CardHead title="Sources and what they cost" meta="The cost lets Analytics compare sources by cost per shortlist and per hire." />
         <div className="grid gap-3 px-4 pb-4">
           {sources.length ? (

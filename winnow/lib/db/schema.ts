@@ -100,6 +100,9 @@ export const orgs = pgTable("org", {
   /** Days a candidate can wait at a stage before it shows in needs-you. */
   staleDays: integer("stale_days").notNull().default(5),
   slackWebhook: text("slack_webhook"),
+  /** Whether anonymised outcomes may improve Winnow for everyone; off unless the company opts in. */
+  shareWithWinnow: boolean("share_with_winnow").notNull().default(false),
+  plan: text("plan").$type<"pilot" | "growth" | "enterprise">().notNull().default("pilot"),
   createdAt: created(),
 });
 
@@ -117,6 +120,9 @@ export const memberships = pgTable(
     /** A hiring manager limited to named roles (see roleAccess). */
     restricted: boolean("restricted").notNull().default(false),
     deactivatedAt: ts("deactivated_at"),
+    /** The last time they opened the console, and where their current "while you were away" starts. */
+    seenAt: ts("seen_at"),
+    awayFrom: ts("away_from"),
     createdAt: created(),
   },
   (t) => [uniqueIndex("membership_org_user").on(t.orgId, t.userId)],
@@ -386,6 +392,14 @@ export const applications = pgTable(
     decisionNote: text("decision_note"),
     decidedBy: text("decided_by").references(() => users.id),
     decidedAt: ts("decided_at"),
+    /** After hired (offer accepted): the day they joined, which is when the hire really counts. */
+    acceptedAt: ts("accepted_at"),
+    joinedAt: ts("joined_at"),
+    /**
+     * Protected attributes the CV stated outright (never inferred), kept apart
+     * from everything the scorer sees and used only for the fairness check.
+     */
+    protectedAttrs: jsonb("protected").$type<{ gender?: string | null; birthYear?: number | null }>().notNull().default({}),
     /** When the hiring manager first opened this candidate. */
     managerSeenAt: ts("manager_seen_at"),
     parseStatus: text("parse_status").$type<"pending" | "parsed" | "unreadable">().notNull().default("pending"),
@@ -589,7 +603,9 @@ export type ObservationKind =
   | "contradiction_resolution"
   | "calibration"
   | "interest"
-  | "outcome";
+  | "outcome"
+  | "brain_correction"
+  | "cut_line";
 
 export const observations = pgTable(
   "observation",
@@ -652,20 +668,26 @@ export type FactGroup =
   | "past_hires"
   | "vocabulary";
 
-export const companyFacts = pgTable("company_fact", {
-  id: id(),
-  orgId: uuid("org_id")
-    .notNull()
-    .references(() => orgs.id, { onDelete: "cascade" }),
-  group: text("group").$type<FactGroup>().notNull(),
-  text: text("text").notNull(),
-  provenance: text("provenance").$type<"told" | "ats" | "inferred">().notNull(),
-  confidence: real("confidence").notNull().default(1),
-  evidence: text("evidence"),
-  active: boolean("active").notNull().default(true),
-  updatedBy: text("updated_by").references(() => users.id),
-  updatedAt: created(),
-});
+export const companyFacts = pgTable(
+  "company_fact",
+  {
+    id: id(),
+    orgId: uuid("org_id")
+      .notNull()
+      .references(() => orgs.id, { onDelete: "cascade" }),
+    group: text("group").$type<FactGroup>().notNull(),
+    /** Stable for beliefs Winnow infers, so re-inferring updates them instead of duplicating. */
+    key: text("key"),
+    text: text("text").notNull(),
+    provenance: text("provenance").$type<"told" | "ats" | "inferred">().notNull(),
+    confidence: real("confidence").notNull().default(1),
+    evidence: text("evidence"),
+    active: boolean("active").notNull().default(true),
+    updatedBy: text("updated_by").references(() => users.id),
+    updatedAt: created(),
+  },
+  (t) => [uniqueIndex("company_fact_key").on(t.orgId, t.key)],
+);
 
 // ---- Interviews --------------------------------------------------------------
 
@@ -807,6 +829,22 @@ export const reasonCodes = pgTable("reason_code", {
   active: boolean("active").notNull().default(true),
 });
 
+/** Data-subject requests under the DPDP Act, and how each was resolved. */
+export const rightsRequests = pgTable("rights_request", {
+  id: id(),
+  orgId: uuid("org_id")
+    .notNull()
+    .references(() => orgs.id, { onDelete: "cascade" }),
+  personId: uuid("person_id").references(() => persons.id, { onDelete: "set null" }),
+  requester: text("requester").notNull(),
+  kind: text("kind").$type<"access" | "correction" | "erasure" | "withdraw_consent" | "grievance">().notNull(),
+  status: text("status").$type<"open" | "done" | "refused">().notNull().default("open"),
+  resolution: text("resolution"),
+  receivedAt: created(),
+  resolvedAt: ts("resolved_at"),
+  handledBy: text("handled_by").references(() => users.id),
+});
+
 // ---- Notifications and chat ---------------------------------------------------
 
 export const notificationPrefs = pgTable(
@@ -822,6 +860,7 @@ export const notificationPrefs = pgTable(
     inApp: boolean("in_app").notNull(),
     email: boolean("email").notNull(),
     slack: boolean("slack").notNull(),
+    frequency: text("frequency").$type<"instant" | "daily">().notNull().default("instant"),
   },
   (t) => [primaryKey({ columns: [t.userId, t.orgId, t.type] })],
 );

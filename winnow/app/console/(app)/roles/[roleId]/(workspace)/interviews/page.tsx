@@ -13,12 +13,12 @@ export default async function Interviews({ params, searchParams }: { params: Pro
   const role = await requireRole(c, (await params).roleId);
   const q = await searchParams;
   const apps = await db
-    .select({ id: applications.id, stage: applications.stage, decision: applications.decision, name: persons.name, email: persons.email })
+    .select({ id: applications.id, stage: applications.stage, decision: applications.decision, name: persons.name, email: persons.email, joinedAt: applications.joinedAt })
     .from(applications)
     .innerJoin(persons, eq(persons.id, applications.personId))
     .where(and(eq(applications.roleId, role.id), inArray(applications.stage, ["shortlisted", "interviewing", "offer", "hired"])));
   const shortlisted = await db
-    .select({ id: applications.id, stage: applications.stage, decision: applications.decision, name: persons.name, email: persons.email })
+    .select({ id: applications.id, stage: applications.stage, decision: applications.decision, name: persons.name, email: persons.email, joinedAt: applications.joinedAt })
     .from(applications)
     .innerJoin(persons, eq(persons.id, applications.personId))
     .where(and(eq(applications.roleId, role.id), eq(applications.decision, "shortlisted")));
@@ -63,7 +63,7 @@ export default async function Interviews({ params, searchParams }: { params: Pro
     waiting: links
       .filter((l) => people.has(l.applicationId))
       .map((l) => ({ id: l.id, applicationId: l.applicationId, name: people.get(l.applicationId)!.name, sentAt: l.createdAt.toISOString(), slots: l.slots.length, expired: l.slots.every((s) => new Date(s.start).getTime() < now) })),
-    candidates: [...people.values()].map((p) => ({ id: p.id, name: p.name, stage: p.stage, hasEmail: Boolean(p.email) })),
+    candidates: [...people.values()].map((p) => ({ id: p.id, name: p.name, stage: p.stage, hasEmail: Boolean(p.email), joined: Boolean(p.joinedAt) })),
   };
   return <InterviewBoard board={board} />;
 }
