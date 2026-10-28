@@ -50,7 +50,7 @@ export async function createOrg(form: FormData) {
   const user = await requireUser();
   if (!user.isOperator) redirect("/console");
   const name = String(form.get("name") ?? "").trim();
-  if (!name) redirect("/console/operator?error=name");
+  if (!name) redirect("/console/operator/overview?error=name");
   const domain = String(form.get("domain") ?? "").trim().toLowerCase() || null;
   const [org] = await db.insert(orgs).values({ name, domain }).returning();
   await audit({ orgId: org.id, actorId: user.id, action: "org.create", entity: "org", entityId: org.id, detail: { name } });
