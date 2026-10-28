@@ -32,7 +32,9 @@ function connect(): DB {
   if (url) {
     const local = /@(localhost|127\.0\.0\.1)[:/]/.test(url);
     // The pooler runs in transaction mode, which cannot hold prepared statements.
-    const client = postgres(url, { prepare: false, max: 5, idle_timeout: 20, connect_timeout: 10, ssl: local ? false : "require" });
+    // Query-string extras (sslmode, supa=…) are dropped: SSL is set here, and the
+    // driver would otherwise send unknown ones to the server as settings.
+    const client = postgres(withoutQuery(url), { prepare: false, max: 5, idle_timeout: 20, connect_timeout: 10, ssl: local ? false : "require" });
     return pgDrizzle({ client, schema });
   }
   if (process.env.VERCEL) throw new Error("The database is not connected");
@@ -40,6 +42,16 @@ function connect(): DB {
   mkdirSync(dir, { recursive: true });
   // Same query API and dialect as Postgres; the cast lets the app use one type.
   return pgliteDrizzle({ client: new PGlite(dir), schema }) as unknown as DB;
+}
+
+function withoutQuery(url: string) {
+  try {
+    const u = new URL(url);
+    u.search = "";
+    return u.toString();
+  } catch {
+    return url;
+  }
 }
 
 /** The real connection, opened on first call. */

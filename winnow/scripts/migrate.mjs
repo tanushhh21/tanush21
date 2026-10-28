@@ -3,9 +3,10 @@
 // so an unmerged branch cannot change the production database.
 import { existsSync, mkdirSync } from "node:fs";
 
-// Migrations use the direct connection when there is one (the pooler is for requests).
-const url =
-  process.env.POSTGRES_URL_NON_POOLING || process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL || process.env.POSTGRES_URL || "";
+// Migrations prefer the direct connection; the pooled one is the fallback (Supabase's
+// direct address can be IPv6-only, which a build machine may not reach).
+const candidates = [process.env.POSTGRES_URL_NON_POOLING, process.env.DATABASE_URL_UNPOOLED, process.env.DATABASE_URL, process.env.POSTGRES_URL].filter(Boolean);
+const url = candidates[0] ?? "";
 if (process.env.VERCEL && process.env.VERCEL_ENV !== "production") {
   console.log("migrate: skipped (preview deployment)");
   process.exit(0);
@@ -49,8 +50,25 @@ if (url) {
   const { default: postgres } = await import("postgres");
   const { drizzle } = await import("drizzle-orm/postgres-js");
   const { migrate } = await import("drizzle-orm/postgres-js/migrator");
-  const local = /@(localhost|127\.0\.0\.1)[:/]/.test(url);
-  const client = postgres(url, { max: 1, prepare: false, ssl: local ? false : "require", onnotice: () => undefined });
+  const open = (u) => {
+    const clean = new URL(u);
+    clean.search = "";
+    const local = /^(localhost|127\.0\.0\.1)$/.test(clean.hostname);
+    return postgres(clean.toString(), { max: 1, prepare: false, connect_timeout: 10, ssl: local ? false : "require", onnotice: () => undefined });
+  };
+  let client;
+  for (const u of candidates) {
+    const c = open(u);
+    try {
+      await c`select 1`;
+      client = c;
+      break;
+    } catch (e) {
+      console.log(`migrate: could not reach ${new URL(u).hostname} (${e.code ?? e.message}), trying the next connection`);
+      await c.end({ timeout: 1 }).catch(() => undefined);
+    }
+  }
+  if (!client) throw new Error("migrate: no database connection worked");
   await migrate(drizzle({ client }), { migrationsFolder: folder });
   await client.unsafe(LOCKDOWN);
   await client.end();

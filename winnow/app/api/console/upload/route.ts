@@ -29,7 +29,8 @@ export async function POST(req: Request) {
   const file = form.get("file");
   if (!(file instanceof File) || file.size === 0) return NextResponse.json({ error: "No file." }, { status: 400 });
   if (file.size > MAX_BYTES) return NextResponse.json({ error: `${file.name} is over 4 MB.` }, { status: 413 });
-  const ext = "." + (file.name.toLowerCase().split(".").pop() ?? "");
+  // The extension goes into the storage path, so only letters and digits survive.
+  const ext = "." + (file.name.toLowerCase().split(".").pop() ?? "").replace(/[^a-z0-9]/g, "").slice(0, 8);
   const source = (SOURCES.includes(String(form.get("source")) as SourceKind) ? String(form.get("source")) : "upload") as SourceKind;
   const referredBy = String(form.get("referredBy") ?? "").trim() || null;
 
