@@ -37,8 +37,34 @@ export const users = pgTable("user", {
   image: text("image"),
   /** Winnow's own staff: every customer, plus the operator console. */
   isOperator: boolean("is_operator").notNull().default(false),
+  /** scrypt, never the password itself. Null for people who only use Google or email links. */
+  passwordHash: text("password_hash"),
+  passwordSetAt: ts("password_set_at"),
+  /** Sessions signed in before this moment are no longer valid (password changed, "sign out everywhere"). */
+  sessionsValidFrom: ts("sessions_valid_from"),
+  failedLogins: integer("failed_logins").notNull().default(0),
+  lockedUntil: ts("locked_until"),
   createdAt: created(),
 });
+
+/**
+ * Short codes sent by email: confirming an address, resetting a password,
+ * and one-time tickets that sign someone in right after. Only a keyed hash is
+ * stored, and each code dies after a few wrong tries or 15 minutes.
+ */
+export const emailCodes = pgTable(
+  "email_code",
+  {
+    id: id(),
+    email: text("email").notNull(),
+    purpose: text("purpose").$type<"verify" | "reset" | "ticket">().notNull(),
+    codeHash: text("code_hash").notNull(),
+    attempts: integer("attempts").notNull().default(0),
+    expiresAt: ts("expires_at").notNull(),
+    createdAt: created(),
+  },
+  (t) => [index("email_code_email").on(t.email, t.purpose)],
+);
 
 export const accounts = pgTable(
   "account",

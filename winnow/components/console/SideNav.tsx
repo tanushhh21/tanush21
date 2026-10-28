@@ -127,10 +127,10 @@ export default function SideNav(p: Props) {
       </nav>
 
       <div className="flex items-center justify-between gap-2 border-t border-hairline px-4 py-3">
-        <span className="min-w-0">
+        <Link href="/console/settings/account" onClick={close} className="min-w-0 rounded-[8px] hover:opacity-80" aria-label="Your account">
           <span className="block truncate text-[13px] font-medium text-ink">{p.user.name}</span>
           <span className="block truncate text-[12px] text-slate">{p.user.email}</span>
-        </span>
+        </Link>
         <form action={p.signOut}>
           <button type="submit" className="rounded-full px-2.5 py-1.5 text-[12.5px] text-slate hover:bg-paper hover:text-ink">
             Sign out

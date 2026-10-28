@@ -29,6 +29,13 @@
       "when": 1793195606985,
       "tag": "0003_org_screens",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793207509433,
+      "tag": "0004_password_accounts",
+      "breakpoints": true
     }
   ]
 }

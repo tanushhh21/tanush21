@@ -3,7 +3,7 @@
  * action waiting, never by role.
  */
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
-import { db } from "@/lib/db";
+import { db, rowsOf } from "@/lib/db";
 import { applications, auditLog, booleanSearches, documents, evaluations, mergeCandidates, observations, orgs, outreach, persons, roles, searchResults } from "@/lib/db/schema";
 import { currentRequirements } from "@/lib/console/scoring";
 
@@ -17,7 +17,7 @@ export async function queueCounts() {
       (select count(*)::int from outreach where status = 'drafted') as outreach,
       (select count(*)::int from outreach where status = 'replied') as replies,
       (select count(*)::int from application a join role ro on ro.id = a.role_id where a.parse_status = 'unreadable' and ro.state = 'open' and coalesce(a.reason_code, '') <> 'unfixable') as parse,
-      (select count(*)::int from merge_candidate where status = 'open') as merges`).then((x) => ((x as { rows?: unknown[] }).rows ?? (x as unknown as unknown[])) as Record<string, number>[]);
+      (select count(*)::int from merge_candidate where status = 'open') as merges`).then((x) => rowsOf<Record<string, number>>(x));
   return r;
 }
 
@@ -172,6 +172,6 @@ export async function rolesPerOperator() {
     from activity a join "user" u on u.id = a.actor_id
     where u.is_operator and a.role_id is not null and a.created_at > now() - interval '12 months'
     group by 1, 2, 3 order by 3 desc, 4 desc`);
-  return ((rows as { rows?: unknown[] }).rows ?? (rows as unknown as unknown[])) as { id: string; name: string; month: string; roles: number }[];
+  return rowsOf<{ id: string; name: string; month: string; roles: number }>(rows);
 }
 

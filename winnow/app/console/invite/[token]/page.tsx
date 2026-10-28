@@ -3,7 +3,7 @@ import Logo from "@/components/Logo";
 import { db } from "@/lib/db";
 import { invites, orgs } from "@/lib/db/schema";
 import { getUser } from "@/lib/console/context";
-import { acceptInvite } from "@/lib/console/actions/session";
+import { acceptInvite, signOutAction } from "@/lib/console/actions/session";
 import { buttonClass } from "@/components/console/ui";
 
 const LEVEL = { hiring_manager: "hiring manager", ta: "talent acquisition", admin: "admin" } as const;
@@ -29,7 +29,18 @@ export default async function Invite({ params }: { params: Promise<{ token: stri
         <>
           <h1 className="mt-8 font-display text-[22px] font-semibold tracking-[-0.02em]">Join {row.orgName} on Winnow</h1>
           <p className="mt-2 text-[14px] text-slate">You&rsquo;ve been invited as {LEVEL[row.invite.access]}.</p>
-          {user ? (
+          {user && (user.email ?? "").toLowerCase() !== row.invite.email.toLowerCase() ? (
+            <div className="mt-6 max-w-[26rem] text-[14px]">
+              <p>
+                This invite was sent to <span className="font-medium">{row.invite.email}</span>, but you are signed in as {user.email}.
+              </p>
+              <form action={signOutAction} className="mt-4">
+                <button type="submit" className={buttonClass("primary")}>
+                  Sign out and use {row.invite.email}
+                </button>
+              </form>
+            </div>
+          ) : user ? (
             <form action={acceptInvite} className="mt-6">
               <input type="hidden" name="token" value={token} />
               <button type="submit" className={buttonClass("primary")}>
@@ -38,9 +49,14 @@ export default async function Invite({ params }: { params: Promise<{ token: stri
               <p className="mt-3 text-[12.5px] text-slate">Signed in as {user.email}</p>
             </form>
           ) : (
-            <a href={`/console/login?next=${encodeURIComponent(`/console/invite/${token}`)}`} className={`${buttonClass("primary")} mt-6`}>
-              Sign in to accept
-            </a>
+            <div className="mt-6 flex flex-wrap justify-center gap-2">
+              <a href={`/console/signup?next=${encodeURIComponent(`/console/invite/${token}`)}`} className={buttonClass("primary")}>
+                Create an account
+              </a>
+              <a href={`/console/login?next=${encodeURIComponent(`/console/invite/${token}`)}`} className={buttonClass("secondary")}>
+                Sign in
+              </a>
+            </div>
           )}
         </>
       )}

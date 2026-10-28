@@ -33,7 +33,16 @@ export const getUser = cache(async () => {
   const session = await auth();
   const id = session?.user?.id;
   if (!id) return null;
-  return (await db.query.users.findFirst({ where: eq(users.id, id) })) ?? null;
+  const user = (await db.query.users.findFirst({ where: eq(users.id, id) })) ?? null;
+  // A password change or "sign out everywhere" ends every session started before it.
+  if (user?.sessionsValidFrom && (session.authAt ?? 0) < Math.floor(user.sessionsValidFrom.getTime() / 1000)) return null;
+  // Operator access is re-checked on every request, so removing someone from
+  // WINNOW_OPERATORS takes effect at once, not at their next sign-in.
+  if (user?.isOperator) {
+    const list = (process.env.WINNOW_OPERATORS ?? "").split(",").map((e) => e.trim().toLowerCase());
+    if (!user.emailVerified || !user.email || !list.includes(user.email.toLowerCase())) return { ...user, isOperator: false };
+  }
+  return user;
 });
 
 /** Every organisation this user can open, with their level in each. */
@@ -65,7 +74,7 @@ export const requireUser = cache(async () => {
 export const requireCtx = cache(async (): Promise<Ctx> => {
   const user = await requireUser();
   const list = await getOrgs(user.id, user.isOperator);
-  if (list.length === 0) redirect(user.isOperator ? "/console/operator" : "/console/no-access");
+  if (list.length === 0) redirect(user.isOperator ? "/console/operator" : "/console/welcome");
   const chosen = (await cookies()).get(ORG_COOKIE)?.value;
   const current = list.find((o) => o.id === chosen) ?? (list.length === 1 ? list[0] : undefined);
   if (!current) redirect("/console/orgs");
