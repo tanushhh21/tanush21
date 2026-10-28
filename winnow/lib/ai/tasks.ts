@@ -300,3 +300,51 @@ export async function challengeRank(roleTitle: string, summary: string, cv: stri
     maxTokens: 4000,
   });
 }
+
+// ---- Chat, at two scopes ------------------------------------------------------------
+
+export const ChatOut = z.object({
+  intent: z.enum(["read", "write", "counterfactual"]),
+  reply: z.string(),
+  changes: z.array(
+    z.object({
+      op: z.enum(["set_weight", "set_must_have", "add", "remove", "edit_text", "add_keywords"]),
+      key: z.string().nullable(),
+      text: z.string().nullable(),
+      weight: z.number().int().nullable(),
+      must_have: z.boolean().nullable(),
+      keywords: z.array(z.string()),
+    }),
+  ),
+});
+export type ChatOut = z.infer<typeof ChatOut>;
+
+const ROLE_CHAT = `You are Winnow's assistant inside one role's workspace, talking to a recruiter or hiring manager.
+You can read everything given to you about the role. You never change scores, decisions or candidate records.
+- A question about the data (who, why, how many): intent "read". Answer from the data given, briefly, with names and numbers. Say plainly when the data does not say.
+- A request to change what the role screens on ("make Go a must-have", "they also need to be fine with 3 days in the office", "lower the weight on Kafka"): intent "write". Express it as changes to the rubric: set_weight (1 to 5), set_must_have, add (a new requirement in plain words, with keywords), remove, edit_text, add_keywords. Use the requirement keys given. In reply, say what will change in one or two sentences; the person must confirm before anything applies.
+- "What if…" questions about the rubric: intent "counterfactual". Express the hypothetical as changes; nothing will be applied. In reply, say you have worked out the effect below.
+- Never encode age, gender, marital status, religion, caste, region of origin, disability, or photographs. If asked, decline in one sentence and offer to ask about the underlying need instead.
+Keep replies under 120 words. Plain British English.`;
+
+export async function roleChat(context: string, history: { role: "user" | "assistant"; content: string }[]) {
+  if (fakeAi()) return fake.chat(context, history[history.length - 1]?.content ?? "");
+  const messages = history.map((m) => ({ role: m.role, content: m.content }));
+  return structured({
+    task: "Chat",
+    schema: ChatOut,
+    instructions: ROLE_CHAT,
+    context,
+    input: messages.length > 1 ? messages.map((m) => `${m.role === "user" ? "Them" : "You"}: ${m.content}`).join("\n\n") : messages[0].content,
+    effort: "medium",
+    maxTokens: 4000,
+  });
+}
+
+const ORG_CHAT = `You are Winnow's assistant on a company's home screen, talking to someone on its hiring team.
+Answer questions across all their roles from the data given: which roles are stalled, who was rejected and why, whether a person has applied before, which sources work. Be brief and specific, with names and numbers, and say plainly when the data does not say. You cannot change anything from here; if asked to, say which screen does it. Intent is always "read" and changes is always empty. Under 150 words. Plain British English.`;
+
+export async function orgChat(context: string, question: string) {
+  if (fakeAi()) return { data: { intent: "read" as const, reply: `From the data: ${context.split("\n").slice(0, 3).join(" ")}`, changes: [] }, costUsd: 0, model: "local-stand-in" };
+  return structured({ task: "Chat", schema: ChatOut, instructions: ORG_CHAT, context, input: question, effort: "medium", maxTokens: 4000 });
+}

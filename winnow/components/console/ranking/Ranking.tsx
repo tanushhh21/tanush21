@@ -58,7 +58,7 @@ const STATUS_LABEL: Record<Row["status"], string> = { reading: "Reading", waitin
 
 export default function Ranking(p: Props) {
   const router = useRouter();
-  const defaultCols = p.scope === "ranking" ? DEFAULT_COLUMNS : ["name", "decision", "reason_code", "decided_by", "applied", "stage_days", "score", "band", "source"];
+  const defaultCols = p.scope === "ranking" ? DEFAULT_COLUMNS : ["name", "decision", "reason_code", "decided_by", "decided_at", "stage_days", "score", "band", "source"];
   const [columns, setColumns] = useState<string[]>(defaultCols);
   const [filters, setFilters] = useState<Filter[]>(p.initialFilters ?? []);
   const [sort, setSort] = useState<Sort>({ key: p.scope === "ranking" ? "rank" : "applied", dir: p.scope === "ranking" ? "asc" : "desc" });
@@ -811,6 +811,7 @@ function FilterMenu({ reqs, onAdd, onClose }: { reqs: Req[]; onAdd: (f: Filter) 
           <option value="band">Band</option>
           <option value="source">Source</option>
           <option value="decision">Decision</option>
+          <option value="reason">Reason code</option>
           <option value="fact">An application field</option>
           <option value="musthaves">Must-haves</option>
           <option value="flag">Flags</option>
@@ -839,6 +840,9 @@ function FilterMenu({ reqs, onAdd, onClose }: { reqs: Req[]; onAdd: (f: Filter) 
             <input aria-label="From" value={min} onChange={(e) => setMin(e.target.value)} placeholder="from" inputMode="numeric" className={`${fieldClass} h-8`} />
             <input aria-label="To" value={max} onChange={(e) => setMax(e.target.value)} placeholder="to" inputMode="numeric" className={`${fieldClass} h-8`} />
           </div>
+        ) : null}
+        {kind === "reason" ? (
+          <input aria-label="Reason codes" value={value} onChange={(e) => setValue(e.target.value)} placeholder="e.g. comp_misaligned, notice_too_long" className={`${fieldClass} h-8`} />
         ) : null}
         {kind === "band" || kind === "source" || kind === "decision" ? (
           <div className="flex flex-wrap gap-2">
@@ -884,6 +888,7 @@ function FilterMenu({ reqs, onAdd, onClose }: { reqs: Req[]; onAdd: (f: Filter) 
               else if (kind === "band") add({ t: "band", values: values as Band[] });
               else if (kind === "source") add({ t: "source", values });
               else if (kind === "decision") add({ t: "decision", values });
+              else if (kind === "reason") add({ t: "reason", values: value.split(",").map((v) => v.trim()).filter(Boolean) });
               else if (kind === "fact") add({ t: "fact", field, op, value });
               else if (kind === "musthaves") add({ t: "musthaves", value: "all" });
               else add({ t: "flag", value: "contradiction" });

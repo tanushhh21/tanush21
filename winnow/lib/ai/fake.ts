@@ -162,3 +162,21 @@ export function evaluate(rubric: RubricForAi, cv: string) {
       .map((v) => ({ requirement_key: v.key, text: `Could you tell us about your experience with ${req(v.key).text.toLowerCase()}?` })),
   });
 }
+
+export function chat(context: string, text: string) {
+  const reqs = Array.from(context.matchAll(/- key: (\w+)\n  requirement: ([^\n]+)/g)).map((m) => ({ key: m[1], text: m[2] }));
+  const lower = text.toLowerCase();
+  const hit = reqs.find((r) => r.text.toLowerCase().split(/\W+/).filter((w) => w.length > 3).some((w) => lower.includes(w)));
+  const what = /what if|suppose|if i/.test(lower);
+  if (hit && /(drop|remove)/.test(lower))
+    return done({ intent: what ? ("counterfactual" as const) : ("write" as const), reply: what ? "Here is what dropping it would do." : `I'll remove "${hit.text}".`, changes: [{ op: "remove" as const, key: hit.key, text: null, weight: null, must_have: null, keywords: [] }] });
+  if (hit && /must[- ]have/.test(lower))
+    return done({ intent: "write" as const, reply: `I'll make "${hit.text}" a must-have.`, changes: [{ op: "set_must_have" as const, key: hit.key, text: null, weight: null, must_have: true, keywords: [] }] });
+  const w = lower.match(/weight (?:to |of )?(\d)/);
+  if (hit && w) return done({ intent: "write" as const, reply: `I'll set the weight of "${hit.text}" to ${w[1]}.`, changes: [{ op: "set_weight" as const, key: hit.key, text: null, weight: Number(w[1]), must_have: null, keywords: [] }] });
+  if (/also need|must be|add /.test(lower)) {
+    const t = text.replace(/^(they )?(also )?(need to|must be|add)\s*/i, "");
+    return done({ intent: "write" as const, reply: `I'll add "${t}" as a requirement.`, changes: [{ op: "add" as const, key: null, text: t, weight: 3, must_have: false, keywords: [] }] });
+  }
+  return done({ intent: "read" as const, reply: `There are ${reqs.length} requirements on this role. ${context.match(/Candidates scored: \d+/)?.[0] ?? ""}`.trim(), changes: [] });
+}

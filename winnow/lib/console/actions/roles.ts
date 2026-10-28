@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { hardFilters, memberships, refusedCriteria, requirements, roleAccess, roleSources, roles, rubricVersions, type SourceKind } from "@/lib/db/schema";
+import { applications, hardFilters, memberships, observations, refusedCriteria, requirements, roleAccess, roleSources, roles, rubricVersions, type SourceKind } from "@/lib/db/schema";
 import { assertCan, can, requireCtx, requireRole } from "@/lib/console/context";
 import { audit, logActivity } from "@/lib/console/log";
 import { enqueue, pump } from "@/lib/console/jobs";
@@ -183,5 +183,100 @@ export async function saveVisibility(form: FormData) {
   const keep = new Set([...people, c.user.id, ...(role.hiringManagerId ? [role.hiringManagerId] : [])]);
   if (visibility === "restricted") await db.insert(roleAccess).values([...keep].map((userId) => ({ roleId: role.id, userId })));
   await audit({ orgId: c.org.id, actorId: c.user.id, action: "role.visibility", entity: "role", entityId: role.id, roleId: role.id, detail: { visibility, people: [...keep] } });
-  redirect(`/console/roles/${role.id}`);
+  redirect(str(form, "next") || `/console/roles/${role.id}`);
+}
+
+/** Who candidate questions come from, for this role. */
+export async function setQuestionSender(roleId: string, mode: "company" | "winnow") {
+  const c = await requireCtx();
+  assertCan(c, can.editRoleSettings);
+  const role = await requireRole(c, roleId);
+  await db.update(roles).set({ questionSender: mode }).where(eq(roles.id, role.id));
+  await audit({ orgId: c.org.id, actorId: c.user.id, action: "role.question_sender", entity: "role", entityId: role.id, roleId: role.id, detail: { mode } });
+  revalidatePath(`/console/roles/${role.id}/verify`);
+}
+
+// ---- Role settings ----------------------------------------------------------
+
+const settingsPath = (roleId: string, saved: string) => `/console/roles/${roleId}/settings?saved=${saved}`;
+
+/** A source and what it cost, so Analytics can show cost per hire by source. */
+export async function saveRoleSource(form: FormData) {
+  const c = await requireCtx();
+  assertCan(c, can.manageSources);
+  const role = await requireRole(c, str(form, "roleId"));
+  const id = str(form, "id");
+  const kind = (str(form, "kind") || "upload") as SourceKind;
+  const label = str(form, "label").slice(0, 120);
+  const costInr = Math.max(0, rupees(form, "costInr") ?? 0);
+  if (!label) redirect(settingsPath(role.id, "source-missing"));
+  if (id) await db.update(roleSources).set({ kind, label, costInr }).where(and(eq(roleSources.id, id), eq(roleSources.roleId, role.id)));
+  else await db.insert(roleSources).values({ roleId: role.id, kind, label, costInr });
+  await audit({ orgId: c.org.id, actorId: c.user.id, action: "role.source", entity: "role", entityId: role.id, roleId: role.id, detail: { kind, label, costInr } });
+  redirect(settingsPath(role.id, "sources"));
+}
+
+export async function deleteRoleSource(form: FormData) {
+  const c = await requireCtx();
+  assertCan(c, can.manageSources);
+  const role = await requireRole(c, str(form, "roleId"));
+  await db.delete(roleSources).where(and(eq(roleSources.id, str(form, "id")), eq(roleSources.roleId, role.id)));
+  redirect(settingsPath(role.id, "sources"));
+}
+
+/**
+ * Closing asks why, and when the role was filled, who was hired: the most
+ * valuable fact the system can learn (it calibrates the rubric for next time).
+ */
+export async function closeRole(form: FormData) {
+  const c = await requireCtx();
+  assertCan(c, can.editRoleSettings);
+  const role = await requireRole(c, str(form, "roleId"));
+  const reason = str(form, "reason") as "filled" | "cancelled" | "on_hold";
+  if (!["filled", "cancelled", "on_hold"].includes(reason)) redirect(settingsPath(role.id, "reason-missing"));
+  const hired = form.getAll("hired").map(String).filter(Boolean);
+  const valid = hired.length
+    ? await db
+        .select({ id: applications.id, personId: applications.personId })
+        .from(applications)
+        .where(and(eq(applications.roleId, role.id)))
+    : [];
+  const picks = valid.filter((v) => hired.includes(v.id));
+  if (reason === "filled" && picks.length === 0 && form.get("unknownHire") !== "on") redirect(settingsPath(role.id, "hire-missing"));
+  await db
+    .update(roles)
+    .set({ state: reason === "on_hold" ? "on_hold" : "closed", closeReason: reason, hiredApplicationId: picks[0]?.id ?? null, lastChangeAt: new Date() })
+    .where(eq(roles.id, role.id));
+  for (const p of picks) {
+    await db.update(applications).set({ stage: "hired", stageChangedAt: new Date() }).where(eq(applications.id, p.id));
+    await db.insert(observations).values({ orgId: c.org.id, kind: "outcome", personId: p.personId, applicationId: p.id, roleId: role.id, payload: { hired: true, via: "close" }, createdBy: c.user.id });
+  }
+  const note = str(form, "note").slice(0, 1000);
+  await audit({ orgId: c.org.id, actorId: c.user.id, action: reason === "on_hold" ? "role.hold" : "role.close", entity: "role", entityId: role.id, roleId: role.id, rubricVersion: role.rubricVersion, detail: { reason, hired: picks.map((p) => p.id), note } });
+  await logActivity({
+    orgId: c.org.id,
+    roleId: role.id,
+    kind: reason === "on_hold" ? "role_on_hold" : "role_closed",
+    message: reason === "on_hold" ? "Put the role on hold" : reason === "filled" ? `Closed the role: filled${picks.length ? ` (${picks.length} hired)` : ""}` : "Closed the role: cancelled",
+    actorId: c.user.id,
+  });
+  revalidatePath("/console", "layout");
+  redirect(settingsPath(role.id, reason === "on_hold" ? "held" : "closed"));
+}
+
+export async function reopenRole(form: FormData) {
+  const c = await requireCtx();
+  assertCan(c, can.editRoleSettings);
+  const role = await requireRole(c, str(form, "roleId"));
+  await db.update(roles).set({ state: "open", closeReason: null, lastChangeAt: new Date() }).where(eq(roles.id, role.id));
+  await audit({ orgId: c.org.id, actorId: c.user.id, action: "role.reopen", entity: "role", entityId: role.id, roleId: role.id });
+  await logActivity({ orgId: c.org.id, roleId: role.id, kind: "role_reopened", message: "Reopened the role", actorId: c.user.id });
+  revalidatePath("/console", "layout");
+  redirect(settingsPath(role.id, "reopened"));
+}
+
+export async function setQuestionSenderForm(form: FormData) {
+  const roleId = str(form, "roleId");
+  await setQuestionSender(roleId, str(form, "questionSender") === "company" ? "company" : "winnow");
+  redirect(settingsPath(roleId, "sender"));
 }

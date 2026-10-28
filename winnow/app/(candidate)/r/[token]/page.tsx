@@ -50,7 +50,7 @@ export default async function Reply({ params, searchParams }: { params: Promise<
           <textarea
             name={`a_${r.q.id}`}
             rows={4}
-            className="mt-2 block w-full rounded-[12px] border border-[#e8eaed] bg-white px-3.5 py-3 text-[16px] leading-relaxed focus:border-[#1b4dff] focus:outline-none focus:shadow-[0_0_0_3px_rgb(27_77_255/0.14)]"
+            className="mt-2 block w-full rounded-[12px] border border-[#e8eaed] bg-paper px-3.5 py-3 text-[16px] leading-relaxed focus:border-[#1b4dff] focus:outline-none focus:shadow-[0_0_0_3px_rgb(27_77_255/0.14)]"
           />
         </label>
       ))}
@@ -59,7 +59,7 @@ export default async function Reply({ params, searchParams }: { params: Promise<
         I am no longer interested in this role
       </label>
       <div>
-        <button type="submit" className="rounded-full bg-[#1b4dff] px-5 py-3 text-[15px] font-medium text-white shadow-[0_1px_2px_rgb(10_12_15/0.06)] hover:bg-[#1440e0]">
+        <button type="submit" className="rounded-full bg-[#1b4dff] px-5 py-3 text-[15px] font-medium text-paper shadow-[0_1px_2px_rgb(10_12_15/0.06)] hover:bg-[#1440e0]">
           Send my answers
         </button>
       </div>

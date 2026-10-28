@@ -56,6 +56,7 @@ export const META_COLUMNS: { id: ColumnId; label: string }[] = [
   { id: "decision", label: "Decision" },
   { id: "reason_code", label: "Reason code" },
   { id: "decided_by", label: "Decided by" },
+  { id: "decided_at", label: "Decided at" },
   { id: "contradictions", label: "Contradictions" },
 ];
 
@@ -107,6 +108,8 @@ export function cellText(row: Row, id: ColumnId, reqs: Req[]): string {
       return row.reasonCode ?? "";
     case "decided_by":
       return row.decidedBy ?? "";
+    case "decided_at":
+      return row.decidedAt ? row.decidedAt.slice(0, 10) : "";
     case "contradictions":
       return row.contradictions ? String(row.contradictions) : "";
   }
@@ -123,6 +126,7 @@ export type Filter =
   | { t: "source"; values: string[] }
   | { t: "flag"; value: "contradiction" | "unseen" }
   | { t: "decision"; values: string[] }
+  | { t: "reason"; values: string[] }
   | { t: "fact"; field: string; op: "contains" | "lte" | "gte" | "known" | "unknown"; value?: string }
   | { t: "musthaves"; value: "all" | "missing" };
 
@@ -144,6 +148,8 @@ export function matches(row: Row, f: Filter, reqs: Req[]): boolean {
       return f.value === "contradiction" ? row.contradictions > 0 : row.decision === "shortlisted" && !row.managerSeen;
     case "decision":
       return f.values.includes(row.decision);
+    case "reason":
+      return row.reasonCode != null && f.values.includes(row.reasonCode);
     case "musthaves": {
       const must = reqs.filter((r) => r.mustHave);
       const allMet = must.every((r) => row.verdicts[r.key] === "met");
@@ -181,6 +187,8 @@ export function describeFilter(f: Filter, reqs: Req[]): string {
       return f.value === "contradiction" ? "has a contradiction" : "shortlisted, not yet seen by the manager";
     case "decision":
       return f.values.map((d) => DECISION_LABEL[d]?.toLowerCase() ?? d).join(" or ");
+    case "reason":
+      return `reason: ${f.values.join(" or ")}`;
     case "musthaves":
       return f.value === "all" ? "all must-haves met" : "missing a must-have";
     case "fact":

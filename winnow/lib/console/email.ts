@@ -14,6 +14,7 @@ export type Email = {
   html?: string;
   from?: string;
   replyTo?: string;
+  attachments?: { filename: string; content: string; contentType: string }[];
 };
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
@@ -56,6 +57,7 @@ export async function sendEmail(m: Email): Promise<{ ok: boolean; id?: string; e
       text: m.text,
       html: m.html,
       reply_to: m.replyTo,
+      attachments: m.attachments?.map((a) => ({ filename: a.filename, content: Buffer.from(a.content).toString("base64"), content_type: a.contentType })),
     }),
   });
   if (!res.ok) return { ok: false, error: `Email failed (${res.status})` };

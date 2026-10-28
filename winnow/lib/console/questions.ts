@@ -18,6 +18,7 @@ async function sender(roleId: string) {
   const role = await db.query.roles.findFirst({ where: eq(roles.id, roleId) });
   const org = role && (await db.query.orgs.findFirst({ where: eq(orgs.id, role.orgId) }));
   if (!role || !org) throw new Error("Role not found.");
+  if (role.state !== "open") throw new Error(role.state === "closed" ? "This role is closed, so nothing more is sent." : "This role is on hold, so nothing is sent until it reopens.");
   const mode = role.questionSender ?? org.questionSender;
   // We can only send from our own verified domain; "from the company" means
   // the company's name, with replies going to its careers address.
@@ -73,7 +74,7 @@ export async function runFollowups() {
     .innerJoin(applications, eq(applications.id, questions.applicationId))
     .innerJoin(persons, eq(persons.id, applications.personId))
     .innerJoin(roles, eq(roles.id, applications.roleId))
-    .where(and(eq(questions.status, "sent"), or(lt(questions.lastFollowupAt, new Date(now - 2 * 86_400_000)), lt(questions.sentAt, new Date(now - 2 * 86_400_000)))));
+    .where(and(eq(questions.status, "sent"), eq(roles.state, "open"), or(lt(questions.lastFollowupAt, new Date(now - 2 * 86_400_000)), lt(questions.sentAt, new Date(now - 2 * 86_400_000)))));
   const byToken = new Map<string, typeof open>();
   for (const r of open) if (r.q.token) byToken.set(r.q.token, [...(byToken.get(r.q.token) ?? []), r]);
   let chased = 0;

@@ -11,6 +11,7 @@ import { ACCEPTED, MAX_BYTES, mimeFor } from "@/lib/console/parse";
 import { putFile, storageConfigured } from "@/lib/console/storage";
 import { enqueue, pump } from "@/lib/console/jobs";
 import { touchRole } from "@/lib/console/roles";
+import { logActivity } from "@/lib/console/log";
 import { and, eq } from "drizzle-orm";
 
 export const maxDuration = 60;
@@ -58,6 +59,7 @@ export async function POST(req: Request) {
     const reason = ext === ".doc" ? "Old Word (.doc) files cannot be read. Ask for a PDF or .docx." : `Files of type ${ext} cannot be read.`;
     await db.update(documents).set({ parseStatus: "unreadable", parseError: reason }).where(eq(documents.id, doc.id));
     await db.update(applications).set({ parseStatus: "unreadable", parseError: reason }).where(eq(applications.id, app.id));
+    await logActivity({ orgId: c.org.id, roleId: role.id, kind: "parse_failure", message: `Could not read ${doc.filename}: ${reason}`, detail: { applicationId: app.id, filename: doc.filename } });
   } else {
     await enqueue("parse", { orgId: c.org.id, roleId: role.id, payload: { applicationId: app.id, documentId: doc.id } });
     after(() => pump(50_000));
