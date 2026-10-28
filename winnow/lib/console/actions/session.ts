@@ -32,25 +32,36 @@ const str = (form: FormData, k: string) => String(form.get(k) ?? "").trim();
 const validEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e) && e.length <= 254;
 const q = (params: Record<string, string>) => new URLSearchParams(params).toString();
 
+/**
+ * Runs a password or ticket sign-in without letting the library redirect, so
+ * a failure can be explained: it reports one as ?error=CredentialsSignin&code=…
+ */
+async function passwordSignIn(fields: Record<string, string>) {
+  let url: string;
+  try {
+    url = await signIn("password", { ...fields, redirect: false });
+  } catch (e) {
+    if (e instanceof AuthError) return e instanceof CredentialsSignin ? e.code : "invalid";
+    throw e;
+  }
+  const u = new URL(url, "http://local");
+  return u.searchParams.get("error") ? (u.searchParams.get("code") ?? "invalid") : null;
+}
+
 /** Email and password. A wrong password and an unknown email read the same. */
 export async function signInPassword(form: FormData) {
   const email = str(form, "email").toLowerCase();
-  try {
-    await signIn("password", { email, password: String(form.get("password") ?? ""), redirectTo: next(form) });
-  } catch (e) {
-    if (e instanceof AuthError) {
-      const code = e instanceof CredentialsSignin ? e.code : "invalid";
-      if (code === "unverified") redirect(`/console/verify?${q({ email, next: next(form) })}`);
-      redirect(`/console/login?${q({ error: code === "locked" ? "locked" : "password", email, next: next(form) })}`);
-    }
-    throw e;
-  }
+  const problem = await passwordSignIn({ email, password: String(form.get("password") ?? "") });
+  if (problem === "unverified") redirect(`/console/verify?${q({ email, next: next(form) })}`);
+  if (problem) redirect(`/console/login?${q({ error: problem === "locked" ? "locked" : "password", email, next: next(form) })}`);
+  redirect(next(form));
 }
 
 /** Signs in with a one-time ticket, right after the person proved their address. */
 async function signInWithTicket(email: string, to: string) {
   const ticket = await issueTicket(email);
-  await signIn("password", { email, ticket, redirectTo: to });
+  const problem = await passwordSignIn({ email, ticket });
+  redirect(problem ? `/console/login?${q({ email })}` : to);
 }
 
 /**

@@ -25,7 +25,7 @@ import { checkCode, sendCode } from "./console/codes";
 declare module "next-auth" {
   interface Session {
     user: { id: string } & DefaultSession["user"];
-    /** When this sign-in happened (seconds), to honour "sign out everywhere". */
+    /** When this sign-in happened (milliseconds), to honour "sign out everywhere". */
     authAt?: number;
   }
 }
@@ -167,7 +167,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
     async jwt({ token, user }) {
       if (user?.id) {
         token.uid = user.id;
-        token.authAt = Math.floor(Date.now() / 1000);
+        token.authAt = Date.now();
       }
       return token;
     },

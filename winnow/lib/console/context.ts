@@ -35,7 +35,7 @@ export const getUser = cache(async () => {
   if (!id) return null;
   const user = (await db.query.users.findFirst({ where: eq(users.id, id) })) ?? null;
   // A password change or "sign out everywhere" ends every session started before it.
-  if (user?.sessionsValidFrom && (session.authAt ?? 0) < Math.floor(user.sessionsValidFrom.getTime() / 1000)) return null;
+  if (user?.sessionsValidFrom && (session.authAt ?? 0) < user.sessionsValidFrom.getTime()) return null;
   // Operator access is re-checked on every request, so removing someone from
   // WINNOW_OPERATORS takes effect at once, not at their next sign-in.
   if (user?.isOperator) {

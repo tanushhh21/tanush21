@@ -36,7 +36,9 @@ export function passwordProblem(password: string, email: string) {
   if (password.length > 128) return "Use at most 128 characters.";
   if (/^(.)\1+$/.test(password)) return "Use more than one character.";
   const lower = password.toLowerCase();
-  if (email && lower.includes(email.toLowerCase().split("@")[0]) && email.split("@")[0].length >= 4) return "Do not include your email in the password.";
+  // Only a password that is essentially the email is refused; a name inside a longer phrase is fine.
+  const local = email.toLowerCase().split("@")[0] ?? "";
+  if (email && (lower.includes(email.toLowerCase()) || (local.length >= 4 && lower.replace(/[^a-z]/g, "") === local.replace(/[^a-z]/g, "")))) return "Do not use your email as the password.";
   if (COMMON.some((c) => lower === c || lower === `${c}123` || lower === `${c}1234`)) return "That password is too common.";
   return null;
 }
