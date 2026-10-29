@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 
+const OLD_HOSTS = ["try-winnow.vercel.app", "winnow-sand.vercel.app", "winnow-hiring.vercel.app"];
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
@@ -7,6 +9,15 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["@electric-sql/pglite", "unpdf", "mammoth"],
   // The console and candidate pages handle private data: never framed by another
   // site, never sniffed, and no referrer (which could carry a token) leaves them.
+  // The old vercel.app addresses still serve the site; send visitors to the real domain.
+  async redirects() {
+    return OLD_HOSTS.map((host) => ({
+      source: "/:path*",
+      has: [{ type: "host" as const, value: host }],
+      destination: "https://getwinnow.in/:path*",
+      permanent: true,
+    }));
+  },
   async headers() {
     const strict = [
       { key: "X-Frame-Options", value: "DENY" },
