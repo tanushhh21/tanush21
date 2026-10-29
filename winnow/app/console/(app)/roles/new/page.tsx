@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { and, desc } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { roles } from "@/lib/db/schema";
@@ -11,16 +12,19 @@ import Steps from "@/components/console/roles/Steps";
 
 export const metadata: Metadata = { title: "New role" };
 
-export default async function NewRolePage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+export default async function NewRolePage({ searchParams }: { searchParams: Promise<{ error?: string; manual?: string }> }) {
   const c = await requireCtx();
   assertCan(c, can.createRole);
+  const sp = await searchParams;
+  // With the AI connected, a new role starts as a conversation; the form stays for those who want it.
+  if (aiConfigured() && sp.manual !== "1" && !sp.error) redirect("/console/chat?new=1");
   const past = await db
     .select({ id: roles.id, title: roles.title, closedAt: roles.closedAt })
     .from(roles)
     .where(and(visibleRoles(c)))
     .orderBy(desc(roles.createdAt))
     .limit(50);
-  const { error } = await searchParams;
+  const { error } = sp;
   return (
     <div className="mx-auto max-w-[44rem]">
       <PageHeader title="New role" meta="What is the role? Winnow builds the rubric from it while you fill in the rest." />

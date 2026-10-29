@@ -52,13 +52,3 @@ export async function awayFeed(c: Ctx, since: Date) {
   }
   return out.slice(0, 40);
 }
-
-export async function orgChatHistory(c: Ctx) {
-  const rows = await db
-    .select()
-    .from(chatMessages)
-    .where(and(eq(chatMessages.orgId, c.org.id), isNull(chatMessages.roleId), eq(chatMessages.userId, c.user.id)))
-    .orderBy(desc(chatMessages.createdAt))
-    .limit(30);
-  return rows.reverse();
-}
