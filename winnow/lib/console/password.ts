@@ -5,6 +5,7 @@
  */
 import { randomBytes, scrypt as scryptCb, timingSafeEqual } from "node:crypto";
 import { promisify } from "node:util";
+import { PASSWORD_RULES } from "./password-rules";
 
 const scrypt = promisify(scryptCb) as (pw: string, salt: Buffer, len: number, opts: { N: number; r: number; p: number; maxmem: number }) => Promise<Buffer>;
 const N = 16384;
@@ -32,13 +33,13 @@ const COMMON = ["password", "1234567890", "qwertyuiop", "winnow", "letmein", "we
 
 /** A reason the password is not acceptable, or null. */
 export function passwordProblem(password: string, email: string) {
-  if (password.length < 10) return "Use at least 10 characters.";
+  const broken = PASSWORD_RULES.find((r) => !r.test(password));
+  if (broken) return broken.problem;
   if (password.length > 128) return "Use at most 128 characters.";
-  if (/^(.)\1+$/.test(password)) return "Use more than one character.";
   const lower = password.toLowerCase();
   // Only a password that is essentially the email is refused; a name inside a longer phrase is fine.
   const local = email.toLowerCase().split("@")[0] ?? "";
   if (email && (lower.includes(email.toLowerCase()) || (local.length >= 4 && lower.replace(/[^a-z]/g, "") === local.replace(/[^a-z]/g, "")))) return "Do not use your email as the password.";
-  if (COMMON.some((c) => lower === c || lower === `${c}123` || lower === `${c}1234`)) return "That password is too common.";
+  if (COMMON.some((c) => lower.replace(/\d+$/, "") === c)) return "That password is too common.";
   return null;
 }
