@@ -20,7 +20,13 @@ export type DB = PostgresJsDatabase<typeof schema>;
  * The pooled connection string. Vercel's Supabase integration names it
  * POSTGRES_URL; DATABASE_URL works too, for a database added by hand.
  */
-export const databaseUrl = () => process.env.DATABASE_URL || process.env.POSTGRES_URL || "";
+export const databaseUrl = () => {
+  // Preview deployments run unmerged code, so they never touch the real
+  // database, even when it is connected to Preview in Vercel. A preview can
+  // be given its own with PREVIEW_DATABASE_URL.
+  if (process.env.VERCEL_ENV === "preview") return process.env.PREVIEW_DATABASE_URL || "";
+  return process.env.DATABASE_URL || process.env.POSTGRES_URL || "";
+};
 
 /** On Vercel the console needs a database; locally PGlite always works. */
 export const dbConfigured = () => Boolean(databaseUrl()) || !process.env.VERCEL;
