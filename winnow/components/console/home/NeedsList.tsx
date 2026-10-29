@@ -58,7 +58,7 @@ export default function NeedsList({ items }: { items: NeedItem[] }) {
         {items.map((n, i) => (
           <li key={n.key} className={`relative px-4 py-3 ${i === cursor ? "bg-mist/70" : ""}`} onMouseEnter={() => setCursor(i)}>
             {i === cursor ? <span aria-hidden="true" className="absolute inset-y-2 left-0 w-[3px] rounded-r-full bg-ink" /> : null}
-            <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-x-4">
               <div className="min-w-0 flex-1">
                 <p className="text-[12px] text-slate">
                   {n.label} · <Link href={`/console/roles/${n.roleId}`} className="hover:text-ink hover:underline">{n.roleTitle}</Link> · {n.ageDays === 0 ? "today" : `${n.ageDays} day${n.ageDays === 1 ? "" : "s"}`}

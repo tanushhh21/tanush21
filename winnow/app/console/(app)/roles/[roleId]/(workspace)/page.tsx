@@ -35,7 +35,7 @@ export default async function RankingPage({ params, searchParams }: { params: Pr
   }
   const initial: Filter[] = view === "shortlisted" ? [{ t: "decision", values: ["shortlisted"] }] : [];
   return (
-    <div className="grid gap-4">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
       <CandidateViews roleId={role.id} active="ranked" />
       <Ranking
       scope="ranking"

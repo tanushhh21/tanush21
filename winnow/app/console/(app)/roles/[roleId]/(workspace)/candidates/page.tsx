@@ -17,7 +17,7 @@ export default async function Candidates({ params, searchParams }: { params: Pro
   if (q.decision) initial.push({ t: "decision", values: q.decision.split(",") });
   if (q.reason) initial.push({ t: "reason", values: q.reason.split(",") });
   return (
-    <div className="grid gap-4">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
       <CandidateViews roleId={role.id} active="everyone" />
       <Ranking
         scope="candidates"

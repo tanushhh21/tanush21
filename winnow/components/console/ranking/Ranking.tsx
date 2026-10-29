@@ -276,7 +276,7 @@ export default function Ranking(p: Props) {
 
   // ---- Render --------------------------------------------------------------------------
   return (
-    <div className="grid gap-4">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
       {progress?.busy || (p.busy && !progress) ? (
         <div role="status" className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-[10px] bg-signal/[0.06] px-3 py-2 text-[13px] text-ink">
           <span className="size-2 animate-pulse rounded-full bg-signal" aria-hidden="true" />
@@ -318,7 +318,7 @@ export default function Ranking(p: Props) {
             const v = e.target.value;
             const at = v.lastIndexOf(":");
             setSort({ key: v.slice(0, at), dir: v.slice(at + 1) as "asc" | "desc" });
-          }} className={smallFieldClass}>
+          }} className={`${smallFieldClass} max-w-full`}>
           <option value="rank:asc">Best match first</option>
           <option value="applied:desc">Newest first</option>
           <option value="stage_days:desc">Waiting longest</option>

@@ -34,7 +34,7 @@ export default async function Activity({ params, searchParams }: { params: Promi
   }
 
   return (
-    <div className="grid gap-4">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
       <InsightViews roleId={role.id} active="history" />
     <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
       <div className="grid gap-4">

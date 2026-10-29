@@ -44,8 +44,8 @@ export default async function Workspace({ children, params }: { children: React.
   ].filter((x, i) => i < 2 || x.n > 0);
 
   return (
-    <div className="grid gap-5">
-      <header className="grid gap-3">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-5">
+      <header className="grid grid-cols-[minmax(0,1fr)] gap-3">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
             <h1 className="font-display text-[clamp(1.375rem,2.4vw,1.75rem)] font-semibold leading-tight tracking-[-0.025em]">

@@ -23,7 +23,7 @@ export default async function Analytics({ searchParams }: { searchParams: Promis
   const qs = new URLSearchParams(Object.entries(q).filter(([, v]) => v) as [string, string][]).toString();
 
   return (
-    <div className="grid gap-6">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
       <PageHeader
         title="Insights"
         meta={`${a.received.toLocaleString("en-IN")} applications ${range.days === "all" ? "all time" : `from ${range.from.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })} to ${range.to.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}`}`}

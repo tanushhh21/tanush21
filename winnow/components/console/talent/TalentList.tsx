@@ -250,8 +250,8 @@ export default function TalentList({
                 </div>
                 <div className="col-start-2 min-w-0 md:col-start-auto">
                   <span className="block truncate">{[r.title, r.company].filter(Boolean).join(" at ") || <span className="text-slate">Not stated</span>}</span>
-                  <span className="block truncate font-mono text-[12px] tabular-nums text-slate">
-                    {[r.city, r.years != null ? `${r.years} yrs` : null, r.expectedCtc ? `expects ${inrShort(r.expectedCtc)}` : null, r.notice != null ? `${r.notice}d notice` : null].filter(Boolean).join(" · ")}
+                  <span className="block truncate text-[12px] tabular-nums text-slate">
+                    {[r.city, r.years != null ? `${r.years} years` : null, r.expectedCtc ? `expects ${inrShort(r.expectedCtc)}` : null, r.notice != null ? `notice ${r.notice} days` : null].filter(Boolean).join(" · ")}
                   </span>
                 </div>
                 <div className="col-start-2 min-w-0 md:col-start-auto">

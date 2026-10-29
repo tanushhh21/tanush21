@@ -297,7 +297,7 @@ function ActionCard({ messageId, a }: { messageId: string; a: ChatAction }) {
         </div>
       ) : (
         <p className={`mt-2 ${a.state === "done" ? "text-ok" : a.state === "failed" ? "text-alert" : "text-slate"}`}>
-          {a.state === "done" ? `Done. ${a.result ?? ""}` : a.state === "failed" ? `Did not work: ${a.result ?? ""}` : "Discarded."}
+          {a.state === "done" ? `✓ ${a.result ?? "Done."}` : a.state === "failed" ? `Did not work: ${a.result ?? ""}` : "Discarded."}
         </p>
       )}
       {error ? <p role="alert" className="mt-1.5 text-alert">{error}</p> : null}

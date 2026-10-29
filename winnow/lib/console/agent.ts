@@ -364,14 +364,16 @@ export async function runAction(c: Ctx, a: ChatAction): Promise<{ ok: true; resu
   const i = a.input as Record<string, unknown>;
   if (a.kind === "decide") {
     const r = await decide({ ids: i.ids as string[], decision: i.decision as "shortlisted" | "held" | "dropped", reasonCode: String(i.reasonCode), note: String(i.note ?? "") });
-    return r.ok ? { ok: true, result: "Done." } : { ok: false, error: r.error };
+    const ids = i.ids as string[];
+    const done = { shortlisted: "Shortlisted", held: "Put on hold", dropped: "Dropped" }[String(i.decision)] ?? "Done";
+    return r.ok ? { ok: true, result: `${done}${ids.length > 1 ? ` all ${ids.length}` : ""}.` } : { ok: false, error: r.error };
   }
   if (a.kind === "ask") {
     const ids = i.ids as string[];
     const r = await askQuestions(ids.map((applicationId) => ({ applicationId, items: [{ requirementKey: null, text: String(i.question) }] })), true);
     if (!r.ok) return { ok: false, error: r.error };
     const failed = (r as { failed?: string[] }).failed ?? [];
-    return failed.length ? { ok: false, error: failed.join(" ") } : { ok: true, result: `Sent to ${ids.length}.` };
+    return failed.length ? { ok: false, error: failed.join(" ") } : { ok: true, result: `Sent to ${ids.length === 1 ? "1 candidate" : `${ids.length} candidates`}.` };
   }
   if (a.kind === "criteria") {
     if (!can.editRubric(c)) return { ok: false, error: "You cannot change the criteria." };
