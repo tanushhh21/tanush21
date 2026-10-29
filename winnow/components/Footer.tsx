@@ -1,5 +1,5 @@
 import Logo from "./Logo";
-import { MAIL, TABS } from "@/lib/site";
+import { TABS } from "@/lib/site";
 
 export default function Footer() {
   return (
@@ -17,7 +17,7 @@ export default function Footer() {
             </li>
           ))}
           <li>
-            <a href={MAIL} className="inline-block py-2 hover:text-ink">
+            <a href="#talk" className="inline-block py-2 hover:text-ink">
               Contact
             </a>
           </li>
