@@ -1,0 +1,1 @@
+ALTER TABLE "org" ADD COLUMN "demo" boolean DEFAULT false NOT NULL;

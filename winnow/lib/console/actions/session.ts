@@ -228,6 +228,35 @@ export async function createOrg(form: FormData) {
   redirect("/console");
 }
 
+/** Operators: build the demo company (replacing any earlier one, so this also resets it) and open it. */
+export async function buildDemoCustomer() {
+  const user = await requireUser();
+  if (!user.isOperator) redirect("/console");
+  const { buildDemo } = await import("@/lib/console/demo");
+  const orgId = await buildDemo(user.id);
+  await audit({ orgId, actorId: user.id, action: "org.demo", entity: "org", entityId: orgId });
+  (await cookies()).set(ORG_COOKIE, orgId, cookieOpts);
+  redirect("/console");
+}
+
+export async function openDemoCustomer() {
+  const user = await requireUser();
+  if (!user.isOperator) redirect("/console");
+  const { findDemo } = await import("@/lib/console/demo");
+  const demo = await findDemo();
+  if (!demo) redirect("/console/operator/overview");
+  (await cookies()).set(ORG_COOKIE, demo.id, cookieOpts);
+  redirect("/console");
+}
+
+export async function deleteDemoCustomer() {
+  const user = await requireUser();
+  if (!user.isOperator) redirect("/console");
+  const { deleteDemo } = await import("@/lib/console/demo");
+  await deleteDemo();
+  redirect("/console/operator/overview");
+}
+
 /** Accepting an invite adds the membership and opens that organisation. */
 export async function acceptInvite(form: FormData) {
   const user = await requireUser();
