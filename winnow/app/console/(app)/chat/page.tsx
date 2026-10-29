@@ -27,7 +27,7 @@ export default async function ChatPage({ searchParams }: { searchParams: Promise
   const off = aiConfigured()
     ? null
     : c.user.isOperator
-      ? "The AI is not connected yet: add ANTHROPIC_API_KEY in Vercel and redeploy."
+      ? "The AI is not connected yet: add GROQ_API_KEY (or ANTHROPIC_API_KEY) in Vercel and redeploy."
       : "Chat is not switched on for your workspace yet. Winnow's team has been told.";
 
   const messages = (await threadFor(c, role?.id ?? null)).map((m) => ({ id: m.id, author: m.author, body: m.body, diff: m.diff, diffState: m.diffState, extras: m.extras, at: m.createdAt.toISOString() }));

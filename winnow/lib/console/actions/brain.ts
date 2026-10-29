@@ -76,7 +76,7 @@ export async function learnFromRoles(): Promise<Result> {
   try {
     const c = await requireCtx();
     assertCan(c, can.editRubric);
-    if (!aiConfigured()) throw new Error("This needs the Claude connection (ANTHROPIC_API_KEY).");
+    if (!aiConfigured()) throw new Error("This needs the AI connected (GROQ_API_KEY or ANTHROPIC_API_KEY).");
     const rs = await db.select({ title: roles.title, jd: roles.jdText, notes: roles.intakeNotes }).from(roles).where(eq(roles.orgId, c.org.id));
     const text = rs
       .filter((r) => r.jd || r.notes)

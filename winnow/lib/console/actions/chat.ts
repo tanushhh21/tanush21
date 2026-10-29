@@ -31,7 +31,7 @@ export async function sendChat(roleId: string | null, text: string, attachment?:
     const role = await scopeRole(c, roleId);
     const said = text.trim().slice(0, 8000);
     if (!said && !attachment) return { ok: false, error: "Write a message." };
-    if (!aiConfigured()) return { ok: false, error: "Chat needs the AI connected (ANTHROPIC_API_KEY)." };
+    if (!aiConfigured()) return { ok: false, error: "Chat needs the AI connected (GROQ_API_KEY or ANTHROPIC_API_KEY)." };
 
     const thread = role
       ? and(eq(chatMessages.orgId, c.org.id), eq(chatMessages.roleId, role.id))

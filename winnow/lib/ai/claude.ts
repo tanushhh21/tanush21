@@ -1,7 +1,9 @@
 /**
- * Every call Winnow makes to Claude goes through structured(): a schema-checked
- * result, a server-side fallback if the model declines, the stable part of the
- * prompt cached, and the cost of the call returned so it can be shown.
+ * Every structured call Winnow makes to the AI goes through structured(): a
+ * schema-checked result, a server-side fallback if the model declines, the
+ * stable part of the prompt cached, and the cost of the call returned so it
+ * can be shown. Claude answers when ANTHROPIC_API_KEY is set; otherwise Groq
+ * does, when GROQ_API_KEY is set (lib/ai/groq.ts).
  *
  * Locally, WINNOW_FAKE_AI=1 swaps in deterministic stand-ins (lib/ai/fake.ts)
  * so the whole product can be exercised without spending money. They can
@@ -10,11 +12,17 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import type { z } from "zod";
+import { AiError, type Effort } from "./errors";
+import { groqStructured } from "./groq";
+
+export { AiError, type Effort };
 
 export const MODEL = process.env.WINNOW_MODEL || "claude-opus-5-5";
 
 export const fakeAi = () => process.env.WINNOW_FAKE_AI === "1" && !process.env.VERCEL;
-export const aiConfigured = () => Boolean(process.env.ANTHROPIC_API_KEY) || fakeAi();
+/** Which service answers: Claude when its key is set, Groq otherwise. */
+export const provider = () => (process.env.ANTHROPIC_API_KEY ? "anthropic" : process.env.GROQ_API_KEY ? "groq" : null);
+export const aiConfigured = () => provider() !== null || fakeAi();
 
 /** US dollars per million tokens. Unknown models are costed as Opus. */
 const PRICES: Record<string, { input: number; output: number; cacheRead: number; cacheWrite: number }> = {
@@ -22,17 +30,6 @@ const PRICES: Record<string, { input: number; output: number; cacheRead: number;
   "claude-sonnet-5-5": { input: 2, output: 10, cacheRead: 0.2, cacheWrite: 2.5 },
   "claude-haiku-5-5": { input: 0.1, output: 0.5, cacheRead: 0.01, cacheWrite: 0.125 },
 };
-
-export class AiError extends Error {
-  constructor(
-    message: string,
-    readonly kind: "refusal" | "truncated" | "unparsed" | "not_configured" | "api",
-  ) {
-    super(message);
-  }
-}
-
-export type Effort = "low" | "medium" | "high" | "xhigh" | "max";
 
 type Usage = {
   input_tokens: number;
@@ -71,7 +68,8 @@ export async function structured<S extends z.ZodType>(o: {
   effort?: Effort;
   maxTokens?: number;
 }): Promise<{ data: z.infer<S>; costUsd: number; model: string }> {
-  if (!process.env.ANTHROPIC_API_KEY) throw new AiError("The AI is not set up yet (ANTHROPIC_API_KEY).", "not_configured");
+  if (provider() === "groq") return groqStructured(o);
+  if (!provider()) throw new AiError("The AI is not set up yet (add GROQ_API_KEY or ANTHROPIC_API_KEY).", "not_configured");
 
   const system: Anthropic.Beta.BetaTextBlockParam[] = [{ type: "text", text: o.instructions }];
   if (o.context) system.push({ type: "text", text: o.context });

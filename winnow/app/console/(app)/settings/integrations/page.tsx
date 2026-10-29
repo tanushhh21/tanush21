@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { integrations, orgs } from "@/lib/db/schema";
 import { can, requireCtx } from "@/lib/console/context";
 import { emailDomain, requestIntegration, saveSlack } from "@/lib/console/actions/settings";
-import { aiConfigured } from "@/lib/ai/claude";
+import { aiConfigured, provider } from "@/lib/ai/claude";
 import { Badge, Card, CardHead, buttonClass, fieldClass } from "@/components/console/ui";
 import Saved from "@/components/console/Saved";
 
@@ -180,7 +180,7 @@ export default async function Integrations({ searchParams }: { searchParams: Pro
       })}
 
       <Block
-        title="Claude"
+        title={provider() === "groq" ? "AI (Groq)" : "AI (Claude)"}
         status={aiConfigured() ? on : <Badge tone="alert">Not set up</Badge>}
         reads="The CVs, job descriptions and answers it is asked to read, with personal attributes removed before scoring."
         writes="Rubrics, verdicts, reasons and suggested questions, always shown to you before anything is sent."

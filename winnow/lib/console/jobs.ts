@@ -92,7 +92,7 @@ async function run(job: Job) {
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
     // Retry transient failures; a missing key or a decline will not fix itself.
-    const permanent = e instanceof AiError && (e.kind === "not_configured" || e.kind === "refusal");
+    const permanent = e instanceof AiError && (e.kind === "not_configured" || e.kind === "refusal" || e.kind === "unsupported");
     const failed = permanent || job.attempts >= MAX_ATTEMPTS;
     await db
       .update(jobs)
@@ -133,7 +133,7 @@ async function parseJob(job: Job) {
   const doc = await db.query.documents.findFirst({ where: eq(documents.id, String(job.payload.documentId)) });
   const app = await db.query.applications.findFirst({ where: eq(applications.id, applicationId) });
   if (!doc || !app) return;
-  if (!aiConfigured()) throw new AiError("The AI is not set up yet (ANTHROPIC_API_KEY).", "not_configured");
+  if (!aiConfigured()) throw new AiError("The AI is not set up yet (add GROQ_API_KEY or ANTHROPIC_API_KEY).", "not_configured");
 
   const data = await readStoredFile(doc.url!);
   const parsed = await extract(doc.filename, data);
