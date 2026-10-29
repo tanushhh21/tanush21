@@ -174,39 +174,6 @@ export function evaluate(rubric: RubricForAi, cv: string) {
   });
 }
 
-export function chat(context: string, text: string) {
-  const reqs = Array.from(context.matchAll(/- key: (\w+)\n  requirement: ([^\n]+)/g)).map((m) => ({ key: m[1], text: m[2] }));
-  const lower = text.toLowerCase();
-  const hit = reqs.find((r) => r.text.toLowerCase().split(/\W+/).filter((w) => w.length > 3).some((w) => lower.includes(w)));
-  const what = /what if|suppose|if i/.test(lower);
-  if (hit && /(drop|remove)/.test(lower))
-    return done({ intent: what ? ("counterfactual" as const) : ("write" as const), reply: what ? "Here is what dropping it would do." : `I'll remove "${hit.text}".`, changes: [{ op: "remove" as const, key: hit.key, text: null, weight: null, must_have: null, keywords: [] }] });
-  if (hit && /must[- ]have/.test(lower))
-    return done({ intent: "write" as const, reply: `I'll make "${hit.text}" a must-have.`, changes: [{ op: "set_must_have" as const, key: hit.key, text: null, weight: null, must_have: true, keywords: [] }] });
-  const w = lower.match(/weight (?:to |of )?(\d)/);
-  if (hit && w) return done({ intent: "write" as const, reply: `I'll set the weight of "${hit.text}" to ${w[1]}.`, changes: [{ op: "set_weight" as const, key: hit.key, text: null, weight: Number(w[1]), must_have: null, keywords: [] }] });
-  if (/also need|must be|add /.test(lower)) {
-    const t = text.replace(/^(they )?(also )?(need to|must be|add)\s*/i, "");
-    return done({ intent: "write" as const, reply: `I'll add "${t}" as a requirement.`, changes: [{ op: "add" as const, key: null, text: t, weight: 3, must_have: false, keywords: [] }] });
-  }
-  return done({ intent: "read" as const, reply: `There are ${reqs.length} requirements on this role. ${context.match(/Candidates scored: \d+/)?.[0] ?? ""}`.trim(), changes: [] });
-}
-
-/** Org chat stand-in: answers the common questions straight from the context lines. */
-export function orgChat(context: string, text: string) {
-  const lower = text.toLowerCase();
-  const section = (name: string) => context.split(`## ${name}\n`)[1]?.split("\n## ")[0]?.trim() ?? "";
-  let reply: string;
-  if (/stall/.test(lower)) {
-    const stalled = section("Roles").split("\n").filter((l) => /status: stalled/.test(l));
-    reply = stalled.length ? `Stalled: ${stalled.map((l) => l.split(" | ")[0].replace(/^- /, "")).join(", ")}.` : "None of your roles is stalled.";
-  } else if (/reject|drop|compensation/.test(lower)) reply = section("Rejection reasons, last 90 days") || "No rejections recorded in the last 90 days.";
-  else if (/seen|before|applied/.test(lower)) reply = section("People matching the question") || "I could not find anyone by that name or email.";
-  else if (/source/.test(lower)) reply = section("Sources") || "No source data yet.";
-  else reply = `You have ${section("Roles").split("\n").filter(Boolean).length} roles. Ask which are stalled, who was rejected and why, whether someone applied before, or which source works.`;
-  return done({ intent: "read" as const, reply: reply.slice(0, 900), changes: [] });
-}
-
 /** Company brain stand-in: picks out obvious lines from job descriptions. */
 export function learnCompany(text: string) {
   const lines = sentences(text);

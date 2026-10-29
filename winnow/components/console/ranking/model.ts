@@ -32,31 +32,78 @@ export const SOURCE_LABEL: Record<string, string> = {
   talent_pool: "Talent pool",
 };
 
-export const BAND_LABEL: Record<Band, string> = { verified: "Verified", needs_verification: "Needs verification", below_bar: "Below the bar" };
+/** Plain words for the bands: is the evidence clear, are there claims to check, or is it below the bar. */
+export const BAND_LABEL: Record<Band, string> = { verified: "Evidence clear", needs_verification: "Check claims", below_bar: "Below the bar" };
 export const VERDICT_LABEL: Record<VerdictValue, string> = { met: "Met", partial: "Partly", not_met: "Not met", unknown: "Unknown" };
-export const DECISION_LABEL: Record<string, string> = { none: "Undecided", shortlisted: "Shortlisted", dropped: "Dropped", held: "Held" };
+export const DECISION_LABEL: Record<string, string> = { none: "Undecided", shortlisted: "Shortlisted", dropped: "Dropped", held: "On hold" };
+
+/** Winnow's own reasons, in words; a company's own codes fall back to their code made readable. */
+export const REASON_LABEL: Record<string, string> = {
+  below_bar: "Below the bar",
+  missing_must_have: "Missing a must-have",
+  comp_misaligned: "Pay expectations too high",
+  notice_too_long: "Notice period too long",
+  location: "Location",
+  not_interested: "Not interested",
+  no_response: "No response",
+  failed_verification: "A claim did not hold up",
+  interview_feedback: "Interview feedback",
+  someone_else: "Chose someone else",
+  duplicate: "Duplicate application",
+  role_closed: "Role closed",
+  other: "Other",
+  timing: "Timing",
+  comparing: "Comparing with others",
+  awaiting_answer: "Waiting on an answer",
+  strong_match: "Strong match",
+  worth_a_conversation: "Worth a conversation",
+};
+export const reasonLabel = (code: string | null) => (code ? REASON_LABEL[code] ?? code.replace(/_/g, " ").replace(/^\w/, (c) => c.toUpperCase()) : "");
+
+/**
+ * The number the list is ordered by: the score, tempered by how much of the
+ * role the CV covers, so a thin CV cannot outrank a full one. Shown as Match.
+ */
+export const matchOf = (r: { score: number | null; confidence: number | null }) => (r.score == null ? null : Math.round(r.score * (0.6 + 0.4 * (r.confidence ?? 0))));
+
+/** Where someone stands, in one word: their stage once decided, otherwise what the evidence says. */
+export function statusOf(r: Pick<Row, "decision" | "stage" | "band" | "status">): { label: string; tone: "ink" | "signal" | "ok" | "caution" | "muted" } {
+  if (r.decision === "dropped") return { label: "Dropped", tone: "muted" };
+  if (r.decision === "held") return { label: "On hold", tone: "caution" };
+  if (r.decision === "shortlisted") {
+    if (r.stage === "hired") return { label: "Hired", tone: "ok" };
+    if (r.stage === "offer") return { label: "Offer out", tone: "signal" };
+    if (r.stage === "interviewing") return { label: "Interviewing", tone: "signal" };
+    return { label: "Shortlisted", tone: "ink" };
+  }
+  if (r.band === "verified") return { label: BAND_LABEL.verified, tone: "ok" };
+  if (r.band === "needs_verification") return { label: BAND_LABEL.needs_verification, tone: "caution" };
+  if (r.band === "below_bar") return { label: BAND_LABEL.below_bar, tone: "muted" };
+  return { label: r.status === "done" ? "Undecided" : "Not scored yet", tone: "muted" };
+}
 
 export type ColumnId = string;
 
-export const DEFAULT_COLUMNS: ColumnId[] = ["rank", "name", "reason", "must", "evidence", "source", "percentile", "score", "band"];
+export const DEFAULT_COLUMNS: ColumnId[] = ["rank", "name", "reason", "must", "score", "status"];
+export const EVERYONE_COLUMNS: ColumnId[] = ["name", "status", "reason_code", "decided_by", "decided_at", "score", "source"];
 
 export const META_COLUMNS: { id: ColumnId; label: string }[] = [
-  { id: "rank", label: "Rank" },
-  { id: "name", label: "Name" },
+  { id: "rank", label: "#" },
+  { id: "name", label: "Candidate" },
   { id: "reason", label: "Why" },
   { id: "must", label: "Must-haves" },
+  { id: "score", label: "Match" },
+  { id: "status", label: "Status" },
   { id: "evidence", label: "Evidence" },
   { id: "source", label: "Source" },
+  { id: "confidence", label: "How much the CV covers" },
   { id: "percentile", label: "Percentile" },
-  { id: "score", label: "Score" },
-  { id: "band", label: "Band" },
-  { id: "confidence", label: "Confidence" },
   { id: "applied", label: "Applied" },
-  { id: "stage_days", label: "Days at stage" },
+  { id: "stage_days", label: "Days at this stage" },
   { id: "decision", label: "Decision" },
-  { id: "reason_code", label: "Reason code" },
+  { id: "reason_code", label: "Reason" },
   { id: "decided_by", label: "Decided by" },
-  { id: "decided_at", label: "Decided at" },
+  { id: "decided_at", label: "Decided on" },
   { id: "contradictions", label: "Contradictions" },
 ];
 
@@ -93,7 +140,9 @@ export function cellText(row: Row, id: ColumnId, reqs: Req[]): string {
     case "percentile":
       return row.percentile != null ? String(row.percentile) : "";
     case "score":
-      return row.score != null ? String(row.score) : "";
+      return matchOf(row) != null ? String(matchOf(row)) : "";
+    case "status":
+      return statusOf(row).label;
     case "band":
       return row.band ? BAND_LABEL[row.band] : row.status;
     case "confidence":
@@ -105,7 +154,7 @@ export function cellText(row: Row, id: ColumnId, reqs: Req[]): string {
     case "decision":
       return DECISION_LABEL[row.decision] ?? row.decision;
     case "reason_code":
-      return row.reasonCode ?? "";
+      return reasonLabel(row.reasonCode);
     case "decided_by":
       return row.decidedBy ?? "";
     case "decided_at":
@@ -188,7 +237,7 @@ export function describeFilter(f: Filter, reqs: Req[]): string {
     case "decision":
       return f.values.map((d) => DECISION_LABEL[d]?.toLowerCase() ?? d).join(" or ");
     case "reason":
-      return `reason: ${f.values.join(" or ")}`;
+      return `reason: ${f.values.map((v) => reasonLabel(v)).join(" or ")}`;
     case "musthaves":
       return f.value === "all" ? "all must-haves met" : "missing a must-have";
     case "fact":
@@ -212,7 +261,7 @@ export function sortValue(row: Row, key: string): number | string {
     case "rank":
       return row.rank ?? 1e9;
     case "score":
-      return row.score ?? -1;
+      return matchOf(row) ?? -1;
     case "confidence":
       return row.confidence ?? -1;
     case "percentile":

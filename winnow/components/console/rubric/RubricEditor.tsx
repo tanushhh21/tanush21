@@ -89,8 +89,8 @@ export default function RubricEditor(p: { roleId: string; items: Item[]; refused
       <section>
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div>
-            <h2 className="font-display text-[16px] font-semibold">The requirements</h2>
-            <p className="text-[12.5px] text-slate">Every edit re-scores the pool and becomes a new version. Old scores are kept.</p>
+            <h2 className="font-display text-[16px] font-semibold">What candidates are scored on</h2>
+            <p className="text-[12.5px] text-slate">More dots means it counts for more. Saving a change re-scores everyone; earlier versions are kept.</p>
           </div>
           {p.canEdit ? (
             <Button
@@ -140,7 +140,7 @@ export default function RubricEditor(p: { roleId: string; items: Item[]; refused
                     </button>
                   </div>
                   <label className="flex items-center gap-2 text-[13px]">
-                    <span className="shrink-0 text-slate">Also counts</span>
+                    <span className="shrink-0 text-slate">Also look for</span>
                     <input value={q.keywords.join(", ")} onChange={(e) => set(i, { keywords: e.target.value.split(",").map((s) => s.trimStart()) })} aria-label="Related keywords" className={`${smallFieldClass} w-full`} placeholder="Keywords that also satisfy it, comma separated" />
                   </label>
                   <p className="flex flex-wrap items-center gap-1.5 text-[12px] text-slate">
@@ -192,8 +192,8 @@ export default function RubricEditor(p: { roleId: string; items: Item[]; refused
       </section>
 
       <section>
-        <h2 className="font-display text-[16px] font-semibold">Refused criteria</h2>
-        <p className="text-[12.5px] text-slate">Lines from the job description Winnow would not encode.</p>
+        <h2 className="font-display text-[16px] font-semibold">Left out on purpose</h2>
+        <p className="text-[12.5px] text-slate">Lines from the job description Winnow does not score, and why.</p>
         {p.refused.length === 0 ? <p className="mt-3 text-[13px] text-slate">Nothing was refused.</p> : null}
         <ul className="mt-3 grid gap-2">
           {p.refused.map((r) => {
@@ -240,8 +240,8 @@ export default function RubricEditor(p: { roleId: string; items: Item[]; refused
       </section>
 
       <section>
-        <h2 className="font-display text-[16px] font-semibold">Hard filters</h2>
-        <p className="text-[12.5px] text-slate">Separate from requirements: a filter removes people, a weight ranks them. A filter never removes someone whose value is unknown.</p>
+        <h2 className="font-display text-[16px] font-semibold">Filters that remove people</h2>
+        <p className="text-[12.5px] text-slate">A filter takes people out of the ranking entirely, for example a notice period over 60 days. Someone whose CV does not say is never removed.</p>
         <ul className="mt-3 grid gap-2">
           {p.filters.map((f) => (
             <li key={f.id} className="flex flex-wrap items-center justify-between gap-2 rounded-[12px] border border-hairline px-4 py-2.5 text-[13px]">
@@ -291,7 +291,7 @@ export default function RubricEditor(p: { roleId: string; items: Item[]; refused
       </section>
 
       <section>
-        <h2 className="font-display text-[16px] font-semibold">Version history</h2>
+        <h2 className="font-display text-[16px] font-semibold">Earlier versions</h2>
         <ol className="mt-3 grid gap-2">
           {p.versions.map((v, i) => (
             <li key={v.version} className="rounded-[12px] border border-hairline px-4 py-3 text-[13px]">

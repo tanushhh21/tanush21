@@ -87,17 +87,17 @@ export default function InterviewBoard({ board }: { board: Board }) {
           {msg}
         </p>
       ) : null}
-      <div className="flex flex-wrap gap-x-5 gap-y-1 font-mono text-[12.5px] tabular-nums text-slate">
-        <span><span className="text-ink">{upcoming.length}</span> upcoming</span>
-        <span><span className="text-ink">{board.waiting.length}</span> waiting on the candidate</span>
-        <span><span className={needDebrief.length ? "text-caution" : "text-ink"}>{needDebrief.length}</span> debriefs due</span>
-        <span><span className="text-ink">{reschedules}</span> reschedules</span>
-        <span><span className={noShows ? "text-alert" : "text-ink"}>{noShows}</span> no-shows</span>
+      <div className="flex flex-wrap gap-x-4 gap-y-1 text-[13.5px] text-slate">
+        <span><span className="font-semibold tabular-nums text-ink">{upcoming.length}</span> upcoming</span>
+        <span><span className="font-semibold tabular-nums text-ink">{board.waiting.length}</span> waiting on the candidate</span>
+        <span><span className={`font-semibold tabular-nums ${needDebrief.length ? "text-caution" : "text-ink"}`}>{needDebrief.length}</span> feedback due</span>
+        <span><span className="font-semibold tabular-nums text-ink">{reschedules}</span> reschedules</span>
+        <span><span className={`font-semibold tabular-nums ${noShows ? "text-alert" : "text-ink"}`}>{noShows}</span> no-shows</span>
       </div>
 
       {needDebrief.length ? (
         <Card>
-          <CardHead title="Debriefs due" meta="Thirty seconds each. This is the only way interview signal reaches the ranking and the analytics." />
+          <CardHead title="Feedback due" meta="Thirty seconds each. This is the only way interview signal reaches the ranking and the analytics." />
           <ul className="divide-y divide-hairline">
             {needDebrief.map((i) => (
               <li key={i.id} className="px-4 py-3">

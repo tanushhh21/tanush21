@@ -53,7 +53,7 @@ export function costOf(model: string, u: Usage) {
 }
 
 let client: Anthropic | null = null;
-const anthropic = () => (client ??= new Anthropic({ maxRetries: 3 }));
+export const anthropic = () => (client ??= new Anthropic({ maxRetries: 3 }));
 
 export type Content = string | Anthropic.Beta.BetaContentBlockParam[];
 

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { dismissNeed } from "@/lib/console/actions/home";
-import { Button, Kbd, fieldClass } from "@/components/console/ui";
+import { Button, fieldClass } from "@/components/console/ui";
 
 export type NeedItem = { key: string; type: string; label: string; roleTitle: string; roleId: string; person?: string; ageDays: number; text: string; action: { label: string; href: string } };
 
@@ -58,7 +58,7 @@ export default function NeedsList({ items }: { items: NeedItem[] }) {
         {items.map((n, i) => (
           <li key={n.key} className={`relative px-4 py-3 ${i === cursor ? "bg-mist/70" : ""}`} onMouseEnter={() => setCursor(i)}>
             {i === cursor ? <span aria-hidden="true" className="absolute inset-y-2 left-0 w-[3px] rounded-r-full bg-ink" /> : null}
-            <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-x-4">
               <div className="min-w-0 flex-1">
                 <p className="text-[12px] text-slate">
                   {n.label} · <Link href={`/console/roles/${n.roleId}`} className="hover:text-ink hover:underline">{n.roleTitle}</Link> · {n.ageDays === 0 ? "today" : `${n.ageDays} day${n.ageDays === 1 ? "" : "s"}`}
@@ -66,10 +66,10 @@ export default function NeedsList({ items }: { items: NeedItem[] }) {
                 <p className="mt-0.5 text-[14.5px] font-medium">{n.text}</p>
               </div>
               <div className="flex items-center gap-1.5">
-                <Link href={n.action.href} className="inline-flex h-9 items-center rounded-full bg-ink px-4 text-[13.5px] font-medium text-paper hover:bg-ink/85 sm:h-8 sm:px-3 sm:text-[13px]">
+                <Link href={n.action.href} className="inline-flex h-9 items-center rounded-full border border-hairline bg-paper px-4 text-[13.5px] font-medium text-ink hover:border-slate/40 sm:h-8 sm:px-3 sm:text-[13px]">
                   {n.action.label}
                 </Link>
-                <Button size="sm" tone="ghost" aria-expanded={dismissing === n.key} onClick={() => setDismissing(dismissing === n.key ? null : n.key)}>
+                <Button size="sm" tone="ghost" aria-label={`Dismiss: ${n.text}`} aria-expanded={dismissing === n.key} onClick={() => setDismissing(dismissing === n.key ? null : n.key)}>
                   Dismiss
                 </Button>
               </div>
@@ -102,9 +102,6 @@ export default function NeedsList({ items }: { items: NeedItem[] }) {
           </li>
         ))}
       </ol>
-      <p className="mt-2 hidden text-[12px] text-slate sm:block">
-        <Kbd>j</Kbd> <Kbd>k</Kbd> move · <Kbd>Enter</Kbd> open · <Kbd>d</Kbd> dismiss
-      </p>
     </div>
   );
 }

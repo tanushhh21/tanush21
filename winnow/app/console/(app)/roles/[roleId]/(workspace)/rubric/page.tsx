@@ -1,20 +1,19 @@
 import type { Metadata } from "next";
-import { and, asc, eq, inArray } from "drizzle-orm";
+import { inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { applicationFacts, chatMessages, refusedCriteria } from "@/lib/db/schema";
+import { applicationFacts, refusedCriteria } from "@/lib/db/schema";
 import { can, requireCtx, requireRole } from "@/lib/console/context";
 import { loadRubric, versionHistory } from "@/lib/console/data/rubric";
 import { loadRanking } from "@/lib/console/data/ranking";
 import { versionEffects } from "@/lib/console/rubric";
 import { currentRequirements } from "@/lib/console/scoring";
 import { describe, excludedBy } from "@/lib/console/filters";
-import { sendRoleChat } from "@/lib/console/actions/rubric";
+import { rubricStrip } from "@/lib/console/roles";
 import RubricEditor from "@/components/console/rubric/RubricEditor";
-import Chat from "@/components/console/Chat";
 import Waiter from "@/components/console/roles/Waiter";
-import { Empty } from "@/components/console/ui";
+import { ButtonLink, Empty } from "@/components/console/ui";
 
-export const metadata: Metadata = { title: "Rubric" };
+export const metadata: Metadata = { title: "Criteria" };
 
 export default async function RubricPage({ params }: { params: Promise<{ roleId: string }> }) {
   const c = await requireCtx();
@@ -27,12 +26,12 @@ export default async function RubricPage({ params }: { params: Promise<{ roleId:
       </Empty>
     );
   }
-  const [rubric, history, effects, ranking, chat] = await Promise.all([
+  const [rubric, history, effects, ranking, strip] = await Promise.all([
     loadRubric(role.id, role.rubricVersion),
     versionHistory(role.id),
     versionEffects(role.id),
     loadRanking(role.id, role.rubricVersion),
-    db.select().from(chatMessages).where(and(eq(chatMessages.roleId, role.id), eq(chatMessages.orgId, c.org.id))).orderBy(asc(chatMessages.createdAt)).limit(100),
+    rubricStrip(role.id, role.rubricVersion),
   ]);
   if (!rubric) return null;
 
@@ -70,7 +69,16 @@ export default async function RubricPage({ params }: { params: Promise<{ roleId:
   );
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+    <div className="grid gap-5">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-[12px] bg-mist px-4 py-3">
+        <p className="text-[13.5px]">
+          Candidates are scored on <strong className="font-semibold">{strip.reqs} requirements</strong>, {strip.must} of them must-haves
+          {strip.refused ? `. ${strip.refused} line${strip.refused === 1 ? "" : "s"} from the job description ${strip.refused === 1 ? "was" : "were"} left out on purpose` : ""}. Age, gender and other personal details are removed before scoring. Version {role.rubricVersion}.
+        </p>
+        <ButtonLink href={`/console/chat?role=${role.id}`} size="sm">
+          Change it by chat
+        </ButtonLink>
+      </div>
       <RubricEditor
         roleId={role.id}
         items={rubric.requirements.map((q) => ({
@@ -91,15 +99,6 @@ export default async function RubricPage({ params }: { params: Promise<{ roleId:
         canEdit={can.editRubric(c)}
         top={top}
       />
-      <div className="xl:sticky xl:top-6 xl:self-start">
-        <Chat
-          title="Chat about this role"
-          placeholder="Ask why someone ranks where they do, what the job description did not say, or what would happen if you dropped a requirement."
-          messages={chat.map((m) => ({ id: m.id, author: m.author, body: m.body, diff: m.diff, diffState: m.diffState, at: m.createdAt.toISOString() }))}
-          send={sendRoleChat.bind(null, role.id)}
-          canApply={can.editRubric(c)}
-        />
-      </div>
     </div>
   );
 }

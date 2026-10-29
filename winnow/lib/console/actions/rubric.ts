@@ -7,16 +7,18 @@ import { db } from "@/lib/db";
 import { applications, chatMessages, hardFilters, refusedCriteria, type ChatDiff } from "@/lib/db/schema";
 import { assertCan, can, requireCtx, requireRole } from "@/lib/console/context";
 import { audit, logActivity } from "@/lib/console/log";
-import { createVersion, impactOf, type ReqInput } from "@/lib/console/rubric";
+import { applyChanges, createVersion, impactOf, type ReqInput, type RubricChange } from "@/lib/console/rubric";
 import { currentRequirements, rankRole } from "@/lib/console/scoring";
 import { applyHardFilters, describe, FILTER_FIELDS } from "@/lib/console/filters";
 import { pump } from "@/lib/console/jobs";
 import { loadRanking } from "@/lib/console/data/ranking";
-import { roleChat, rubricContext, type ChatOut } from "@/lib/ai/tasks";
 
 type Result = { ok: true; message?: string } | { ok: false; error: string };
 const fail = (e: unknown): Result => ({ ok: false, error: e instanceof Error ? e.message : "Something went wrong." });
-const path = (roleId: string) => revalidatePath(`/console/roles/${roleId}`, "layout");
+const path = (roleId: string) => {
+  revalidatePath(`/console/roles/${roleId}`, "layout");
+  revalidatePath("/console/chat");
+};
 
 export async function previewRubric(roleId: string, items: (ReqInput & { key: string })[]) {
   const c = await requireCtx();
@@ -138,88 +140,6 @@ export async function deleteFilter(filterId: string): Promise<Result> {
 
 // ---- Role chat ------------------------------------------------------------------------
 
-function applyChanges(current: (ReqInput & { key: string })[], changes: ChatOut["changes"]) {
-  let items = current.map((q) => ({ ...q }));
-  for (const ch of changes) {
-    const i = items.findIndex((q) => q.key === ch.key);
-    if (ch.op === "add" && ch.text) {
-      items.push({ key: crypto.randomUUID().slice(0, 8), text: ch.text, weight: ch.weight ?? 3, mustHave: ch.must_have ?? false, keywords: ch.keywords, minYears: null, recencySensitive: false, origin: "chat", sourceSentence: "You told us in chat" });
-      continue;
-    }
-    if (i < 0) continue;
-    if (ch.op === "remove") items = items.filter((_, j) => j !== i);
-    else if (ch.op === "set_weight" && ch.weight) items[i].weight = Math.min(5, Math.max(1, ch.weight));
-    else if (ch.op === "set_must_have" && ch.must_have != null) items[i].mustHave = ch.must_have;
-    else if (ch.op === "edit_text" && ch.text) items[i] = { ...items[i], text: ch.text, origin: "chat" };
-    else if (ch.op === "add_keywords") items[i].keywords = [...new Set([...items[i].keywords, ...ch.keywords])];
-  }
-  return items;
-}
-
-async function chatContext(roleId: string, version: number, title: string) {
-  const reqs = await currentRequirements(roleId, version);
-  const { rows } = await loadRanking(roleId, version);
-  const scored = rows.filter((r) => r.status === "done");
-  const top = scored
-    .filter((r) => r.rank != null)
-    .sort((a, b) => (a.rank ?? 1e9) - (b.rank ?? 1e9))
-    .slice(0, 15)
-    .map((r) => `#${r.rank} ${r.name}: score ${r.score}, ${r.band}, ${r.decision}. ${reqs.map((q) => `${q.key}=${r.verdicts[q.key] ?? "unknown"}`).join(" ")}. Strongest: ${r.strength}. Gap: ${r.gap}`)
-    .join("\n");
-  const coverage = reqs.map((q) => `${q.key}: ${scored.filter((r) => (r.verdicts[q.key] ?? "unknown") !== "unknown").length}/${scored.length} have evidence`).join("; ");
-  return `Role: ${title}\n\n${rubricContext(reqs.map((q) => ({ key: q.key, text: q.text, weight: q.weight, mustHave: q.mustHave, keywords: q.keywords, minYears: q.minYears, recencySensitive: q.recencySensitive })))}\n\nCandidates received: ${rows.length}. Candidates scored: ${scored.length}. Shortlisted: ${rows.filter((r) => r.decision === "shortlisted").length}. Dropped: ${rows.filter((r) => r.decision === "dropped").length}. Unreadable: ${rows.filter((r) => r.status === "unreadable").length}.\nCoverage: ${coverage}\n\nTop of the ranking:\n${top}`;
-}
-
-export async function sendRoleChat(roleId: string, text: string): Promise<Result> {
-  try {
-    const c = await requireCtx();
-    const role = await requireRole(c, roleId);
-    if (!text.trim()) throw new Error("Write a message.");
-    const history = await db
-      .select()
-      .from(chatMessages)
-      .where(and(eq(chatMessages.roleId, role.id), eq(chatMessages.orgId, c.org.id)))
-      .orderBy(desc(chatMessages.createdAt))
-      .limit(10);
-    await db.insert(chatMessages).values({ orgId: c.org.id, roleId: role.id, userId: c.user.id, author: "user", body: text.slice(0, 4000) });
-    const context = await chatContext(role.id, role.rubricVersion, role.title);
-    const out = await roleChat(context, [
-      ...history.reverse().map((m) => ({ role: m.author === "user" ? ("user" as const) : ("assistant" as const), content: m.body })),
-      { role: "user", content: text },
-    ]);
-    const r = out.data;
-    let diff: ChatDiff | null = null;
-    let diffState: "proposed" | null = null;
-    if (r.intent !== "read" && r.changes.length && role.rubricVersion > 0) {
-      if (r.intent === "write" && !can.editRubric(c)) {
-        await db.insert(chatMessages).values({ orgId: c.org.id, roleId: role.id, author: "winnow", body: "Only the TA team can change the rubric. Ask them, or leave a note on the role.", costUsd: out.costUsd });
-        path(role.id);
-        return { ok: true };
-      }
-      const current = (await currentRequirements(role.id, role.rubricVersion)).map((q) => ({
-        key: q.key,
-        text: q.text,
-        weight: q.weight,
-        mustHave: q.mustHave,
-        keywords: q.keywords,
-        minYears: q.minYears,
-        recencySensitive: q.recencySensitive,
-        origin: q.origin,
-        sourceSentence: q.sourceSentence,
-      }));
-      const items = applyChanges(current, r.changes);
-      const impact = await impactOf(role.id, items);
-      diff = { summary: r.reply, changes: r.changes, impact: { moved: impact.moved, enteredTop: impact.enteredTop, leftTop: impact.leftTop } };
-      diffState = r.intent === "write" ? "proposed" : null;
-    }
-    await db.insert(chatMessages).values({ orgId: c.org.id, roleId: role.id, author: "winnow", body: r.reply, diff, diffState, costUsd: out.costUsd });
-    await logActivity({ orgId: c.org.id, roleId: role.id, kind: "chat", message: "Chat", costUsd: out.costUsd, actorId: c.user.id });
-    path(role.id);
-    return { ok: true };
-  } catch (e) {
-    return fail(e);
-  }
-}
 
 /** Applies a proposed chat diff: a new rubric version whose origin is the chat. */
 export async function applyChatDiff(messageId: string): Promise<Result> {
@@ -240,7 +160,7 @@ export async function applyChatDiff(messageId: string): Promise<Result> {
       origin: q.origin,
       sourceSentence: q.sourceSentence,
     }));
-    const items = applyChanges(current, m.diff.changes as ChatOut["changes"]);
+    const items = applyChanges(current, m.diff.changes as RubricChange[]);
     const v = await createVersion(role.id, items, "chat", m.diff.summary, c.user.id);
     await db.update(chatMessages).set({ diffState: "applied" }).where(eq(chatMessages.id, m.id));
     await audit({ orgId: c.org.id, actorId: c.user.id, action: "rubric.chat", entity: "role", entityId: role.id, roleId: role.id, rubricVersion: v.version, detail: { diff: m.diff } });

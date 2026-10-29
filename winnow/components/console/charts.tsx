@@ -68,13 +68,13 @@ export function BarList({ data, max, fmt: f, head = ["", "Value"], unit = "" }: 
   const [table, setTable] = useState(false);
   const top = max ?? Math.max(1, ...data.map((d) => d.value));
   return (
-    <div>
+    <div className="@container">
       {table ? (
         <DataTable data={data} head={head} fmt={fmt} />
       ) : (
-        <ul className="grid gap-2">
+        <ul className="grid gap-2.5 @sm:gap-2">
           {data.map((d) => (
-            <li key={d.label} tabIndex={0} aria-label={`${d.label}: ${fmt(d.value)}${unit}${d.note ? `, ${d.note}` : ""}`} className="grid grid-cols-[minmax(0,11rem)_minmax(0,1fr)] items-center gap-3 rounded-[6px] outline-offset-2 sm:grid-cols-[minmax(0,15rem)_minmax(0,1fr)]">
+            <li key={d.label} tabIndex={0} aria-label={`${d.label}: ${fmt(d.value)}${unit}${d.note ? `, ${d.note}` : ""}`} className="grid items-center gap-1 rounded-[6px] outline-offset-2 @sm:grid-cols-[minmax(0,11rem)_minmax(0,1fr)] @sm:gap-3 @xl:grid-cols-[minmax(0,15rem)_minmax(0,1fr)]">
               <span className="min-w-0">
                 <span className={`block truncate text-[13px] ${d.muted ? "text-slate" : "text-ink"}`} title={d.label}>
                   {d.label}

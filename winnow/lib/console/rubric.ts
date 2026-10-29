@@ -128,3 +128,24 @@ export async function versionEffects(roleId: string) {
     };
   });
 }
+
+export type RubricChange = { op: string; key: string | null; text: string | null; weight: number | null; must_have: boolean | null; keywords: string[] };
+
+/** Applies chat-style edits (set_weight, add, remove…) to a rubric, by requirement key. */
+export function applyChanges(current: (ReqInput & { key: string })[], changes: RubricChange[]) {
+  let items = current.map((q) => ({ ...q }));
+  for (const ch of changes) {
+    const i = items.findIndex((q) => q.key === ch.key);
+    if (ch.op === "add" && ch.text) {
+      items.push({ key: crypto.randomUUID().slice(0, 8), text: ch.text, weight: ch.weight ?? 3, mustHave: ch.must_have ?? false, keywords: ch.keywords, minYears: null, recencySensitive: false, origin: "chat", sourceSentence: "You told us in chat" });
+      continue;
+    }
+    if (i < 0) continue;
+    if (ch.op === "remove") items = items.filter((_, j) => j !== i);
+    else if (ch.op === "set_weight" && ch.weight) items[i].weight = Math.min(5, Math.max(1, ch.weight));
+    else if (ch.op === "set_must_have" && ch.must_have != null) items[i].mustHave = ch.must_have;
+    else if (ch.op === "edit_text" && ch.text) items[i] = { ...items[i], text: ch.text, origin: "chat" };
+    else if (ch.op === "add_keywords") items[i].keywords = [...new Set([...items[i].keywords, ...ch.keywords])];
+  }
+  return items;
+}

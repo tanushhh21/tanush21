@@ -3,8 +3,9 @@ import { can, requireCtx, requireRole } from "@/lib/console/context";
 import { loadRanking, reasonsFor, viewsFor } from "@/lib/console/data/ranking";
 import Ranking from "@/components/console/ranking/Ranking";
 import type { Filter } from "@/components/console/ranking/model";
+import { CandidateViews } from "@/components/console/roles/Views";
 
-export const metadata: Metadata = { title: "Candidates" };
+export const metadata: Metadata = { title: "Everyone" };
 
 /** Everyone, regardless of band or decision: the records view. */
 export default async function Candidates({ params, searchParams }: { params: Promise<{ roleId: string }>; searchParams: Promise<{ decision?: string; reason?: string }> }) {
@@ -16,8 +17,8 @@ export default async function Candidates({ params, searchParams }: { params: Pro
   if (q.decision) initial.push({ t: "decision", values: q.decision.split(",") });
   if (q.reason) initial.push({ t: "reason", values: q.reason.split(",") });
   return (
-    <div className="grid gap-3">
-      <p className="text-[13px] text-slate">Everyone who applied or was found, whatever their band or decision. Use it to answer &ldquo;did we ever see this person&rdquo; and &ldquo;what happened to everyone we dropped&rdquo;.</p>
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
+      <CandidateViews roleId={role.id} active="everyone" />
       <Ranking
         scope="candidates"
         roleId={role.id}

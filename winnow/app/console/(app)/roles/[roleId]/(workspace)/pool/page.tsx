@@ -6,9 +6,10 @@ import { requireCtx, requireRole } from "@/lib/console/context";
 import { loadRanking } from "@/lib/console/data/ranking";
 import { Card, CardHead, Empty, inr } from "@/components/console/ui";
 import { BarList, Columns, Funnel } from "@/components/console/charts";
+import { InsightViews } from "@/components/console/roles/Views";
 import { SOURCE_LABEL } from "@/components/console/ranking/model";
 
-export const metadata: Metadata = { title: "Pool" };
+export const metadata: Metadata = { title: "Insights" };
 
 /** The screen that says the search is wrong rather than the candidates. */
 export default async function Pool({ params }: { params: Promise<{ roleId: string }> }) {
@@ -93,6 +94,9 @@ export default async function Pool({ params }: { params: Promise<{ roleId: strin
 
   return (
     <div className="grid gap-5 lg:grid-cols-2">
+      <div className="lg:col-span-2">
+        <InsightViews roleId={role.id} active="overview" />
+      </div>
       <Card className="lg:col-span-2">
         <CardHead title="What is missing" meta={`Read from ${n} scored candidates`} />
         <div className="grid gap-2 px-5 py-4 text-[14px]">

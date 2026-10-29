@@ -59,14 +59,14 @@ const PRIORITY: Record<NeedType, number> = {
 
 export const NEED_LABEL: Record<NeedType, string> = {
   reply_unread: "Candidate replied",
-  questions_drafted: "Questions to approve",
-  shortlist_unseen: "Shortlist not looked at",
-  manager_holding: "Manager holding a shortlist",
-  no_debrief: "No debrief recorded",
-  contradiction_unread: "Contradiction flagged",
-  unanswered_twice: "No answer after two follow-ups",
-  rubric_unreviewed: "Rubric never reviewed",
-  waiting_at_stage: "Waiting at a stage",
+  questions_drafted: "Questions waiting to be sent",
+  shortlist_unseen: "Manager has not opened the shortlist",
+  manager_holding: "Manager is holding the shortlist",
+  no_debrief: "Interview feedback missing",
+  contradiction_unread: "CV contradicts itself",
+  unanswered_twice: "No answer after two reminders",
+  rubric_unreviewed: "Criteria never checked",
+  waiting_at_stage: "Waiting too long",
   role_quiet: "No new candidates",
 };
 
@@ -165,8 +165,8 @@ export async function needsYou(c: Ctx, opts: { includeDismissed?: boolean } = {}
       person: d.name,
       applicationId: d.iv.applicationId,
       ageDays: age(d.iv.endAt),
-      text: `Interview with ${d.name}, no debrief yet`,
-      action: { label: "Record debrief", href: `${base(d.iv.roleId)}/interviews?debrief=${d.iv.id}` },
+      text: `How did the interview with ${d.name} go?`,
+      action: { label: "Add feedback", href: `${base(d.iv.roleId)}/interviews?debrief=${d.iv.id}` },
     });
 
   // A contradiction was flagged and nobody has read it.
@@ -185,8 +185,8 @@ export async function needsYou(c: Ctx, opts: { includeDismissed?: boolean } = {}
       person: f.name,
       applicationId: f.cx.applicationId,
       ageDays: age(f.cx.createdAt),
-      text: `Contradiction on ${f.name}`,
-      action: { label: "Read", href: `/console/c/${f.cx.applicationId}#contradictions` },
+      text: `${f.name}'s CV says two different things`,
+      action: { label: "See both", href: `/console/c/${f.cx.applicationId}#contradictions` },
     });
 
   // A verification question went unanswered twice: close the candidate out.
@@ -209,7 +209,7 @@ export async function needsYou(c: Ctx, opts: { includeDismissed?: boolean } = {}
       applicationId: s.q.applicationId,
       ageDays: age(s.q.lastFollowupAt ?? s.q.sentAt),
       text: `${s.name} did not answer after two follow-ups`,
-      action: { label: "Close out", href: `/console/c/${s.q.applicationId}#decide` },
+      action: { label: "Decide", href: `/console/c/${s.q.applicationId}#decide` },
     });
   }
 
@@ -228,8 +228,8 @@ export async function needsYou(c: Ctx, opts: { includeDismissed?: boolean } = {}
       roleId: r.id,
       roleTitle: r.title,
       ageDays: age(r.createdAt),
-      text: `${s.n} scored against a rubric nobody has reviewed`,
-      action: { label: "Review rubric", href: `${base(r.id)}/rubric` },
+      text: `${s.n} scored on criteria nobody has checked yet`,
+      action: { label: "Check criteria", href: `${base(r.id)}/rubric` },
     });
   }
 
@@ -255,8 +255,8 @@ export async function needsYou(c: Ctx, opts: { includeDismissed?: boolean } = {}
       person: w.name,
       applicationId: w.app.id,
       ageDays: age(w.app.stageChangedAt),
-      text: `${w.name} has been ${w.app.stage.replace("_", " ")} for ${age(w.app.stageChangedAt)} days`,
-      action: { label: "Move forward", href: `/console/c/${w.app.id}` },
+      text: `${w.name} has been ${{ on_hold: "on hold", new: "waiting for a decision", screening: "waiting for a decision", shortlisted: "shortlisted", interviewing: "in interviews", offer: "waiting on an offer" }[w.app.stage as string] ?? w.app.stage} for ${age(w.app.stageChangedAt)} days`,
+      action: { label: "Decide", href: `/console/c/${w.app.id}` },
     });
 
   // A role has had no new candidates for a week.

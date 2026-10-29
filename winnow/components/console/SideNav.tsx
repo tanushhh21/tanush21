@@ -21,14 +21,22 @@ type Props = {
   signOut: () => Promise<void>;
 };
 
+/** Five places, each a plain word. Company knowledge and the audit log live in Settings. */
 const MAIN = [
-  { href: "/console", label: "Home", exact: true },
-  { href: "/console/talent", label: "Talent pool" },
-  { href: "/console/analytics", label: "Analytics" },
-  { href: "/console/brain", label: "Company brain" },
-  { href: "/console/audit", label: "Audit" },
-  { href: "/console/settings", label: "Settings" },
+  { href: "/console", label: "Home", exact: true, icon: "M3.75 9.25 10 4l6.25 5.25V16a.75.75 0 0 1-.75.75H12.5V12h-5v4.75H4.5a.75.75 0 0 1-.75-.75Z" },
+  { href: "/console/chat", label: "Chat", icon: "M4 4.75h12a.75.75 0 0 1 .75.75v7.5a.75.75 0 0 1-.75.75H9l-3.5 2.75V13.75H4a.75.75 0 0 1-.75-.75V5.5A.75.75 0 0 1 4 4.75Z" },
+  { href: "/console/talent", label: "People", icon: "M7.5 9.25a2.75 2.75 0 1 0 0-5.5 2.75 2.75 0 0 0 0 5.5ZM2.75 16.25c0-2.6 2.1-4.25 4.75-4.25s4.75 1.65 4.75 4.25M13.25 9a2.25 2.25 0 1 0 0-4.5M14.5 12.1c1.6.4 2.75 1.8 2.75 4.15" },
+  { href: "/console/analytics", label: "Insights", icon: "M4 16.25V10.5M8 16.25V6.5M12 16.25v-4.5M16 16.25V3.75" },
+  { href: "/console/settings", label: "Settings", also: ["/console/brain", "/console/audit"], icon: "M3.75 6.25h6.5M13.75 6.25h2.5M3.75 13.75h2.5M9.75 13.75h6.5M12 4.25v4M8 11.75v4" },
 ];
+
+function Icon({ d }: { d: string }) {
+  return (
+    <svg viewBox="0 0 20 20" className="size-[17px] shrink-0" aria-hidden="true">
+      <path d={d} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
 
 const toneDot = { alert: "bg-alert", caution: "bg-caution", signal: "bg-signal", muted: "bg-hairline" };
 
@@ -87,7 +95,8 @@ export default function SideNav(p: Props) {
         <ul className="grid gap-0.5">
           {MAIN.map((m) => (
             <li key={m.href}>
-              <NavLink href={m.href} active={is(m.href, m.exact)} onClick={close}>
+              <NavLink href={m.href} active={is(m.href, m.exact) || !!m.also?.some((a) => is(a))} onClick={close}>
+                <Icon d={m.icon} />
                 <span className="flex-1">{m.label}</span>
                 {m.href === "/console" && p.needsYou ? (
                   <span className="rounded-full bg-signal px-1.5 font-mono text-[11px] leading-[18px] text-paper tabular-nums">{p.needsYou}</span>
@@ -98,7 +107,8 @@ export default function SideNav(p: Props) {
           {p.isOperator ? (
             <li>
               <NavLink href="/console/operator" active={is("/console/operator")} onClick={close}>
-                Operator console
+                <Icon d="M10 2.75 16.25 5v4.5c0 3.6-2.6 6.4-6.25 7.75C6.35 15.9 3.75 13.1 3.75 9.5V5Z" />
+                <span className="flex-1">Operator console</span>
               </NavLink>
             </li>
           ) : null}
@@ -108,7 +118,7 @@ export default function SideNav(p: Props) {
           <p className="text-[12px] font-medium text-slate">Roles</p>
           {p.canCreateRole ? (
             <Link href="/console/roles/new" onClick={close} className="text-[12.5px] font-medium text-signal hover:underline">
-              New role
+              + New role
             </Link>
           ) : null}
         </div>
