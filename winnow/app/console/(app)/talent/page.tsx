@@ -7,7 +7,7 @@ import { loadTalent } from "@/lib/console/data/talent";
 import { Empty, PageHeader } from "@/components/console/ui";
 import TalentList from "@/components/console/talent/TalentList";
 
-export const metadata: Metadata = { title: "Talent pool" };
+export const metadata: Metadata = { title: "People" };
 
 export default async function Talent({ searchParams }: { searchParams: Promise<{ view?: string }> }) {
   const c = await requireCtx();
@@ -20,8 +20,8 @@ export default async function Talent({ searchParams }: { searchParams: Promise<{
   return (
     <div className="grid gap-6">
       <PageHeader
-        title="Talent pool"
-        meta={`${rows.length.toLocaleString("en-IN")} people who applied across your roles${silver ? `, ${silver} silver medallist${silver === 1 ? "" : "s"}` : ""}. Re-rank any of them against an open role in one action.`}
+        title="People"
+        meta={`Everyone who has applied to any of your roles: ${rows.length.toLocaleString("en-IN")} ${rows.length === 1 ? "person" : "people"}${silver ? `, ${silver} who nearly got an offer` : ""}. Search them, group them, and rank any of them for an open role.`}
       />
       {rows.length === 0 ? (
         <Empty title="Nobody here yet">Everyone who applies to any role lands here, searchable and re-rankable against your next role.</Empty>

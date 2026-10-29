@@ -21,17 +21,31 @@ export function VerdictMark({ v, withLabel = false }: { v: VerdictValue; withLab
   );
 }
 
+const BAND_TITLE: Record<Band, string> = {
+  verified: "Every must-have is shown in the CV and nothing contradicts it",
+  needs_verification: "Some claims need checking before you can rely on the score",
+  below_bar: "Missing a must-have, or well below on what the CV shows",
+};
+
 export function BandBadge({ band }: { band: Band | null }) {
   if (!band) return null;
-  if (band === "verified") return <Badge tone="signal">Verified</Badge>;
-  if (band === "needs_verification") return <Badge tone="caution">Needs verification</Badge>;
-  return <Badge tone="muted">Below the bar</Badge>;
+  const label = band === "verified" ? "Evidence clear" : band === "needs_verification" ? "Check claims" : "Below the bar";
+  return (
+    <span title={BAND_TITLE[band]}>
+      <Badge tone={band === "verified" ? "ok" : band === "needs_verification" ? "caution" : "muted"}>{label}</Badge>
+    </span>
+  );
 }
 
-export function DecisionBadge({ decision }: { decision: string }) {
-  if (decision === "shortlisted") return <Badge tone="ink">Shortlisted</Badge>;
+export function DecisionBadge({ decision, stage }: { decision: string; stage?: string }) {
+  if (decision === "shortlisted") {
+    if (stage === "hired") return <Badge tone="ok">Hired</Badge>;
+    if (stage === "offer") return <Badge tone="signal">Offer out</Badge>;
+    if (stage === "interviewing") return <Badge tone="signal">Interviewing</Badge>;
+    return <Badge tone="ink">Shortlisted</Badge>;
+  }
   if (decision === "dropped") return <Badge tone="muted">Dropped</Badge>;
-  if (decision === "held") return <Badge tone="caution">Held</Badge>;
+  if (decision === "held") return <Badge tone="caution">On hold</Badge>;
   return null;
 }
 

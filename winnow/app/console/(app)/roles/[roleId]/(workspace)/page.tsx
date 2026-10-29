@@ -6,10 +6,11 @@ import { can, requireCtx, requireRole } from "@/lib/console/context";
 import { loadRanking, reasonsFor, viewsFor } from "@/lib/console/data/ranking";
 import Ranking from "@/components/console/ranking/Ranking";
 import Waiter from "@/components/console/roles/Waiter";
+import { CandidateViews } from "@/components/console/roles/Views";
 import { Empty } from "@/components/console/ui";
 import type { Filter } from "@/components/console/ranking/model";
 
-export const metadata: Metadata = { title: "Ranking" };
+export const metadata: Metadata = { title: "Candidates" };
 
 export default async function RankingPage({ params, searchParams }: { params: Promise<{ roleId: string }>; searchParams: Promise<{ view?: string }> }) {
   const c = await requireCtx();
@@ -34,7 +35,9 @@ export default async function RankingPage({ params, searchParams }: { params: Pr
   }
   const initial: Filter[] = view === "shortlisted" ? [{ t: "decision", values: ["shortlisted"] }] : [];
   return (
-    <Ranking
+    <div className="grid gap-4">
+      <CandidateViews roleId={role.id} active="ranked" />
+      <Ranking
       scope="ranking"
       roleId={role.id}
       roleTitle={role.title}
@@ -46,5 +49,6 @@ export default async function RankingPage({ params, searchParams }: { params: Pr
       initialFilters={initial}
       busy={(busy?.n ?? 0) > 0}
     />
+    </div>
   );
 }

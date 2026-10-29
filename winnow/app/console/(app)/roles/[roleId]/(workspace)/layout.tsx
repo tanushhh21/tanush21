@@ -1,43 +1,47 @@
 import Link from "next/link";
-import { and, eq, sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { applications, evaluations, questions, refusedCriteria, rubricVersions, users } from "@/lib/db/schema";
-import { currentRequirements } from "@/lib/console/scoring";
+import { applications, users } from "@/lib/db/schema";
 import { can, daysSince, requireCtx, requireRole } from "@/lib/console/context";
-import { Badge, dateLabel, inr } from "@/components/console/ui";
+import { Badge, buttonClass, dateLabel, inr } from "@/components/console/ui";
 import Tabs from "@/components/console/roles/Tabs";
 import Uploader from "@/components/console/roles/Uploader";
 
-/** Role workspace: header, rubric strip and tabs, shared by every role screen. */
+/** Role workspace: header (what the role is and where its candidates stand) and four tabs, shared by every role screen. */
 export default async function Workspace({ children, params }: { children: React.ReactNode; params: Promise<{ roleId: string }> }) {
   const c = await requireCtx();
   const role = await requireRole(c, (await params).roleId);
   const [manager] = role.hiringManagerId ? await db.select({ name: users.name }).from(users).where(eq(users.id, role.hiringManagerId)) : [];
   const [counts] = await db
     .select({
-      received: sql<number>`count(distinct ${applications.id})::int`,
-      unreadable: sql<number>`count(distinct ${applications.id}) filter (where ${applications.parseStatus} = 'unreadable')::int`,
-      scored: sql<number>`count(distinct ${evaluations.id}) filter (where ${evaluations.status} = 'done')::int`,
-      shortlisted: sql<number>`count(distinct ${applications.id}) filter (where ${applications.decision} = 'shortlisted')::int`,
+      total: sql<number>`count(*) filter (where coalesce(${applications.reasonCode}, '') <> 'duplicate')::int`,
+      review: sql<number>`count(*) filter (where ${applications.decision} = 'none' and ${applications.parseStatus} = 'parsed')::int`,
+      shortlisted: sql<number>`count(*) filter (where ${applications.stage} = 'shortlisted')::int`,
+      interviewing: sql<number>`count(*) filter (where ${applications.stage} = 'interviewing')::int`,
+      offer: sql<number>`count(*) filter (where ${applications.stage} = 'offer')::int`,
+      hired: sql<number>`count(*) filter (where ${applications.stage} = 'hired')::int`,
+      unreadable: sql<number>`count(*) filter (where ${applications.parseStatus} = 'unreadable')::int`,
     })
     .from(applications)
-    .leftJoin(evaluations, and(eq(evaluations.applicationId, applications.id), eq(evaluations.rubricVersion, role.rubricVersion)))
     .where(eq(applications.roleId, role.id));
-  const strip = role.rubricVersion ? await rubricStrip(role.id, role.rubricVersion) : null;
-  const [drafted] = await db
-    .select({ n: sql<number>`count(distinct ${questions.applicationId})::int` })
-    .from(questions)
-    .where(and(eq(questions.roleId, role.id), eq(questions.status, "drafted")));
+  const base = `/console/roles/${role.id}`;
 
   const meta = [
-    c.org.name,
     role.locations.join(", ") || null,
-    `${daysSince(role.createdAt)} days open`,
-    role.targetDate ? `target ${dateLabel(role.targetDate)}` : null,
-    manager?.name ? `hiring manager ${manager.name}` : null,
+    manager?.name ? `Hiring manager ${manager.name}` : null,
     `${role.openings} opening${role.openings === 1 ? "" : "s"}`,
     role.compMin || role.compMax ? `${inr(role.compMin)}–${inr(role.compMax)}` : null,
+    role.state === "open" ? `Open ${daysSince(role.createdAt)} day${daysSince(role.createdAt) === 1 ? "" : "s"}` : null,
+    role.targetDate && role.state === "open" ? `Target ${dateLabel(role.targetDate)}` : null,
   ].filter(Boolean);
+  const pipeline = [
+    { n: counts.total, label: counts.total === 1 ? "candidate" : "candidates", href: `${base}/candidates` },
+    { n: counts.review, label: "to review", href: base },
+    { n: counts.shortlisted, label: "shortlisted", href: `${base}?view=shortlisted` },
+    { n: counts.interviewing, label: "interviewing", href: `${base}/interviews` },
+    { n: counts.offer, label: counts.offer === 1 ? "offer out" : "offers out", href: `${base}/interviews` },
+    { n: counts.hired, label: "hired", href: `${base}/interviews` },
+  ].filter((x, i) => i < 2 || x.n > 0);
 
   return (
     <div className="grid gap-5">
@@ -50,49 +54,34 @@ export default async function Workspace({ children, params }: { children: React.
             </h1>
             <p className="mt-1 text-[13px] text-slate">{meta.join(" · ")}</p>
           </div>
-          {can.manageSources(c) && role.state === "open" ? (
-            <div className="flex items-center gap-2">
-              <Uploader roleId={role.id} compact />
-            </div>
-          ) : null}
-        </div>
-        <div className="flex flex-wrap gap-x-5 gap-y-1 font-mono text-[12.5px] tabular-nums text-slate">
-          <span>
-            <span className="text-ink">{counts.received}</span> received
-          </span>
-          <span>
-            <span className="text-ink">{counts.scored}</span> scored
-          </span>
-          <span>
-            <span className={counts.unreadable ? "text-alert" : "text-ink"}>{counts.unreadable}</span> unreadable
-          </span>
-          <span>
-            <span className="text-ink">{counts.shortlisted}</span> shortlisted
-          </span>
-        </div>
-        {strip ? (
-          <p className="rounded-[10px] bg-mist px-3 py-2 text-[13px]">
-            Screening on {strip.reqs} requirements, {strip.must} must-have{strip.must === 1 ? "" : "s"}
-            {strip.refused ? `, ${strip.refused} criteria refused` : ""}. Personal attributes are removed before scoring.{" "}
-            <Link href={`/console/roles/${role.id}/rubric`} className="text-signal hover:underline">
-              Rubric v{role.rubricVersion}
+          <div className="flex items-center gap-2">
+            {can.manageSources(c) && role.state === "open" ? <Uploader roleId={role.id} compact /> : null}
+            <Link href={`/console/chat?role=${role.id}`} className={buttonClass("secondary", "sm")}>
+              Ask AI
             </Link>
-          </p>
-        ) : null}
-        <Tabs roleId={role.id} counts={{ verify: drafted?.n ?? 0 }} />
+            <Link href={`${base}/settings`} className={buttonClass("ghost", "sm")}>
+              <svg viewBox="0 0 20 20" className="size-[16px]" aria-hidden="true">
+                <path d="M3.75 6.25h6.5M13.75 6.25h2.5M3.75 13.75h2.5M9.75 13.75h6.5M12 4.25v4M8 11.75v4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+              Settings
+            </Link>
+          </div>
+        </div>
+        <p className="flex flex-wrap gap-x-4 gap-y-1 text-[13.5px]">
+          {pipeline.map((x) => (
+            <Link key={x.label} href={x.href} className="text-slate hover:text-ink">
+              <span className="font-semibold text-ink tabular-nums">{x.n}</span> {x.label}
+            </Link>
+          ))}
+          {counts.unreadable ? (
+            <Link href={`${base}/candidates`} className="text-alert hover:underline">
+              {counts.unreadable} could not be read
+            </Link>
+          ) : null}
+        </p>
+        <Tabs roleId={role.id} counts={{}} />
       </header>
       {children}
     </div>
   );
-}
-
-/** What we are screening on, in one line. */
-async function rubricStrip(roleId: string, version: number) {
-  const reqs = await currentRequirements(roleId, version);
-  const [refused] = await db
-    .select({ n: sql<number>`count(*)::int` })
-    .from(refusedCriteria)
-    .innerJoin(rubricVersions, eq(rubricVersions.id, refusedCriteria.rubricVersionId))
-    .where(and(eq(rubricVersions.roleId, roleId), eq(rubricVersions.version, version), eq(refusedCriteria.addedAnyway, false)));
-  return { reqs: reqs.length, must: reqs.filter((r) => r.mustHave).length, refused: refused?.n ?? 0 };
 }

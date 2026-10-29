@@ -12,7 +12,7 @@ import { AiError, aiConfigured } from "@/lib/ai/claude";
 
 type Result = { ok: true; message?: string } | { ok: false; error: string };
 const fail = (e: unknown): Result => ({ ok: false, error: e instanceof Error ? e.message : "Something went wrong." });
-const done = () => revalidatePath("/console/brain");
+const done = () => revalidatePath("/console/settings/knowledge");
 
 async function mine(id: string) {
   const c = await requireCtx();

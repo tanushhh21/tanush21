@@ -118,6 +118,19 @@ export function PageHeader({
   );
 }
 
+/** A section's own heading inside Settings (the page title is already "Settings"). */
+export function SettingsHead({ title, meta, actions }: { title: string; meta?: React.ReactNode; actions?: React.ReactNode }) {
+  return (
+    <div className="flex flex-wrap items-start justify-between gap-3">
+      <div className="min-w-0 max-w-[44rem]">
+        <h2 className="font-display text-[18px] font-semibold tracking-[-0.015em] text-ink">{title}</h2>
+        {meta ? <p className="mt-1 text-[13px] text-slate">{meta}</p> : null}
+      </div>
+      {actions ? <div className="flex items-center gap-2">{actions}</div> : null}
+    </div>
+  );
+}
+
 export function Empty({ title, children, action }: { title: string; children?: React.ReactNode; action?: React.ReactNode }) {
   return (
     <div className="flex flex-col items-center px-6 py-14 text-center">

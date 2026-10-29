@@ -7,16 +7,20 @@ import { db } from "@/lib/db";
 import { applications, chatMessages, hardFilters, refusedCriteria, type ChatDiff } from "@/lib/db/schema";
 import { assertCan, can, requireCtx, requireRole } from "@/lib/console/context";
 import { audit, logActivity } from "@/lib/console/log";
-import { createVersion, impactOf, type ReqInput } from "@/lib/console/rubric";
+import { applyChanges, createVersion, impactOf, type ReqInput } from "@/lib/console/rubric";
 import { currentRequirements, rankRole } from "@/lib/console/scoring";
 import { applyHardFilters, describe, FILTER_FIELDS } from "@/lib/console/filters";
 import { pump } from "@/lib/console/jobs";
 import { loadRanking } from "@/lib/console/data/ranking";
 import { roleChat, rubricContext, type ChatOut } from "@/lib/ai/tasks";
+import { aiConfigured } from "@/lib/ai/claude";
 
 type Result = { ok: true; message?: string } | { ok: false; error: string };
 const fail = (e: unknown): Result => ({ ok: false, error: e instanceof Error ? e.message : "Something went wrong." });
-const path = (roleId: string) => revalidatePath(`/console/roles/${roleId}`, "layout");
+const path = (roleId: string) => {
+  revalidatePath(`/console/roles/${roleId}`, "layout");
+  revalidatePath("/console/chat");
+};
 
 export async function previewRubric(roleId: string, items: (ReqInput & { key: string })[]) {
   const c = await requireCtx();
@@ -138,23 +142,6 @@ export async function deleteFilter(filterId: string): Promise<Result> {
 
 // ---- Role chat ------------------------------------------------------------------------
 
-function applyChanges(current: (ReqInput & { key: string })[], changes: ChatOut["changes"]) {
-  let items = current.map((q) => ({ ...q }));
-  for (const ch of changes) {
-    const i = items.findIndex((q) => q.key === ch.key);
-    if (ch.op === "add" && ch.text) {
-      items.push({ key: crypto.randomUUID().slice(0, 8), text: ch.text, weight: ch.weight ?? 3, mustHave: ch.must_have ?? false, keywords: ch.keywords, minYears: null, recencySensitive: false, origin: "chat", sourceSentence: "You told us in chat" });
-      continue;
-    }
-    if (i < 0) continue;
-    if (ch.op === "remove") items = items.filter((_, j) => j !== i);
-    else if (ch.op === "set_weight" && ch.weight) items[i].weight = Math.min(5, Math.max(1, ch.weight));
-    else if (ch.op === "set_must_have" && ch.must_have != null) items[i].mustHave = ch.must_have;
-    else if (ch.op === "edit_text" && ch.text) items[i] = { ...items[i], text: ch.text, origin: "chat" };
-    else if (ch.op === "add_keywords") items[i].keywords = [...new Set([...items[i].keywords, ...ch.keywords])];
-  }
-  return items;
-}
 
 async function chatContext(roleId: string, version: number, title: string) {
   const reqs = await currentRequirements(roleId, version);
@@ -175,6 +162,7 @@ export async function sendRoleChat(roleId: string, text: string): Promise<Result
     const c = await requireCtx();
     const role = await requireRole(c, roleId);
     if (!text.trim()) throw new Error("Write a message.");
+    if (!aiConfigured()) throw new Error("Chat needs the AI connected (ANTHROPIC_API_KEY).");
     const history = await db
       .select()
       .from(chatMessages)

@@ -15,6 +15,11 @@ import { BandBadge, DecisionBadge, Evidence, VerdictMark } from "@/components/co
 import {
   BAND_LABEL,
   DEFAULT_COLUMNS,
+  EVERYONE_COLUMNS,
+  REASON_LABEL,
+  matchOf,
+  reasonLabel,
+  statusOf,
   FACT_LABEL,
   META_COLUMNS,
   SOURCE_LABEL,
@@ -58,7 +63,7 @@ const STATUS_LABEL: Record<Row["status"], string> = { reading: "Reading", waitin
 
 export default function Ranking(p: Props) {
   const router = useRouter();
-  const defaultCols = p.scope === "ranking" ? DEFAULT_COLUMNS : ["name", "decision", "reason_code", "decided_by", "decided_at", "stage_days", "score", "band", "source"];
+  const defaultCols = p.scope === "ranking" ? DEFAULT_COLUMNS : EVERYONE_COLUMNS;
   const [columns, setColumns] = useState<string[]>(defaultCols);
   const [filters, setFilters] = useState<Filter[]>(p.initialFilters ?? []);
   const [sort, setSort] = useState<Sort>({ key: p.scope === "ranking" ? "rank" : "applied", dir: p.scope === "ranking" ? "asc" : "desc" });
@@ -70,7 +75,7 @@ export default function Ranking(p: Props) {
   const [openId, setOpenId] = useState<string | null>(null);
   const [panel, setPanel] = useState<Candidate | null>(null);
   const [dialog, setDialog] = useState<Dialog>(null);
-  const [menu, setMenu] = useState<null | "columns" | "filters" | "views">(null);
+  const [menu, setMenu] = useState<null | "columns" | "filters" | "more">(null);
   const [showBelow, setShowBelow] = useState(false);
   const [showRemoved, setShowRemoved] = useState(false);
   const [hideDropped, setHideDropped] = useState(p.scope === "ranking");
@@ -272,33 +277,6 @@ export default function Ranking(p: Props) {
   // ---- Render --------------------------------------------------------------------------
   return (
     <div className="grid gap-4">
-      {p.scope === "ranking" ? (
-        <div className="flex flex-wrap gap-2" aria-label="Bands">
-          {(["verified", "needs_verification", "below_bar"] as Band[]).map((b) => (
-            <button
-              key={b}
-              type="button"
-              onClick={() => {
-                if (b === "below_bar") setShowBelow(true);
-                setFilters((f) => (f.some((x) => x.t === "band") ? f.filter((x) => x.t !== "band") : [...f, { t: "band", values: [b] }]));
-              }}
-              className={`rounded-[10px] border px-3 py-2 text-left transition-colors hover:border-slate/40 ${filters.some((f) => f.t === "band" && f.values.includes(b)) ? "border-ink" : "border-hairline"}`}
-            >
-              <span className="block font-mono text-[18px] font-medium tabular-nums leading-none">{bandCounts[b]}</span>
-              <span className="mt-1 block text-[12px] text-slate">{BAND_LABEL[b]}</span>
-            </button>
-          ))}
-          <button
-            type="button"
-            onClick={() => setFilters((f) => (f.some((x) => x.t === "flag") ? f.filter((x) => x.t !== "flag") : [...f, { t: "flag", value: "contradiction" }]))}
-            className={`rounded-[10px] border px-3 py-2 text-left transition-colors hover:border-slate/40 ${filters.some((f) => f.t === "flag") ? "border-ink" : "border-hairline"}`}
-          >
-            <span className="block font-mono text-[18px] font-medium tabular-nums leading-none">{bandCounts.contradictions}</span>
-            <span className="mt-1 block text-[12px] text-slate">Contradictions flagged</span>
-          </button>
-        </div>
-      ) : null}
-
       {progress?.busy || (p.busy && !progress) ? (
         <div role="status" className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-[10px] bg-signal/[0.06] px-3 py-2 text-[13px] text-ink">
           <span className="size-2 animate-pulse rounded-full bg-signal" aria-hidden="true" />
@@ -317,61 +295,60 @@ export default function Ranking(p: Props) {
         </div>
       ) : null}
 
-      {/* Toolbar */}
+      {/* Toolbar: the everyday tools in view, the rest under More. */}
       <div className="flex flex-wrap items-center gap-2">
-        <span className="mr-1 font-mono text-[13px] tabular-nums text-slate">{filtered.length} candidates</span>
+        <span className="mr-1 text-[13px] text-slate">
+          <span className="font-semibold text-ink tabular-nums">{filtered.length}</span> {filtered.length === 1 ? "candidate" : "candidates"}
+        </span>
         <input
           ref={searchRef}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search  /"
+          placeholder="Search name, company, skill"
           aria-label="Search candidates"
-          className={`${smallFieldClass} w-40 sm:w-52`}
+          className={`${smallFieldClass} w-48 sm:w-60`}
         />
         <div className="relative">
           <Button size="sm" onClick={() => setMenu(menu === "filters" ? null : "filters")} aria-expanded={menu === "filters"}>
-            Filters{filters.length ? ` (${filters.length})` : ""}
+            Filter{filters.length ? ` (${filters.length})` : ""}
           </Button>
           {menu === "filters" ? <FilterMenu reqs={p.requirements} onAdd={(f) => setFilters([...filters, f])} onClose={() => setMenu(null)} /> : null}
-        </div>
-        <div className="relative">
-          <Button size="sm" onClick={() => setMenu(menu === "columns" ? null : "columns")} aria-expanded={menu === "columns"}>
-            Columns
-          </Button>
-          {menu === "columns" ? (
-            <ColumnMenu reqs={p.requirements} columns={columns} onChange={setColumns} onClose={() => setMenu(null)} />
-          ) : null}
         </div>
         <select aria-label="Sort" value={`${sort.key}:${sort.dir}`} onChange={(e) => {
             const v = e.target.value;
             const at = v.lastIndexOf(":");
             setSort({ key: v.slice(0, at), dir: v.slice(at + 1) as "asc" | "desc" });
           }} className={smallFieldClass}>
-          <option value="rank:asc">By rank</option>
-          <option value="score:desc">By score</option>
-          <option value="confidence:desc">By confidence</option>
-          <option value="name:asc">By name</option>
+          <option value="rank:asc">Best match first</option>
           <option value="applied:desc">Newest first</option>
-          <option value="stage_days:desc">Longest at stage</option>
-          <option value="fact:expected_ctc:asc">Expected CTC, low first</option>
-          <option value="fact:notice_period_days:asc">Notice period, short first</option>
+          <option value="stage_days:desc">Waiting longest</option>
+          <option value="fact:expected_ctc:asc">Lowest pay expectation</option>
+          <option value="fact:notice_period_days:asc">Shortest notice period</option>
+          <option value="name:asc">Name, A to Z</option>
           {p.requirements.map((r) => (
             <option key={r.key} value={`req:${r.key}:desc`}>
-              By: {r.text.slice(0, 40)}
+              Strongest on: {r.text.slice(0, 40)}
             </option>
           ))}
         </select>
-        <Button size="sm" tone="ghost" onClick={() => setDensity(density === "compact" ? "comfortable" : "compact")}>
-          {density === "compact" ? "Comfortable" : "Compact"}
-        </Button>
         <div className="relative">
-          <Button size="sm" tone="ghost" onClick={() => setMenu(menu === "views" ? null : "views")} aria-expanded={menu === "views"}>
-            Views
+          <Button size="sm" tone="ghost" onClick={() => setMenu(menu === "more" || menu === "columns" ? null : "more")} aria-expanded={menu === "more"}>
+            More
           </Button>
-          {menu === "views" ? (
-            <div className="absolute left-0 top-9 z-30 w-64 rounded-[12px] border border-hairline bg-paper p-1.5 shadow-lift-hover">
+          {menu === "more" ? (
+            <div className="absolute left-0 top-9 z-30 w-64 rounded-[12px] border border-hairline bg-paper p-1.5 text-[13.5px] shadow-lift-hover">
+              <button type="button" className="block w-full rounded-[8px] px-2.5 py-1.5 text-left hover:bg-mist" onClick={() => setMenu("columns")}>
+                Choose columns…
+              </button>
+              <button type="button" className="block w-full rounded-[8px] px-2.5 py-1.5 text-left hover:bg-mist" onClick={() => { setDensity(density === "compact" ? "comfortable" : "compact"); setMenu(null); }}>
+                {density === "compact" ? "Roomier rows" : "Tighter rows"}
+              </button>
+              <button type="button" className="block w-full rounded-[8px] px-2.5 py-1.5 text-left hover:bg-mist" onClick={() => { exportCsv(filtered); setMenu(null); }}>
+                Download as a spreadsheet
+              </button>
+              <p className="mt-1 border-t border-hairline px-2.5 pb-1 pt-2 text-[11.5px] font-medium text-slate">Saved views</p>
               <button type="button" className="block w-full rounded-[8px] px-2.5 py-1.5 text-left hover:bg-mist" onClick={() => applyView({})}>
-                Default view
+                Default
               </button>
               {p.views.map((v) => (
                 <button key={v.id} type="button" className="block w-full rounded-[8px] px-2.5 py-1.5 text-left hover:bg-mist" onClick={() => applyView(v.config)}>
@@ -379,15 +356,16 @@ export default function Ranking(p: Props) {
                   {!v.mine ? <span className="text-slate"> · shared</span> : null}
                 </button>
               ))}
-              <button type="button" className="mt-1 block w-full rounded-[8px] border-t border-hairline px-2.5 py-1.5 text-left text-signal hover:bg-mist" onClick={() => setDialog({ kind: "save" })}>
+              <button type="button" className="block w-full rounded-[8px] px-2.5 py-1.5 text-left text-signal hover:bg-mist" onClick={() => setDialog({ kind: "save" })}>
                 Save this view…
+              </button>
+              <button type="button" className="mt-1 block w-full rounded-[8px] border-t border-hairline px-2.5 py-1.5 text-left text-slate hover:bg-mist" onClick={() => setDialog({ kind: "help" })}>
+                Keyboard shortcuts
               </button>
             </div>
           ) : null}
+          {menu === "columns" ? <ColumnMenu reqs={p.requirements} columns={columns} onChange={setColumns} onClose={() => setMenu(null)} /> : null}
         </div>
-        <Button size="sm" tone="ghost" onClick={() => exportCsv(filtered)}>
-          Export
-        </Button>
         {compare.length >= 2 ? (
           <Link href={`/console/roles/${p.roleId}/compare?ids=${compare.join(",")}`} className={buttonClass("primary", "sm")}>
             Compare {compare.length}
@@ -395,9 +373,6 @@ export default function Ranking(p: Props) {
         ) : compare.length ? (
           <span className="text-[12.5px] text-slate">{compare.length} to compare · add one more</span>
         ) : null}
-        <button type="button" onClick={() => setDialog({ kind: "help" })} className="ml-auto hidden text-[12.5px] text-slate hover:text-ink sm:block">
-          Keyboard <Kbd>?</Kbd>
-        </button>
       </div>
 
       {filters.length ? (
@@ -456,7 +431,7 @@ export default function Ranking(p: Props) {
                   />
                 </th>
                 {columns.map((c) => (
-                  <th key={c} className="whitespace-nowrap px-3 py-2 text-[12px] font-medium text-slate">
+                  <th key={c} title={c === "score" ? "How well they fit, from 0 to 100. A CV that says little about the role scores lower, so the list order always follows this number." : undefined} className="whitespace-nowrap px-3 py-2 text-[12px] font-medium text-slate">
                     <button type="button" className="hover:text-ink" onClick={() => setSort({ key: c, dir: sort.key === c && sort.dir === "desc" ? "asc" : c === "rank" || c === "name" ? "asc" : "desc" })}>
                       {c.startsWith("req:") ? <span className="block max-w-[9rem] truncate">{columnLabel(c, p.requirements)}</span> : columnLabel(c, p.requirements)}
                       {sort.key === c ? (sort.dir === "asc" ? " ↑" : " ↓") : ""}
@@ -509,21 +484,18 @@ export default function Ranking(p: Props) {
                       {r.rank ? <span className="mr-1.5 font-mono text-[12px] text-slate">{r.rank}</span> : null}
                       {r.name}
                     </p>
+                    {subtitle(r) ? <p className="text-[12.5px] text-slate">{subtitle(r)}</p> : null}
                     <p className="mt-1 line-clamp-2 text-[13px] text-slate">{r.strength}</p>
                     {r.gap ? <p className="line-clamp-1 text-[13px] text-slate">{r.gap}</p> : null}
                   </div>
                   <div className="shrink-0 text-right">
-                    <p className="font-mono text-[18px] font-medium tabular-nums">{r.score ?? "–"}</p>
-                    <div className="mt-1">
-                      <BandBadge band={r.band} />
-                    </div>
+                    <p className="font-display text-[20px] font-semibold tabular-nums">{matchOf(r) ?? "–"}</p>
+                    <p className="text-[11px] text-slate">match</p>
                   </div>
                 </div>
-                {r.decision !== "none" ? (
-                  <div className="mt-2">
-                    <DecisionBadge decision={r.decision} />
-                  </div>
-                ) : null}
+                <div className="mt-2">
+                  <Badge tone={statusOf(r).tone}>{statusOf(r).label}</Badge>
+                </div>
               </Link>
             </li>
           ))}
@@ -696,14 +668,10 @@ function Cell({ r, c, reqs, compact, comparing }: { r: Row; c: string; reqs: Req
       return <span className="font-mono text-[12.5px] tabular-nums text-slate">{r.rank ?? "–"}</span>;
     case "name":
       return (
-        <span className="font-medium">
-          {r.name}
+        <span className="block">
+          <span className="font-medium">{r.name}</span>
           {comparing ? <span className="ml-1.5 text-[11px] font-normal text-signal">compare</span> : null}
-          {r.decision !== "none" ? (
-            <span className="ml-1.5">
-              <DecisionBadge decision={r.decision} />
-            </span>
-          ) : null}
+          {subtitle(r) ? <span className="block max-w-[16rem] truncate text-[12.5px] text-slate">{subtitle(r)}</span> : null}
         </span>
       );
     case "reason":
@@ -728,16 +696,32 @@ function Cell({ r, c, reqs, compact, comparing }: { r: Row; c: string; reqs: Req
     case "percentile":
       return <span className="font-mono text-[12.5px] tabular-nums">{r.percentile ?? "–"}</span>;
     case "score":
-      return <span className="font-mono text-[14px] font-medium tabular-nums">{r.score ?? "–"}</span>;
+      return <span className="font-display text-[15px] font-semibold tabular-nums">{matchOf(r) ?? "–"}</span>;
+    case "status":
+      return <Badge tone={statusOf(r).tone}>{statusOf(r).label}</Badge>;
     case "band":
       return <BandBadge band={r.band} />;
+    case "reason_code":
+      return r.reasonCode ? <span>{reasonLabel(r.reasonCode)}</span> : <span className="text-slate">–</span>;
+    case "decided_at":
+    case "applied": {
+      const d = c === "applied" ? r.appliedAt : r.decidedAt;
+      return d ? <span>{new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}</span> : <span className="text-slate">–</span>;
+    }
     case "contradictions":
       return r.contradictions ? <Badge tone="caution">{r.contradictions}</Badge> : <span className="text-slate">–</span>;
     case "decision":
-      return r.decision === "none" ? <span className="text-slate">Undecided</span> : <DecisionBadge decision={r.decision} />;
+      return r.decision === "none" ? <span className="text-slate">Undecided</span> : <DecisionBadge decision={r.decision} stage={r.stage} />;
     default:
       return <span>{cellText(r, c, reqs) || <span className="text-slate">–</span>}</span>;
   }
+}
+
+/** Their current job, from the CV: "Senior Engineer at Tiffino". */
+function subtitle(r: Row) {
+  const t = r.facts.current_title?.v;
+  const co = r.facts.current_company?.v;
+  return t && co ? `${t} at ${co}` : t || co || "";
 }
 
 function ColumnMenu({ reqs, columns, onChange, onClose }: { reqs: Req[]; columns: string[]; onChange: (c: string[]) => void; onClose: () => void }) {
@@ -750,14 +734,14 @@ function ColumnMenu({ reqs, columns, onChange, onClose }: { reqs: Req[]; columns
   );
   return (
     <div className="absolute left-0 top-9 z-30 max-h-[70vh] w-[min(22rem,90vw)] overflow-y-auto rounded-[12px] border border-hairline bg-paper p-2 text-[13px] shadow-lift-hover">
-      <p className="px-2 py-1 text-[11.5px] font-medium text-slate">Rubric</p>
+      <p className="px-2 py-1 text-[11.5px] font-medium text-slate">Each requirement</p>
       {reqs.map((r) => box(`req:${r.key}`, r.text))}
-      <p className="mt-2 px-2 py-1 text-[11.5px] font-medium text-slate">Read off the application</p>
+      <p className="mt-2 px-2 py-1 text-[11.5px] font-medium text-slate">From the CV</p>
       {Object.entries(FACT_LABEL).map(([k, v]) => box(`fact:${k}`, v))}
-      <p className="mt-2 px-2 py-1 text-[11.5px] font-medium text-slate">Ranking and decisions</p>
+      <p className="mt-2 px-2 py-1 text-[11.5px] font-medium text-slate">Scores and decisions</p>
       {META_COLUMNS.map((m) => box(m.id, m.label))}
       <div className="mt-2 flex justify-end gap-2 border-t border-hairline pt-2">
-        <Button size="sm" tone="ghost" onClick={() => onChange(DEFAULT_COLUMNS)}>
+        <Button size="sm" tone="ghost" onClick={() => onChange(columns.includes("decided_by") ? EVERYONE_COLUMNS : DEFAULT_COLUMNS)}>
           Reset
         </Button>
         <Button size="sm" onClick={onClose}>
@@ -790,31 +774,31 @@ function FilterMenu({ reqs, onAdd, onClose }: { reqs: Req[]; onAdd: (f: Filter) 
   const other = reqs.find((r) => r.key !== must?.key);
   return (
     <div className="absolute left-0 top-9 z-30 w-[min(24rem,90vw)] rounded-[12px] border border-hairline bg-paper p-3 text-[13px] shadow-lift-hover">
-      <p className="text-[11.5px] font-medium text-slate">Worth building deliberately</p>
+      <p className="text-[11.5px] font-medium text-slate">Useful starting points</p>
       <div className="mt-1.5 grid gap-1.5">
         {must && other ? (
           <button type="button" className="rounded-[8px] bg-mist px-2.5 py-1.5 text-left hover:bg-hairline" onClick={() => preset([{ t: "req", key: other.key, states: ["unknown"] }, { t: "req", key: must.key, states: ["met"] }])}>
-            Unknown on one requirement, met on another
-            <span className="block text-[12px] text-slate">A cohort to send one question to</span>
+            Strong on a must-have, silent on something else
+            <span className="block text-[12px] text-slate">A group to send one question to</span>
           </button>
         ) : null}
         <button type="button" className="rounded-[8px] bg-mist px-2.5 py-1.5 text-left hover:bg-hairline" onClick={() => preset([{ t: "musthaves", value: "all" }, { t: "score", max: 60 }])}>
-          All must-haves met, score below 60
-          <span className="block text-[12px] text-slate">Where the rubric is probably wrong</span>
+          Meets every must-have but scores below 60
+          <span className="block text-[12px] text-slate">Where the criteria may be off</span>
         </button>
       </div>
       <div className="mt-3 grid gap-2 border-t border-hairline pt-3">
         <select aria-label="Filter on" value={kind} onChange={(e) => setKind(e.target.value)} className={`${fieldClass} h-8`}>
-          <option value="req">A requirement&rsquo;s state</option>
-          <option value="score">Score range</option>
-          <option value="confidence">Confidence range</option>
-          <option value="band">Band</option>
-          <option value="source">Source</option>
+          <option value="req">How they do on one requirement</option>
+          <option value="score">Match between two numbers</option>
+          <option value="band">What the evidence says</option>
           <option value="decision">Decision</option>
-          <option value="reason">Reason code</option>
-          <option value="fact">An application field</option>
-          <option value="musthaves">Must-haves</option>
-          <option value="flag">Flags</option>
+          <option value="reason">Reason for the decision</option>
+          <option value="source">Where they came from</option>
+          <option value="fact">Something on their CV (notice, pay, city…)</option>
+          <option value="musthaves">Meets every must-have</option>
+          <option value="flag">CV contradicts itself</option>
+          <option value="confidence">How much the CV covers (%)</option>
         </select>
         {kind === "req" ? (
           <>
@@ -841,12 +825,9 @@ function FilterMenu({ reqs, onAdd, onClose }: { reqs: Req[]; onAdd: (f: Filter) 
             <input aria-label="To" value={max} onChange={(e) => setMax(e.target.value)} placeholder="to" inputMode="numeric" className={`${fieldClass} h-8`} />
           </div>
         ) : null}
-        {kind === "reason" ? (
-          <input aria-label="Reason codes" value={value} onChange={(e) => setValue(e.target.value)} placeholder="e.g. comp_misaligned, notice_too_long" className={`${fieldClass} h-8`} />
-        ) : null}
-        {kind === "band" || kind === "source" || kind === "decision" ? (
-          <div className="flex flex-wrap gap-2">
-            {Object.entries(kind === "band" ? BAND_LABEL : kind === "source" ? SOURCE_LABEL : { none: "Undecided", shortlisted: "Shortlisted", dropped: "Dropped", held: "Held" }).map(([k, v]) => (
+        {kind === "band" || kind === "source" || kind === "decision" || kind === "reason" ? (
+          <div className="flex max-h-48 flex-wrap gap-2 overflow-y-auto">
+            {Object.entries(kind === "band" ? BAND_LABEL : kind === "source" ? SOURCE_LABEL : kind === "reason" ? REASON_LABEL : { none: "Undecided", shortlisted: "Shortlisted", dropped: "Dropped", held: "On hold" }).map(([k, v]) => (
               <label key={k} className="flex items-center gap-1.5">
                 <input type="checkbox" checked={values.includes(k)} onChange={() => setValues(values.includes(k) ? values.filter((x) => x !== k) : [...values, k])} className="size-3.5 accent-[#1b4dff]" />
                 {v}
@@ -888,7 +869,7 @@ function FilterMenu({ reqs, onAdd, onClose }: { reqs: Req[]; onAdd: (f: Filter) 
               else if (kind === "band") add({ t: "band", values: values as Band[] });
               else if (kind === "source") add({ t: "source", values });
               else if (kind === "decision") add({ t: "decision", values });
-              else if (kind === "reason") add({ t: "reason", values: value.split(",").map((v) => v.trim()).filter(Boolean) });
+              else if (kind === "reason") add({ t: "reason", values });
               else if (kind === "fact") add({ t: "fact", field, op, value });
               else if (kind === "musthaves") add({ t: "musthaves", value: "all" });
               else add({ t: "flag", value: "contradiction" });

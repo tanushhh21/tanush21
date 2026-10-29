@@ -5,9 +5,11 @@ import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { TalentRow } from "@/lib/console/data/talent";
 import { poolPeople, rerankAgainst, setConsent, tagPeople } from "@/lib/console/actions/talent";
-import { Badge, Button, Kbd, fieldClass, smallFieldClass } from "@/components/console/ui";
+import { Badge, Button, fieldClass, smallFieldClass } from "@/components/console/ui";
 import { BandBadge } from "@/components/console/candidate/bits";
-import { DECISION_LABEL, download, inrShort } from "@/components/console/ranking/model";
+import { DECISION_LABEL, download, inrShort, reasonLabel } from "@/components/console/ranking/model";
+
+const STAGE_WORD: Record<string, string> = { new: "not decided", screening: "not decided", shortlisted: "shortlisted", interviewing: "interviewing", offer: "offer out", hired: "hired", dropped: "dropped", on_hold: "on hold" };
 import type { Band } from "@/lib/db/schema";
 
 const CONSENT = { unknown: "Consent unknown", given: "Consent given", withdrawn: "Consent withdrawn" } as const;
@@ -38,6 +40,7 @@ export default function TalentList({
   const [minYears, setMinYears] = useState("");
   const [maxCtc, setMaxCtc] = useState("");
   const [maxNotice, setMaxNotice] = useState("");
+  const [more, setMore] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [cursor, setCursor] = useState(0);
   const [open, setOpen] = useState<string | null>(null);
@@ -127,14 +130,17 @@ export default function TalentList({
           <span className="sr-only">Search</span>
           <input ref={search} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, email, title, company, city or tag   ( / )" className={fieldClass} />
         </label>
-        <Button tone={silver ? "primary" : "secondary"} aria-pressed={silver} onClick={() => setSilver(!silver)}>
-          Silver medallists
+        <Button tone={silver ? "primary" : "secondary"} aria-pressed={silver} onClick={() => setSilver(!silver)} title="People who reached the final stages of a role but were not hired">
+          Nearly hired
+        </Button>
+        <Button tone={more ? "primary" : "secondary"} aria-expanded={more} onClick={() => setMore(!more)}>
+          More filters
         </Button>
         <Button tone="ghost" onClick={exportCsv}>
-          Export CSV
+          Download
         </Button>
       </div>
-      <div className="flex flex-wrap items-center gap-2 text-[13px]">
+      <div className={`${more ? "flex" : "hidden"} flex-wrap items-center gap-2 text-[13px]`}>
         <select aria-label="Pool" value={pool} onChange={(e) => setPool(e.target.value)} className={smallFieldClass}>
           <option value="">Any pool</option>
           {pools.map((p) => (
@@ -168,10 +174,10 @@ export default function TalentList({
         <input aria-label="Minimum years" value={minYears} onChange={(e) => setMinYears(e.target.value.replace(/[^\d.]/g, ""))} placeholder="Years ≥" className={`${smallFieldClass} w-20`} />
         <input aria-label="Expected CTC at most, in lakh" value={maxCtc} onChange={(e) => setMaxCtc(e.target.value.replace(/[^\d.]/g, ""))} placeholder="CTC ≤ ₹L" className={`${smallFieldClass} w-24`} />
         <input aria-label="Notice period at most, in days" value={maxNotice} onChange={(e) => setMaxNotice(e.target.value.replace(/\D/g, ""))} placeholder="Notice ≤ days" className={`${smallFieldClass} w-28`} />
-        <span className="ml-auto font-mono text-[12.5px] tabular-nums text-slate">
-          {shown.length.toLocaleString("en-IN")} shown{truncated ? " (most recent 3,000 people)" : ""}
-        </span>
       </div>
+      <p className="-mt-2 text-[12.5px] text-slate">
+        {shown.length.toLocaleString("en-IN")} shown{truncated ? " (the most recent 3,000 people)" : ""}
+      </p>
 
       {selected.size ? (
         <div className="sticky top-14 z-10 flex flex-wrap items-center gap-2 rounded-[12px] bg-ink px-3 py-2.5 text-[13px] text-paper lg:top-2">
@@ -224,9 +230,9 @@ export default function TalentList({
         <div className="hidden grid-cols-[2rem_minmax(0,1.6fr)_minmax(0,1.2fr)_minmax(0,1.4fr)_minmax(0,1fr)] gap-3 border-b border-hairline bg-mist/60 px-3 py-2 text-[12px] font-medium text-slate md:grid">
           <input type="checkbox" aria-label="Select all shown" checked={allShown} onChange={() => setSelected(allShown ? new Set() : new Set(shown.map((r) => r.id)))} className="size-4 accent-[#1b4dff]" />
           <span>Person</span>
-          <span>Now</span>
-          <span>Last here</span>
-          <span>Pool and consent</span>
+          <span>Works as</span>
+          <span>Last applied for</span>
+          <span>Groups</span>
         </div>
         {shown.length === 0 ? <p className="px-4 py-5 text-[13.5px] text-slate">Nobody matches. Loosen a filter.</p> : null}
         <ul>
@@ -239,7 +245,7 @@ export default function TalentList({
                   <Link href={`/console/c/${r.last.applicationId}`} className="font-medium hover:underline">
                     {r.name}
                   </Link>
-                  {r.silver ? <Badge tone="signal" className="ml-2">Silver on {r.silver}</Badge> : null}
+                  {r.silver ? <Badge tone="signal" className="ml-2">Nearly hired: {r.silver}</Badge> : null}
                   <span className="block truncate text-[12px] text-slate">{r.email ?? "No email"}</span>
                 </div>
                 <div className="col-start-2 min-w-0 md:col-start-auto">
@@ -250,13 +256,18 @@ export default function TalentList({
                 </div>
                 <div className="col-start-2 min-w-0 md:col-start-auto">
                   <span className="block truncate">
-                    {r.last.role} <span className="text-slate">· {r.last.stage}</span>
+                    {r.last.role}
                     {r.applications > 1 ? <span className="text-slate"> · {r.applications} applications</span> : null}
                   </span>
                   <span className="flex items-center gap-1.5 text-[12px] text-slate">
-                    {DECISION_LABEL[r.last.decision] ?? r.last.decision}
-                    {r.last.reason ? ` (${r.last.reason.replace(/_/g, " ")})` : ""}
-                    {r.best?.band ? <BandBadge band={r.best.band as Band} /> : null}
+                    {r.last.decision === "none" ? (
+                      r.best?.band ? <BandBadge band={r.best.band as Band} /> : "Not decided"
+                    ) : (
+                      <>
+                        {(STAGE_WORD[r.last.stage] ?? DECISION_LABEL[r.last.decision] ?? r.last.decision).replace(/^\w/, (c) => c.toUpperCase())}
+                        {r.last.reason ? ` · ${reasonLabel(r.last.reason).toLowerCase()}` : ""}
+                      </>
+                    )}
                   </span>
                 </div>
                 <div className="col-start-2 flex min-w-0 flex-wrap items-center gap-1 md:col-start-auto">
@@ -266,9 +277,9 @@ export default function TalentList({
                   {r.pools.map((p) => (
                     <Badge key={p} tone="neutral">{p}</Badge>
                   ))}
-                  <button type="button" onClick={() => setOpen(open === r.id ? null : r.id)} className={`text-[12px] hover:underline ${r.consent === "withdrawn" ? "text-alert" : r.consent === "given" ? "text-ok" : "text-slate"}`}>
-                    {CONSENT[r.consent]}
-                    {r.retainUntil ? `, keep until ${r.retainUntil}` : ""}
+                  {r.consent !== "given" ? <span className={`text-[12px] ${r.consent === "withdrawn" ? "text-alert" : "text-slate"}`}>{CONSENT[r.consent]}</span> : null}
+                  <button type="button" onClick={() => setOpen(open === r.id ? null : r.id)} aria-label={`Tags, groups and consent for ${r.name}`} className="text-[12px] text-slate/70 hover:text-ink hover:underline" aria-expanded={open === r.id}>
+                    Edit
                   </button>
                 </div>
               </div>
@@ -278,9 +289,6 @@ export default function TalentList({
         </ul>
         {shown.length > 500 ? <p className="border-t border-hairline px-4 py-3 text-[12.5px] text-slate">Showing the first 500. Search or filter to narrow it; export includes everyone shown.</p> : null}
       </div>
-      <p className="hidden text-[12px] text-slate sm:block">
-        <Kbd>j</Kbd> <Kbd>k</Kbd> move · <Kbd>Space</Kbd> select · <Kbd>Enter</Kbd> open · <Kbd>o</Kbd> consent and tags · <Kbd>/</Kbd> search
-      </p>
     </div>
   );
 }

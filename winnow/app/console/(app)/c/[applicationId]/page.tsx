@@ -29,7 +29,7 @@ export default async function Candidate({ params }: { params: Promise<{ applicat
   const i = ranked.findIndex((r) => r.id === data.id);
   const neighbours = [ranked[i - 1], ranked[i + 1], ranked[i - 2], ranked[i + 2]].filter(Boolean);
   return (
-    <div className="mx-auto max-w-[46rem]">
+    <div className="mx-auto max-w-[70rem]">
       <p className="mb-4 text-[13px]">
         <Link href={`/console/roles/${data.role.id}`} className="text-signal hover:underline">
           ← {data.role.title}

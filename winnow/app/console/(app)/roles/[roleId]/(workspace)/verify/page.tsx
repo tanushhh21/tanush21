@@ -8,8 +8,9 @@ import { arithmetic, placesAtStake } from "@/lib/console/arith";
 import { FOLLOWUP_DAYS } from "@/lib/console/questions";
 import VerifyList, { type Work } from "@/components/console/verify/VerifyList";
 import { Empty } from "@/components/console/ui";
+import { CandidateViews } from "@/components/console/roles/Views";
 
-export const metadata: Metadata = { title: "Verify" };
+export const metadata: Metadata = { title: "To check" };
 
 export default async function Verify({ params }: { params: Promise<{ roleId: string }> }) {
   const c = await requireCtx();
@@ -63,6 +64,14 @@ export default async function Verify({ params }: { params: Promise<{ roleId: str
     .filter((w) => w.unverified.length && (w.stake > 0 || (w.rank <= near && w.band === "needs_verification")))
     .sort((a, b) => b.stake - a.stake || a.rank - b.rank);
 
-  if (role.rubricVersion === 0) return <Empty title="Nothing to verify yet">The worklist fills once candidates are scored.</Empty>;
-  return <VerifyList roleId={role.id} work={work} canAsk={can.sendQuestions(c)} sender={role.questionSender ?? org?.questionSender ?? "winnow"} orgName={c.org.name} />;
+  return (
+    <div className="grid gap-4">
+      <CandidateViews roleId={role.id} active="check" />
+      {role.rubricVersion === 0 ? (
+        <Empty title="Nothing to check yet">This fills once candidates are scored.</Empty>
+      ) : (
+        <VerifyList roleId={role.id} work={work} canAsk={can.sendQuestions(c)} sender={role.questionSender ?? org?.questionSender ?? "winnow"} orgName={c.org.name} />
+      )}
+    </div>
+  );
 }

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { dismissNeed } from "@/lib/console/actions/home";
-import { Button, Kbd, fieldClass } from "@/components/console/ui";
+import { Button, fieldClass } from "@/components/console/ui";
 
 export type NeedItem = { key: string; type: string; label: string; roleTitle: string; roleId: string; person?: string; ageDays: number; text: string; action: { label: string; href: string } };
 
@@ -66,10 +66,10 @@ export default function NeedsList({ items }: { items: NeedItem[] }) {
                 <p className="mt-0.5 text-[14.5px] font-medium">{n.text}</p>
               </div>
               <div className="flex items-center gap-1.5">
-                <Link href={n.action.href} className="inline-flex h-9 items-center rounded-full bg-ink px-4 text-[13.5px] font-medium text-paper hover:bg-ink/85 sm:h-8 sm:px-3 sm:text-[13px]">
+                <Link href={n.action.href} className="inline-flex h-9 items-center rounded-full border border-hairline bg-paper px-4 text-[13.5px] font-medium text-ink hover:border-slate/40 sm:h-8 sm:px-3 sm:text-[13px]">
                   {n.action.label}
                 </Link>
-                <Button size="sm" tone="ghost" aria-expanded={dismissing === n.key} onClick={() => setDismissing(dismissing === n.key ? null : n.key)}>
+                <Button size="sm" tone="ghost" aria-label={`Dismiss: ${n.text}`} aria-expanded={dismissing === n.key} onClick={() => setDismissing(dismissing === n.key ? null : n.key)}>
                   Dismiss
                 </Button>
               </div>
@@ -102,9 +102,6 @@ export default function NeedsList({ items }: { items: NeedItem[] }) {
           </li>
         ))}
       </ol>
-      <p className="mt-2 hidden text-[12px] text-slate sm:block">
-        <Kbd>j</Kbd> <Kbd>k</Kbd> move · <Kbd>Enter</Kbd> open · <Kbd>d</Kbd> dismiss
-      </p>
     </div>
   );
 }

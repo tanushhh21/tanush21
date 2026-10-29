@@ -918,6 +918,21 @@ export type ChatDiff = {
   impact?: { moved: number; enteredTop: string[]; leftTop: string[] };
 };
 
+/**
+ * What the assistant did or proposes in one reply. Proposals that affect
+ * candidates (decisions, emails, criteria, closing a role) wait for Confirm.
+ */
+export type ChatAction = {
+  id: string;
+  kind: "decide" | "ask" | "criteria" | "close";
+  title: string;
+  detail: string[];
+  input: Record<string, unknown>;
+  state: "proposed" | "done" | "discarded" | "failed";
+  result?: string;
+};
+export type ChatExtras = { actions: ChatAction[]; links: { label: string; href: string }[] };
+
 export const chatMessages = pgTable(
   "chat_message",
   {
@@ -932,6 +947,8 @@ export const chatMessages = pgTable(
     body: text("body").notNull(),
     diff: jsonb("diff").$type<ChatDiff>(),
     diffState: text("diff_state").$type<"proposed" | "applied" | "discarded">(),
+    /** What the assistant did, and anything waiting for the person to confirm. */
+    extras: jsonb("extras").$type<ChatExtras>(),
     costUsd: numeric("cost_usd", { mode: "number" }).notNull().default(0),
     createdAt: created(),
   },

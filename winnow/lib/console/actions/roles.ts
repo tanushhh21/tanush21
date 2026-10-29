@@ -8,6 +8,7 @@ import { db } from "@/lib/db";
 import { applications, hardFilters, memberships, observations, refusedCriteria, requirements, roleAccess, roleSources, roles, rubricVersions, type SourceKind } from "@/lib/db/schema";
 import { assertCan, can, requireCtx, requireRole } from "@/lib/console/context";
 import { audit, logActivity } from "@/lib/console/log";
+import { closeRoleWith } from "@/lib/console/roles";
 import { enqueue, pump } from "@/lib/console/jobs";
 import { extract } from "@/lib/console/parse";
 import { aiConfigured } from "@/lib/ai/claude";
@@ -243,26 +244,7 @@ export async function closeRole(form: FormData) {
     : [];
   const picks = valid.filter((v) => hired.includes(v.id));
   if (reason === "filled" && picks.length === 0 && form.get("unknownHire") !== "on") redirect(settingsPath(role.id, "hire-missing"));
-  await db
-    .update(roles)
-    .set({ state: reason === "on_hold" ? "on_hold" : "closed", closeReason: reason, hiredApplicationId: picks[0]?.id ?? null, lastChangeAt: new Date() })
-    .where(eq(roles.id, role.id));
-  for (const p of picks) {
-    await db
-      .update(applications)
-      .set({ stage: "hired", stageChangedAt: new Date(), acceptedAt: sql`coalesce(${applications.acceptedAt}, now())` })
-      .where(eq(applications.id, p.id));
-    await db.insert(observations).values({ orgId: c.org.id, kind: "outcome", personId: p.personId, applicationId: p.id, roleId: role.id, payload: { hired: true, via: "close" }, createdBy: c.user.id });
-  }
-  const note = str(form, "note").slice(0, 1000);
-  await audit({ orgId: c.org.id, actorId: c.user.id, action: reason === "on_hold" ? "role.hold" : "role.close", entity: "role", entityId: role.id, roleId: role.id, rubricVersion: role.rubricVersion, detail: { reason, hired: picks.map((p) => p.id), note } });
-  await logActivity({
-    orgId: c.org.id,
-    roleId: role.id,
-    kind: reason === "on_hold" ? "role_on_hold" : "role_closed",
-    message: reason === "on_hold" ? "Put the role on hold" : reason === "filled" ? `Closed the role: filled${picks.length ? ` (${picks.length} hired)` : ""}` : "Closed the role: cancelled",
-    actorId: c.user.id,
-  });
+  await closeRoleWith(c, role, reason, picks.map((p) => p.id), str(form, "note"));
   revalidatePath("/console", "layout");
   redirect(settingsPath(role.id, reason === "on_hold" ? "held" : "closed"));
 }

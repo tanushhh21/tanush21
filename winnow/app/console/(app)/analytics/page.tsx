@@ -5,7 +5,7 @@ import { NEED_LABEL, type NeedType } from "@/lib/console/needs";
 import { BarList, Funnel } from "@/components/console/charts";
 import { Card, CardHead, Empty, PageHeader, Stat, buttonClass, smallFieldClass, tableClass, tdClass, thClass } from "@/components/console/ui";
 
-export const metadata: Metadata = { title: "Analytics" };
+export const metadata: Metadata = { title: "Insights" };
 
 const rupees = (n: number | null) => (n == null ? "–" : `₹${n >= 100000 ? `${(n / 100000).toFixed(1)}L` : Math.round(n).toLocaleString("en-IN")}`);
 const days = (n: number | null) => (n == null ? "–" : `${Math.round(n * 10) / 10}d`);
@@ -25,7 +25,7 @@ export default async function Analytics({ searchParams }: { searchParams: Promis
   return (
     <div className="grid gap-6">
       <PageHeader
-        title="Analytics"
+        title="Insights"
         meta={`${a.received.toLocaleString("en-IN")} applications ${range.days === "all" ? "all time" : `from ${range.from.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })} to ${range.to.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}`}`}
         actions={
           <a href={`/api/console/export?what=analytics${qs ? `&${qs}` : ""}`} className={buttonClass("ghost", "sm")}>

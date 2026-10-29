@@ -5,7 +5,8 @@
  */
 import { and, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { applications, contradictions, evaluations, questions, roles, users, type Stage } from "@/lib/db/schema";
+import { applications, contradictions, evaluations, observations, questions, refusedCriteria, roles, rubricVersions, users, type Stage } from "@/lib/db/schema";
+import { audit, logActivity } from "./log";
 import { visibleRoles, type Ctx } from "./context";
 
 export type RoleStatus =
@@ -149,4 +150,46 @@ export async function summarizeRoles(c: Ctx, opts: { includeClosed?: boolean; mi
 /** Marks a role as having changed, which is what keeps it out of "stalled". */
 export async function touchRole(roleId: string) {
   await db.update(roles).set({ lastChangeAt: new Date() }).where(eq(roles.id, roleId));
+}
+
+/** What a role is screened on, in one line (the Criteria tab). */
+export async function rubricStrip(roleId: string, version: number) {
+  const { currentRequirements } = await import("./scoring");
+  const reqs = await currentRequirements(roleId, version);
+  const [refused] = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(refusedCriteria)
+    .innerJoin(rubricVersions, eq(rubricVersions.id, refusedCriteria.rubricVersionId))
+    .where(and(eq(rubricVersions.roleId, roleId), eq(rubricVersions.version, version), eq(refusedCriteria.addedAnyway, false)));
+  return { reqs: reqs.length, must: reqs.filter((r) => r.mustHave).length, refused: refused?.n ?? 0 };
+}
+
+/**
+ * Closes (or holds) a role and records who was hired: the most useful fact
+ * Winnow can learn, as it checks the criteria against what really happened.
+ * Shared by role settings and chat.
+ */
+export async function closeRoleWith(c: Ctx, role: typeof roles.$inferSelect, reason: "filled" | "cancelled" | "on_hold", hiredIds: string[], note: string) {
+  const valid = hiredIds.length ? await db.select({ id: applications.id, personId: applications.personId }).from(applications).where(eq(applications.roleId, role.id)) : [];
+  const picks = valid.filter((v) => hiredIds.includes(v.id));
+  await db
+    .update(roles)
+    .set({ state: reason === "on_hold" ? "on_hold" : "closed", closeReason: reason, hiredApplicationId: picks[0]?.id ?? null, lastChangeAt: new Date(), closedAt: reason === "on_hold" ? null : new Date() })
+    .where(eq(roles.id, role.id));
+  for (const p of picks) {
+    await db
+      .update(applications)
+      .set({ stage: "hired", stageChangedAt: new Date(), acceptedAt: sql`coalesce(${applications.acceptedAt}, now())` })
+      .where(eq(applications.id, p.id));
+    await db.insert(observations).values({ orgId: c.org.id, kind: "outcome", personId: p.personId, applicationId: p.id, roleId: role.id, payload: { hired: true, via: "close" }, createdBy: c.user.id });
+  }
+  await audit({ orgId: c.org.id, actorId: c.user.id, action: reason === "on_hold" ? "role.hold" : "role.close", entity: "role", entityId: role.id, roleId: role.id, rubricVersion: role.rubricVersion, detail: { reason, hired: picks.map((p) => p.id), note: note.slice(0, 1000) } });
+  await logActivity({
+    orgId: c.org.id,
+    roleId: role.id,
+    kind: reason === "on_hold" ? "role_on_hold" : "role_closed",
+    message: reason === "on_hold" ? "Put the role on hold" : reason === "filled" ? `Closed the role: filled${picks.length ? ` (${picks.length} hired)` : ""}` : "Closed the role: cancelled",
+    actorId: c.user.id,
+  });
+  return picks.length;
 }

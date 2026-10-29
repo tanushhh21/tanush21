@@ -4,9 +4,10 @@ import { requireCtx, requireRole } from "@/lib/console/context";
 import { costByStage, isFailure, loadActivity, type Filter } from "@/lib/console/data/activity";
 import { USD_INR, rupeesFromUsd, usd } from "@/lib/console/money";
 import { BarList } from "@/components/console/charts";
+import { InsightViews } from "@/components/console/roles/Views";
 import { Card, CardHead, Empty, buttonClass } from "@/components/console/ui";
 
-export const metadata: Metadata = { title: "Activity" };
+export const metadata: Metadata = { title: "History" };
 
 const FILTERS: { id: Filter; label: string }[] = [
   { id: "all", label: "Everything" },
@@ -33,6 +34,8 @@ export default async function Activity({ params, searchParams }: { params: Promi
   }
 
   return (
+    <div className="grid gap-4">
+      <InsightViews roleId={role.id} active="history" />
     <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
       <div className="grid gap-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -118,6 +121,7 @@ export default async function Activity({ params, searchParams }: { params: Promi
           </Card>
         ) : null}
       </aside>
+    </div>
     </div>
   );
 }
