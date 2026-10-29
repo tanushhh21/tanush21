@@ -3,6 +3,7 @@ import Link from "next/link";
 import { requestReset, resetPassword } from "@/lib/console/actions/session";
 import { buttonClass, fieldClass } from "@/components/console/ui";
 import AuthCard, { Notice } from "@/components/console/AuthCard";
+import PasswordField from "@/components/console/PasswordField";
 
 export const metadata: Metadata = { title: "Reset your password" };
 
@@ -28,11 +29,8 @@ export default async function Reset({ searchParams }: { searchParams: Promise<Re
             <span className="text-[13px] font-medium">Code</span>
             <input name="code" required inputMode="numeric" autoComplete="one-time-code" pattern="\d{6}" maxLength={6} placeholder="123456" className={`${fieldClass} text-center font-mono text-[20px] tracking-[0.35em]`} />
           </label>
-          <label className="grid gap-1.5">
-            <span className="text-[13px] font-medium">New password</span>
-            <input name="password" type="password" required minLength={10} maxLength={128} autoComplete="new-password" className={fieldClass} />
-            <span className="text-[12px] text-slate">At least 10 characters. You will be signed out everywhere else.</span>
-          </label>
+          <PasswordField label="New password" />
+          <p className="text-[12px] text-slate">You will be signed out everywhere else.</p>
           <button type="submit" className={`${buttonClass("primary")} h-10 w-full`}>
             Set the new password
           </button>

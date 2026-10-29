@@ -6,6 +6,7 @@ import { getUser } from "@/lib/console/context";
 import { signInGoogle, signUp } from "@/lib/console/actions/session";
 import { buttonClass, fieldClass } from "@/components/console/ui";
 import AuthCard, { GoogleG, Notice } from "@/components/console/AuthCard";
+import PasswordField from "@/components/console/PasswordField";
 
 export const metadata: Metadata = { title: "Create an account" };
 
@@ -57,13 +58,7 @@ export default async function SignUp({ searchParams }: { searchParams: Promise<R
           <span className="text-[13px] font-medium">Work email</span>
           <input name="email" type="email" required autoComplete="email" defaultValue={q.email ?? ""} placeholder="you@company.com" className={fieldClass} />
         </label>
-        <label className="grid gap-1.5">
-          <span className="text-[13px] font-medium">Password</span>
-          <input name="password" type="password" required minLength={10} maxLength={128} autoComplete="new-password" aria-describedby="pw-hint" className={fieldClass} />
-          <span id="pw-hint" className="text-[12px] text-slate">
-            At least 10 characters. A short sentence works well.
-          </span>
-        </label>
+        <PasswordField />
         <button type="submit" disabled={!emailReady} className={`${buttonClass("primary")} mt-1 h-10 w-full`}>
           Create account
         </button>

@@ -3,6 +3,7 @@ import { requireUser } from "@/lib/console/context";
 import { changePassword, saveProfile, signOutEverywhere } from "@/lib/console/actions/session";
 import { Card, CardHead, Field, buttonClass, fieldClass } from "@/components/console/ui";
 import Saved from "@/components/console/Saved";
+import PasswordField from "@/components/console/PasswordField";
 
 export const metadata: Metadata = { title: "Your account" };
 
@@ -46,9 +47,10 @@ export default async function Account({ searchParams }: { searchParams: Promise<
               <input name="current" type="password" required autoComplete="current-password" className={fieldClass} />
             </Field>
           ) : null}
-          <Field label="New password" hint="At least 10 characters. Other devices will be signed out.">
-            <input name="password" type="password" required minLength={10} maxLength={128} autoComplete="new-password" className={fieldClass} />
-          </Field>
+          <div>
+            <PasswordField label="New password" />
+            <p className="mt-1.5 text-[12px] text-slate">Other devices will be signed out.</p>
+          </div>
           <div className="sm:col-span-2">
             <button type="submit" className={buttonClass("primary")}>
               {has ? "Change password" : "Set password"}
