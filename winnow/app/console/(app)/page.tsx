@@ -29,7 +29,7 @@ export default async function Home() {
       <div className="flex min-h-[70svh] items-center justify-center">
         <Empty
           title={can.createRole(c) ? "Add your first role" : "No roles yet"}
-          action={can.createRole(c) ? <ButtonLink href="/console/roles/new" tone="primary">Add a role</ButtonLink> : null}
+          action={can.createRole(c) ? <ButtonLink href="/console/chat?new=1" tone="primary">Add a role</ButtonLink> : null}
         >
           {can.createRole(c)
             ? "Describe the role in your own words, or paste the job description. Winnow sets it up, decides what to screen on, and starts ranking."
@@ -91,7 +91,7 @@ export default async function Home() {
       <PageHeader
         title={`Good ${greeting()}, ${c.user.name.split(" ")[0]}`}
         meta={needs.length ? `${needs.length} thing${needs.length === 1 ? "" : "s"} need${needs.length === 1 ? "s" : ""} you today.` : "Nothing needs you right now."}
-        actions={can.createRole(c) ? <ButtonLink href="/console/roles/new" tone="primary">New role</ButtonLink> : null}
+        actions={can.createRole(c) ? <ButtonLink href="/console/chat?new=1" tone="primary">New role</ButtonLink> : null}
       />
 
       <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4">

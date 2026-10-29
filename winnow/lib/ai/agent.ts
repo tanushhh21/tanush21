@@ -7,7 +7,8 @@
  */
 import { betaZodTool } from "@anthropic-ai/sdk/helpers/beta/zod";
 import type { AgentTool } from "@/lib/console/agent";
-import { AiError, MODEL, anthropic, costOf, fakeAi } from "./claude";
+import { AiError, MODEL, anthropic, costOf, fakeAi, provider } from "./claude";
+import { groqAgent } from "./groq";
 
 export type Turn = { role: "user" | "assistant"; content: string };
 
@@ -27,7 +28,8 @@ How to write: plain, warm, short. British English. Pay in lakh per year (LPA), n
 /** One turn of the conversation. Returns the reply and what it cost; tool side effects land in the tools' own state. */
 export async function runAgent(o: { context: string; history: Turn[]; tools: AgentTool[] }): Promise<{ reply: string; costUsd: number; model: string }> {
   if (fakeAi()) return fakeAgent(o.history[o.history.length - 1]?.content ?? "", o.tools, o.context);
-  if (!process.env.ANTHROPIC_API_KEY) throw new AiError("The AI is not set up yet (ANTHROPIC_API_KEY).", "not_configured");
+  if (provider() === "groq") return groqAgent({ instructions: INSTRUCTIONS, context: o.context, history: o.history.slice(o.history.findIndex((t) => t.role === "user")), tools: o.tools });
+  if (!provider()) throw new AiError("The AI is not set up yet (add GROQ_API_KEY or ANTHROPIC_API_KEY).", "not_configured");
 
   // The API needs the conversation to start with the person.
   const turns = o.history.slice(o.history.findIndex((t) => t.role === "user"));

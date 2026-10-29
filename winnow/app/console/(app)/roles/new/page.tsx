@@ -16,8 +16,8 @@ export default async function NewRolePage({ searchParams }: { searchParams: Prom
   const c = await requireCtx();
   assertCan(c, can.createRole);
   const sp = await searchParams;
-  // With the AI connected, a new role starts as a conversation; the form stays for those who want it.
-  if (aiConfigured() && sp.manual !== "1" && !sp.error) redirect("/console/chat?new=1");
+  // A new role is set up in chat. The form is kept for Winnow's own team only, as a fallback.
+  if (!(c.user.isOperator && sp.manual === "1")) redirect("/console/chat?new=1");
   const past = await db
     .select({ id: roles.id, title: roles.title, closedAt: roles.closedAt })
     .from(roles)

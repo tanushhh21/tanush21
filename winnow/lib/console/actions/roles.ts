@@ -45,7 +45,7 @@ export async function createRole(form: FormData) {
   const file = form.get("jdFile");
   if (file instanceof File && file.size > 0) {
     const parsed = await extract(file.name, Buffer.from(await file.arrayBuffer()));
-    if (!parsed.ok) redirect(`/console/roles/new?error=${encodeURIComponent(parsed.reason)}`);
+    if (!parsed.ok) redirect(`/console/roles/new?manual=1&error=${encodeURIComponent(parsed.reason)}`);
     jd = parsed.text;
   }
   const intake = str(form, "intake");
@@ -56,7 +56,7 @@ export async function createRole(form: FormData) {
       if (p.ok && p.text) examples.push(p.text.slice(0, 6000));
     }
   }
-  if (!jd && !intake && examples.length === 0) redirect("/console/roles/new?error=empty");
+  if (!jd && !intake && examples.length === 0) redirect("/console/roles/new?manual=1&error=empty");
   const notes = [intake, examples.length ? `People we would hire (examples):\n\n${examples.map((e, i) => `Example ${i + 1}:\n${e}`).join("\n\n")}` : ""]
     .filter(Boolean)
     .join("\n\n");

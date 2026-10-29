@@ -27,7 +27,7 @@ export default async function ChatPage({ searchParams }: { searchParams: Promise
   const off = aiConfigured()
     ? null
     : c.user.isOperator
-      ? "The AI is not connected yet: add ANTHROPIC_API_KEY in Vercel and redeploy."
+      ? "The AI is not connected yet: add GROQ_API_KEY (or ANTHROPIC_API_KEY) in Vercel and redeploy."
       : "Chat is not switched on for your workspace yet. Winnow's team has been told.";
 
   const messages = (await threadFor(c, role?.id ?? null)).map((m) => ({ id: m.id, author: m.author, body: m.body, diff: m.diff, diffState: m.diffState, extras: m.extras, at: m.createdAt.toISOString() }));
@@ -82,10 +82,6 @@ export default async function ChatPage({ searchParams }: { searchParams: Promise
             ) : role ? (
               <Link href={`/console/roles/${role.id}`} className="inline-flex h-8 items-center rounded-full px-3 text-[13px] text-slate hover:bg-mist hover:text-ink">
                 Open role
-              </Link>
-            ) : newRole ? (
-              <Link href="/console/roles/new?manual=1" className="inline-flex h-8 items-center rounded-full px-3 text-[13px] text-slate hover:bg-mist hover:text-ink">
-                Prefer a form?
               </Link>
             ) : null
           }

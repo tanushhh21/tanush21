@@ -117,7 +117,7 @@ export default function SideNav(p: Props) {
         <div className="mt-6 flex items-center justify-between px-2.5">
           <p className="text-[12px] font-medium text-slate">Roles</p>
           {p.canCreateRole ? (
-            <Link href="/console/roles/new" onClick={close} className="text-[12.5px] font-medium text-signal hover:underline">
+            <Link href="/console/chat?new=1" onClick={close} className="text-[12.5px] font-medium text-signal hover:underline">
               + New role
             </Link>
           ) : null}
