@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
-import { createOrg } from "@/lib/console/actions/session";
+import { buildDemoCustomer, createOrg, deleteDemoCustomer, openDemoCustomer } from "@/lib/console/actions/session";
 import { queueCounts, rolesPerOperator, slaView } from "@/lib/console/data/operator";
+import { findDemo } from "@/lib/console/demo";
 import { Badge, Card, CardHead, Field, PageHeader, Stat, buttonClass, fieldClass, tableClass, tdClass, thClass } from "@/components/console/ui";
 
 export const metadata: Metadata = { title: "Operator" };
 
 export default async function Overview({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const err = (await searchParams).error;
-  const [q, sla, ops] = await Promise.all([queueCounts(), slaView(), rolesPerOperator()]);
+  const [q, sla, ops, demo] = await Promise.all([queueCounts(), slaView(), rolesPerOperator(), findDemo()]);
   const months = [...new Set(ops.map((o) => o.month))].sort().reverse().slice(0, 6);
   const people = [...new Map(ops.map((o) => [o.id, o.name])).entries()];
   return (
@@ -92,6 +93,40 @@ export default async function Overview({ searchParams }: { searchParams: Promise
             </table>
           </div>
         )}
+      </Card>
+
+      <Card>
+        <CardHead
+          title="Demo customer"
+          meta="A made-up company with three roles and 31 candidates already read, scored and part-way through hiring. Everyone in it is fictional, and it cannot email anyone."
+        />
+        <div className="flex flex-wrap items-center gap-2 px-4 py-4 sm:px-5">
+          {demo ? (
+            <>
+              <form action={openDemoCustomer}>
+                <button type="submit" className={buttonClass("primary")}>
+                  Open {demo.name}
+                </button>
+              </form>
+              <form action={buildDemoCustomer}>
+                <button type="submit" className={buttonClass("secondary")}>
+                  Reset it
+                </button>
+              </form>
+              <form action={deleteDemoCustomer}>
+                <button type="submit" className={buttonClass("ghost")}>
+                  Delete it
+                </button>
+              </form>
+            </>
+          ) : (
+            <form action={buildDemoCustomer}>
+              <button type="submit" className={buttonClass("primary")}>
+                Create demo customer
+              </button>
+            </form>
+          )}
+        </div>
       </Card>
 
       <Card>

@@ -39,6 +39,9 @@ export function loginEmail(url: string) {
   };
 }
 
+/** Domains reserved for examples (RFC 2606 and 6761): no mailbox exists there, so nothing is sent. The demo company lives on them. */
+export const reservedAddress = (to: string) => /@(?:[^@\s]+\.)?(?:example\.(?:com|net|org)|example|test|invalid|localhost)$/i.test(to.trim());
+
 export async function sendEmail(m: Email): Promise<{ ok: boolean; id?: string; error?: string }> {
   const key = process.env.RESEND_API_KEY;
   if (!key) {
@@ -47,6 +50,7 @@ export async function sendEmail(m: Email): Promise<{ ok: boolean; id?: string; e
     appendFileSync(".data/outbox.jsonl", JSON.stringify({ at: new Date().toISOString(), from: m.from ?? EMAIL_FROM, ...m }) + "\n");
     return { ok: true, id: "outbox" };
   }
+  if (reservedAddress(m.to)) return { ok: true, id: "reserved" };
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },

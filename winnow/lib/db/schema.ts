@@ -129,6 +129,8 @@ export const orgs = pgTable("org", {
   /** Whether anonymised outcomes may improve Winnow for everyone; off unless the company opts in. */
   shareWithWinnow: boolean("share_with_winnow").notNull().default(false),
   plan: text("plan").$type<"pilot" | "growth" | "enterprise">().notNull().default("pilot"),
+  /** The made-up company operators show the console with (lib/console/demo.ts). Only that code sets it. */
+  demo: boolean("demo").notNull().default(false),
   createdAt: created(),
 });
 
