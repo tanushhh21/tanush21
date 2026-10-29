@@ -83,10 +83,6 @@ export default async function ChatPage({ searchParams }: { searchParams: Promise
               <Link href={`/console/roles/${role.id}`} className="inline-flex h-8 items-center rounded-full px-3 text-[13px] text-slate hover:bg-mist hover:text-ink">
                 Open role
               </Link>
-            ) : newRole ? (
-              <Link href="/console/roles/new?manual=1" className="inline-flex h-8 items-center rounded-full px-3 text-[13px] text-slate hover:bg-mist hover:text-ink">
-                Prefer a form?
-              </Link>
             ) : null
           }
           messages={messages}
