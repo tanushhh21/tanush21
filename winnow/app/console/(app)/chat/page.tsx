@@ -35,25 +35,25 @@ export default async function ChatPage({ searchParams }: { searchParams: Promise
   const open = roles.filter((r) => r.state !== "closed");
   const closed = roles.filter((r) => r.state === "closed");
   const item = (href: string, label: string, sub: string, active: boolean) => (
-    <Link key={href} href={href} aria-current={active ? "page" : undefined} className={`block rounded-[10px] px-3 py-2 transition-colors ${active ? "bg-mist" : "hover:bg-mist/60"}`}>
-      <span className={`block truncate text-[13.5px] ${active ? "font-medium text-ink" : "text-ink"}`}>{label}</span>
+    <Link key={href} href={href} aria-current={active ? "page" : undefined} className={`block rounded-[6px] px-2.5 py-1.5 transition-colors ${active ? "bg-ink/[0.06]" : "hover:bg-ink/[0.03]"}`}>
+      <span className={`block truncate text-[13px] ${active ? "font-medium text-ink" : "text-ink"}`}>{label}</span>
       <span className="block truncate text-[12px] text-slate">{sub}</span>
     </Link>
   );
 
   return (
     <div className="-mb-20 flex h-[calc(100svh-6.5rem)] gap-6 lg:h-[calc(100svh-4rem)]">
-      <nav aria-label="Conversations" className="hidden w-60 shrink-0 flex-col gap-1 overflow-y-auto border-r border-hairline pr-4 md:flex">
+      <nav aria-label="Conversations" className="hidden w-56 shrink-0 flex-col gap-px overflow-y-auto border-r border-hairline pr-3 md:flex">
         {can.createRole(c) ? (
-          <Link href="/console/chat?new=1" className="mb-3 inline-flex h-9 items-center justify-center rounded-full bg-signal px-4 text-[13.5px] font-medium text-paper shadow-lift hover:bg-[#1440e0]">
+          <Link href="/console/chat?new=1" className="mb-3 inline-flex h-8 items-center justify-center rounded-[6px] border border-hairline bg-paper px-3 text-[13px] font-medium text-ink shadow-[0_1px_1px_rgb(10_12_15/0.04)] hover:bg-mist">
             + New role
           </Link>
         ) : null}
-        <p className="px-3 pb-1 text-[11.5px] font-medium uppercase tracking-[0.06em] text-slate/80">Conversations</p>
+        <p className="px-2.5 pb-1 text-[12px] font-medium text-slate">Conversations</p>
         {item("/console/chat", "All roles", "Across the company, and new roles", !role)}
-        {open.length ? <p className="mt-3 px-3 pb-1 text-[11.5px] font-medium uppercase tracking-[0.06em] text-slate/80">Open roles</p> : null}
+        {open.length ? <p className="mt-3 px-2.5 pb-1 text-[12px] font-medium text-slate">Open roles</p> : null}
         {open.map((r) => item(`/console/chat?role=${r.id}`, r.title, `${r.received} candidates · ${r.status}`, role?.id === r.id))}
-        {closed.length ? <p className="mt-3 px-3 pb-1 text-[11.5px] font-medium uppercase tracking-[0.06em] text-slate/80">Closed</p> : null}
+        {closed.length ? <p className="mt-3 px-2.5 pb-1 text-[12px] font-medium text-slate">Closed</p> : null}
         {closed.map((r) => item(`/console/chat?role=${r.id}`, r.title, "Closed", role?.id === r.id))}
       </nav>
 
@@ -75,12 +75,12 @@ export default async function ChatPage({ searchParams }: { searchParams: Promise
             role && role.state === "open" && can.manageSources(c) ? (
               <>
                 <Uploader roleId={role.id} compact />
-                <Link href={`/console/roles/${role.id}`} className="inline-flex h-8 items-center rounded-full px-3 text-[13px] text-slate hover:bg-mist hover:text-ink">
+                <Link href={`/console/roles/${role.id}`} className="inline-flex h-8 items-center rounded-[6px] px-3 text-[13px] text-slate hover:bg-mist hover:text-ink">
                   Open role
                 </Link>
               </>
             ) : role ? (
-              <Link href={`/console/roles/${role.id}`} className="inline-flex h-8 items-center rounded-full px-3 text-[13px] text-slate hover:bg-mist hover:text-ink">
+              <Link href={`/console/roles/${role.id}`} className="inline-flex h-8 items-center rounded-[6px] px-3 text-[13px] text-slate hover:bg-mist hover:text-ink">
                 Open role
               </Link>
             ) : null

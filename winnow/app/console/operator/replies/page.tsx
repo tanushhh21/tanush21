@@ -18,7 +18,7 @@ export default async function Replies({ searchParams }: { searchParams: Promise<
         <Card key={o.id}>
           <CardHead title={`${o.toName} replied`} meta={`${org} · ${role} · ${o.channel}`} />
           <div className="grid gap-3 px-4 py-4 sm:px-5">
-            <blockquote className="whitespace-pre-wrap rounded-[10px] bg-mist px-3 py-2 text-[13.5px]">{o.reply}</blockquote>
+            <blockquote className="whitespace-pre-wrap rounded-[7px] bg-mist px-3 py-2 text-[13.5px]">{o.reply}</blockquote>
             <form action={replyInterested} className="grid gap-2">
               <input type="hidden" name="id" value={o.id} />
               <Field label="Their CV or profile, pasted" hint="Needed to add them: Winnow reads and scores it against the role.">

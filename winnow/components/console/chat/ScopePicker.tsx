@@ -10,7 +10,7 @@ export default function ScopePicker({ value, roles }: { value: string; roles: { 
       aria-label="Conversation"
       value={value}
       onChange={(e) => router.push(e.target.value ? `/console/chat?role=${e.target.value}` : "/console/chat")}
-      className="h-10 w-full rounded-[10px] border border-hairline bg-paper px-3 text-[15px]"
+      className="h-10 w-full rounded-[7px] border border-hairline bg-paper px-3 text-[15px]"
     >
       <option value="">All roles</option>
       {roles.map((r) => (

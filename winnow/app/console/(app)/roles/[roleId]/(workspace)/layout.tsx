@@ -44,15 +44,15 @@ export default async function Workspace({ children, params }: { children: React.
   ].filter((x, i) => i < 2 || x.n > 0);
 
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)] gap-5">
-      <header className="grid grid-cols-[minmax(0,1fr)] gap-3">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
+      <header className="grid grid-cols-[minmax(0,1fr)] gap-2.5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
-            <h1 className="font-display text-[clamp(1.375rem,2.4vw,1.75rem)] font-semibold leading-tight tracking-[-0.025em]">
+            <h1 className="text-[20px] font-semibold leading-tight tracking-[-0.018em]">
               {role.title}
               {role.state !== "open" ? <Badge tone="muted" className="ml-2 align-middle">{role.state === "closed" ? "Closed" : "On hold"}</Badge> : null}
             </h1>
-            <p className="mt-1 text-[13px] text-slate">{meta.join(" · ")}</p>
+            <p className="mt-1 text-[12.5px] text-slate">{meta.join(" · ")}</p>
           </div>
           <div className="flex items-center gap-2">
             {can.manageSources(c) && role.state === "open" ? <Uploader roleId={role.id} compact /> : null}
@@ -67,7 +67,7 @@ export default async function Workspace({ children, params }: { children: React.
             </Link>
           </div>
         </div>
-        <p className="flex flex-wrap gap-x-4 gap-y-1 text-[13.5px]">
+        <p className="flex flex-wrap gap-x-4 gap-y-1 text-[12.5px]">
           {pipeline.map((x) => (
             <Link key={x.label} href={x.href} className="text-slate hover:text-ink">
               <span className="font-semibold text-ink tabular-nums">{x.n}</span> {x.label}

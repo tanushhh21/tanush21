@@ -22,12 +22,12 @@ const SUPPORT: Record<string, string> = { verified: "confirmed", supported: "sta
 
 function Section({ id, title, meta, children }: { id?: string; title: string; meta?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <section id={id} className="scroll-mt-20 border-t border-hairline pt-5">
+    <section id={id} className="scroll-mt-20">
       <div className="flex items-baseline justify-between gap-3">
-        <h3 className="font-display text-[14.5px] font-semibold tracking-[-0.01em]">{title}</h3>
+        <h3 className="text-[13.5px] font-semibold">{title}</h3>
         {meta ? <span className="text-[12px] text-slate">{meta}</span> : null}
       </div>
-      <div className="mt-3">{children}</div>
+      <div className="mt-2.5">{children}</div>
     </section>
   );
 }
@@ -75,12 +75,12 @@ export default function CandidateView({ data, reasons, canAsk, neighbours = [], 
   const rest = data.facts.filter((f) => !shown.has(f.field) && f.value);
 
   return (
-    <article className="@container grid gap-5 text-[13.5px]">
+    <article className="@container grid gap-5 text-[13px]">
       {/* Header */}
       <header>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
-            <h2 className="font-display text-[24px] font-semibold leading-tight tracking-[-0.02em]">{data.person.name}</h2>
+            <h2 className="text-[20px] font-semibold leading-tight tracking-[-0.018em]">{data.person.name}</h2>
             <p className="mt-1 text-slate">
               {glance[0][1] ? `${glance[0][1]} · ` : ""}
               {data.person.city ? `${data.person.city} · ` : ""}
@@ -97,15 +97,15 @@ export default function CandidateView({ data, reasons, canAsk, neighbours = [], 
             </div>
           </div>
           <div className="text-right">
-            <p className="font-display text-[34px] font-semibold leading-none tabular-nums tracking-[-0.03em]">{match ?? "–"}</p>
+            <p className="text-[28px] font-semibold leading-none tabular-nums tracking-[-0.03em]">{match ?? "–"}</p>
             <p className="mt-1 text-[12px] text-slate">{h.rank ? `match · #${h.rank} for this role` : "Not ranked yet"}</p>
           </div>
         </div>
         {h.status === "unreadable" || h.status === "failed" ? (
-          <p className="mt-3 rounded-[10px] bg-alert/[0.06] px-3 py-2 text-alert">{h.status === "unreadable" ? "This CV could not be read" : "Scoring failed"}: {h.problem}</p>
+          <p className="mt-3 rounded-[7px] bg-alert/[0.06] px-3 py-2 text-alert">{h.status === "unreadable" ? "This CV could not be read" : "Scoring failed"}: {h.problem}</p>
         ) : null}
         {h.strength || h.gap ? (
-          <div className="mt-4 grid gap-1.5 rounded-[12px] bg-mist px-4 py-3">
+          <div className="mt-4 grid gap-1.5 rounded-[8px] border border-hairline bg-mist/60 px-3.5 py-2.5">
             {h.strength ? (
               <p>
                 <span className="font-medium text-ok">Best evidence: </span>
@@ -123,7 +123,7 @@ export default function CandidateView({ data, reasons, canAsk, neighbours = [], 
       </header>
 
       {error ? (
-        <p role="alert" className="rounded-[10px] bg-alert/[0.06] px-3 py-2 text-alert">
+        <p role="alert" className="rounded-[7px] bg-alert/[0.06] px-3 py-2 text-alert">
           {error}
         </p>
       ) : null}
@@ -131,8 +131,8 @@ export default function CandidateView({ data, reasons, canAsk, neighbours = [], 
       <div className="grid gap-5 [grid-template-areas:'top'_'main'_'bottom'] @3xl:grid-cols-[minmax(0,1fr)_17.5rem] @3xl:grid-rows-[auto_1fr] @3xl:gap-x-8 @3xl:[grid-template-areas:'main_top'_'main_bottom']">
         {/* Decision and the facts at a glance */}
         <div className="grid content-start gap-4 [grid-area:top]">
-          <div id="decide" className="scroll-mt-20 rounded-[14px] border border-hairline p-4">
-            <h3 className="font-display text-[14.5px] font-semibold">Decision</h3>
+          <div id="decide" className="scroll-mt-20 rounded-[8px] border border-hairline p-3.5">
+            <h3 className="text-[13px] font-semibold">Decision</h3>
             {h.decision !== "none" && !deciding ? (
               <div className="mt-2 grid gap-2">
                 <p>
@@ -192,8 +192,8 @@ export default function CandidateView({ data, reasons, canAsk, neighbours = [], 
             )}
           </div>
 
-          <div id="facts" className="scroll-mt-20 rounded-[14px] border border-hairline p-4">
-            <h3 className="font-display text-[14.5px] font-semibold">At a glance</h3>
+          <div id="facts" className="scroll-mt-20 rounded-[8px] border border-hairline p-3.5">
+            <h3 className="text-[13px] font-semibold">At a glance</h3>
             <dl className="mt-2 grid gap-1.5">
               {glance
                 .filter(([, v]) => v)
@@ -230,14 +230,14 @@ export default function CandidateView({ data, reasons, canAsk, neighbours = [], 
             title="Against what you asked for"
             meta={covers != null ? `the CV covers ${covers}% of it` : undefined}
           >
-            <ul className="grid gap-2">
+            <ul className="divide-y divide-hairline overflow-hidden rounded-[8px] border border-hairline">
               {data.rubric.map((r) => (
-                <li key={r.key} className="rounded-[12px] border border-hairline p-3">
+                <li key={r.key} className="px-3.5 py-3">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="font-medium">
                         {r.text}
-                        {r.mustHave ? <span className="ml-1.5 rounded-full bg-mist px-1.5 py-[1px] text-[11px] font-normal text-slate">must-have</span> : null}
+                        {r.mustHave ? <span className="ml-1.5 rounded-[4px] bg-ink/[0.05] px-1.5 py-[1px] align-[1px] text-[11px] font-medium text-slate">Must-have</span> : null}
                       </p>
                       <p className="mt-1">
                         <VerdictMark v={r.verdict} withLabel />
@@ -246,7 +246,7 @@ export default function CandidateView({ data, reasons, canAsk, neighbours = [], 
                       {r.quote ? <p className="mt-1.5 border-l-2 border-signal/40 pl-2.5 text-[13px] leading-snug text-ink/85">&ldquo;{r.quote}&rdquo;</p> : null}
                       {r.verdict === "unknown" ? <p className="mt-1 text-[12px] text-slate">The CV does not say. This costs them nothing, but worth asking.</p> : null}
                     </div>
-                    <span className="shrink-0 font-mono text-[12.5px] tabular-nums text-slate" title="Points earned of the points this requirement is worth">
+                    <span className="shrink-0 text-[12px] tabular-nums text-slate" title="Points earned of the points this requirement is worth">
                       {r.verdict === "unknown" ? "–" : fmt(r.contribution)}
                       <span className="text-slate/70"> of {r.weight}</span>
                     </span>
@@ -270,14 +270,14 @@ export default function CandidateView({ data, reasons, canAsk, neighbours = [], 
             <Section id="contradictions" title="The CV says two different things" meta="This does not change the score">
               <ul className="grid gap-3">
                 {data.contradictions.map((cx) => (
-                  <li key={cx.id} className="rounded-[12px] border border-hairline p-3">
+                  <li key={cx.id} className="rounded-[8px] border border-hairline p-3">
                     <div className="flex items-center gap-2">
                       <Badge tone={cx.resolved ? "muted" : "caution"}>{cx.kind === "dates" ? "Dates" : cx.kind.charAt(0).toUpperCase() + cx.kind.slice(1)}</Badge>
                       {cx.resolved ? <span className="text-[12px] text-slate">Sorted: {cx.resolution}</span> : null}
                     </div>
                     <div className="mt-2 grid gap-2 sm:grid-cols-2">
-                      <blockquote className="rounded-[10px] bg-mist p-2.5 text-[13px]">&ldquo;{cx.quoteA}&rdquo;</blockquote>
-                      <blockquote className="rounded-[10px] bg-mist p-2.5 text-[13px]">&ldquo;{cx.quoteB}&rdquo;</blockquote>
+                      <blockquote className="rounded-[7px] bg-mist p-2.5 text-[13px]">&ldquo;{cx.quoteA}&rdquo;</blockquote>
+                      <blockquote className="rounded-[7px] bg-mist p-2.5 text-[13px]">&ldquo;{cx.quoteB}&rdquo;</blockquote>
                     </div>
                     {!cx.resolved ? (
                       <div className="mt-2 flex gap-2">
@@ -303,7 +303,7 @@ export default function CandidateView({ data, reasons, canAsk, neighbours = [], 
             {data.questions.length ? (
               <ul className="mb-3 grid gap-1.5">
                 {data.questions.map((q) => (
-                  <li key={q.id} className="flex items-start justify-between gap-3 rounded-[10px] bg-mist px-3 py-2">
+                  <li key={q.id} className="flex items-start justify-between gap-3 rounded-[7px] bg-mist px-3 py-2">
                     <span>
                       {q.text}
                       {q.answer ? <span className="mt-1 block text-ink/80">Their answer: {q.answer}</span> : null}
@@ -366,7 +366,7 @@ export default function CandidateView({ data, reasons, canAsk, neighbours = [], 
             ) : (
               <ul className="grid gap-2">
                 {data.messages.map((m) => (
-                  <li key={m.id} className={`rounded-[12px] px-3 py-2 ${m.direction === "in" ? "bg-mist" : "border border-hairline"}`}>
+                  <li key={m.id} className={`rounded-[8px] px-3 py-2 ${m.direction === "in" ? "bg-mist" : "border border-hairline"}`}>
                     <p className="text-[12px] text-slate">
                       {m.direction === "in" ? `From ${data.person.name.split(" ")[0]}` : `To ${data.person.name.split(" ")[0]}${m.by ? `, from ${m.by}` : ""}`} · {ago(m.at)}
                     </p>
@@ -430,7 +430,7 @@ export default function CandidateView({ data, reasons, canAsk, neighbours = [], 
               </div>
               {pending ? <p className="text-slate">Working…</p> : null}
               {deep ? (
-                <div className="rounded-[12px] bg-mist px-4 py-3">
+                <div className="rounded-[8px] bg-mist px-4 py-3">
                   <p className="text-[12px] font-medium text-slate">{deep.kind}</p>
                   <p className="mt-1 whitespace-pre-wrap">{deep.text}</p>
                 </div>
@@ -438,7 +438,7 @@ export default function CandidateView({ data, reasons, canAsk, neighbours = [], 
             </div>
           </Section>
 
-          <details id="trail" className="scroll-mt-20 rounded-[12px] border border-hairline px-4 py-3">
+          <details id="trail" className="scroll-mt-20 rounded-[8px] border border-hairline px-4 py-3">
             <summary className="cursor-pointer font-display text-[14px] font-semibold">How this was scored</summary>
             <ul className="mt-2 grid gap-1 text-[13px]">
               {data.trail.opened.map((d, i) => (
@@ -469,13 +469,13 @@ export default function CandidateView({ data, reasons, canAsk, neighbours = [], 
 
         {/* Notes and history */}
         <div className="grid content-start gap-4 [grid-area:bottom]">
-          <div id="notes" className="scroll-mt-20 rounded-[14px] border border-hairline p-4">
-            <h3 className="font-display text-[14.5px] font-semibold">Notes</h3>
+          <div id="notes" className="scroll-mt-20 rounded-[8px] border border-hairline p-3.5">
+            <h3 className="text-[14px] font-semibold">Notes</h3>
             <p className="text-[12px] text-slate">Your team sees these. Type @name to tell someone.</p>
             {data.notes.length ? (
               <ul className="mt-2 grid gap-2">
                 {data.notes.map((n) => (
-                  <li key={n.id} className="rounded-[10px] bg-mist px-3 py-2">
+                  <li key={n.id} className="rounded-[7px] bg-mist px-3 py-2">
                     <p className="text-[12px] text-slate">
                       {n.by} · {ago(n.at)}
                     </p>
@@ -494,14 +494,14 @@ export default function CandidateView({ data, reasons, canAsk, neighbours = [], 
             </div>
           </div>
 
-          <div id="history" className="scroll-mt-20 rounded-[14px] border border-hairline p-4">
-            <h3 className="font-display text-[14.5px] font-semibold">Before this</h3>
+          <div id="history" className="scroll-mt-20 rounded-[8px] border border-hairline p-3.5">
+            <h3 className="text-[14px] font-semibold">Before this</h3>
             {data.history.length === 0 ? (
               <p className="mt-1 text-slate">First time they have applied here.</p>
             ) : (
               <ul className="mt-2 grid gap-2">
                 {data.history.map((p) => (
-                  <li key={p.id} className="rounded-[10px] bg-mist px-3 py-2">
+                  <li key={p.id} className="rounded-[7px] bg-mist px-3 py-2">
                     <p>
                       <span className="font-medium">{p.role}</span> · {dateLabel(p.appliedAt)}
                     </p>

@@ -50,23 +50,23 @@ export default function NeedsList({ items }: { items: NeedItem[] }) {
     });
 
   if (items.length === 0)
-    return <p className="rounded-[14px] border border-hairline px-4 py-5 text-[14px] text-slate">Nothing needs you right now.</p>;
+    return <p className="rounded-[8px] border border-hairline px-4 py-4 text-[13px] text-slate">Nothing needs you right now.</p>;
 
   return (
     <div>
-      <ol ref={list} className="divide-y divide-hairline overflow-hidden rounded-[14px] border border-hairline">
+      <ol ref={list} className="divide-y divide-hairline overflow-hidden rounded-[8px] border border-hairline">
         {items.map((n, i) => (
-          <li key={n.key} className={`relative px-4 py-3 ${i === cursor ? "bg-mist/70" : ""}`} onMouseEnter={() => setCursor(i)}>
-            {i === cursor ? <span aria-hidden="true" className="absolute inset-y-2 left-0 w-[3px] rounded-r-full bg-ink" /> : null}
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-x-4">
+          <li key={n.key} className={`relative px-4 py-2.5 ${i === cursor ? "bg-mist/80" : ""}`} onMouseEnter={() => setCursor(i)}>
+            {i === cursor ? <span aria-hidden="true" className="absolute inset-y-0 left-0 w-[2px] bg-signal" /> : null}
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-x-4">
               <div className="min-w-0 flex-1">
                 <p className="text-[12px] text-slate">
                   {n.label} · <Link href={`/console/roles/${n.roleId}`} className="hover:text-ink hover:underline">{n.roleTitle}</Link> · {n.ageDays === 0 ? "today" : `${n.ageDays} day${n.ageDays === 1 ? "" : "s"}`}
                 </p>
-                <p className="mt-0.5 text-[14.5px] font-medium">{n.text}</p>
+                <p className="mt-0.5 text-[13.5px] font-medium">{n.text}</p>
               </div>
               <div className="flex items-center gap-1.5">
-                <Link href={n.action.href} className="inline-flex h-9 items-center rounded-full border border-hairline bg-paper px-4 text-[13.5px] font-medium text-ink hover:border-slate/40 sm:h-8 sm:px-3 sm:text-[13px]">
+                <Link href={n.action.href} className="inline-flex h-9 items-center rounded-[6px] border border-hairline bg-paper px-3 text-[13px] font-medium text-ink shadow-[0_1px_1px_rgb(10_12_15/0.04)] hover:bg-mist sm:h-7 sm:px-2.5 sm:text-[12.5px]">
                   {n.action.label}
                 </Link>
                 <Button size="sm" tone="ghost" aria-label={`Dismiss: ${n.text}`} aria-expanded={dismissing === n.key} onClick={() => setDismissing(dismissing === n.key ? null : n.key)}>
@@ -75,7 +75,7 @@ export default function NeedsList({ items }: { items: NeedItem[] }) {
               </div>
             </div>
             {dismissing === n.key ? (
-              <div className="mt-3 grid gap-2 rounded-[12px] border border-hairline bg-paper p-3">
+              <div className="mt-3 grid gap-2 rounded-[8px] border border-hairline bg-paper p-3">
                 <p className="text-[13px] font-medium">Why dismiss it?</p>
                 <div className="flex flex-wrap gap-1.5">
                   {REASONS.map((r) => (

@@ -51,11 +51,11 @@ export default async function RoleSettings({ params, searchParams }: { params: P
   return (
     <div className="grid max-w-[46rem] gap-5">
       <div>
-        <h2 className="font-display text-[17px] font-semibold">Role settings</h2>
+        <h2 className="text-[14px] font-semibold">Role settings</h2>
         <p className="text-[13px] text-slate">The basics, who can see the role, where candidates come from, and closing it. You can also ask the AI to change any of this.</p>
       </div>
       {saved && SAVED[saved] ? (
-        <p role={bad ? "alert" : "status"} className={`rounded-[10px] px-3 py-2 text-[13px] ${bad ? "bg-alert/[0.06] text-alert" : "bg-mist"}`}>
+        <p role={bad ? "alert" : "status"} className={`rounded-[7px] px-3 py-2 text-[13px] ${bad ? "bg-alert/[0.06] text-alert" : "bg-mist"}`}>
           {SAVED[saved]}
         </p>
       ) : null}
@@ -147,7 +147,7 @@ export default async function RoleSettings({ params, searchParams }: { params: P
           {sources.length ? (
             <ul className="grid gap-2">
               {sources.map((s) => (
-                <li key={s.id} className="flex flex-wrap items-end gap-2 rounded-[12px] border border-hairline p-3">
+                <li key={s.id} className="flex flex-wrap items-end gap-2 rounded-[8px] border border-hairline p-3">
                   <form action={saveRoleSource} className="flex flex-1 flex-wrap items-end gap-2">
                     <input type="hidden" name="roleId" value={role.id} />
                     <input type="hidden" name="id" value={s.id} />

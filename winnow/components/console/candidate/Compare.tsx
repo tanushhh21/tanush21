@@ -29,7 +29,7 @@ export default function Compare({ roleId, people, reasons, canAsk }: { roleId: s
 
   return (
     <div className="grid gap-5">
-      <div className="rounded-[12px] bg-mist px-4 py-3 text-[13.5px]">
+      <div className="rounded-[8px] bg-mist px-4 py-3 text-[13.5px]">
         <p className="font-medium">Which would you interview first?</p>
         <p className="mt-0.5 text-[12.5px] text-slate">Your answer moves the weights for this role. No form, just the decision you were making anyway.</p>
         <div className="mt-2 flex flex-wrap gap-2">
@@ -50,7 +50,7 @@ export default function Compare({ roleId, people, reasons, canAsk }: { roleId: s
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-[14px] border border-hairline">
+      <div className="overflow-x-auto rounded-[10px] border border-hairline">
         <table className="w-full min-w-[40rem] border-collapse text-left text-[13.5px]">
           <thead>
             <tr className="bg-mist/60">
@@ -110,7 +110,7 @@ export default function Compare({ roleId, people, reasons, canAsk }: { roleId: s
       {msg ? <p role="status" className="text-[13px] text-slate">{msg}</p> : null}
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="rounded-[12px] border border-hairline p-4">
+        <div className="rounded-[8px] border border-hairline p-4">
           <p className="font-medium">Shortlist one, drop the others</p>
           <div className="mt-2 grid gap-2">
             <select aria-label="Shortlist" value={first ?? ""} onChange={(e) => setFirst(e.target.value)} className={fieldClass}>
@@ -146,7 +146,7 @@ export default function Compare({ roleId, people, reasons, canAsk }: { roleId: s
           </div>
         </div>
         {canAsk ? (
-          <div className="rounded-[12px] border border-hairline p-4">
+          <div className="rounded-[8px] border border-hairline p-4">
             <p className="font-medium">Send all of them the same question</p>
             <textarea value={question} onChange={(e) => setQuestion(e.target.value)} rows={3} aria-label="Question" className={`${areaClass} mt-2 min-h-0`} />
             <Button

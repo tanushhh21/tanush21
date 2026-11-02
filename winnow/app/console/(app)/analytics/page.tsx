@@ -92,7 +92,7 @@ export default async function Analytics({ searchParams }: { searchParams: Promis
           <Card>
             <CardHead title="Why candidates were rejected" meta={`${a.rejections.total} rejection${a.rejections.total === 1 ? "" : "s"} with a reason code, by the stage ${a.rejections.total === 1 ? "it was" : "they were"} made at.`} />
             <div className="grid gap-5 px-4 py-4 sm:px-5">
-              {a.rejections.headline ? <p className="font-display text-[18px] font-semibold tracking-[-0.01em]">{a.rejections.headline}</p> : null}
+              {a.rejections.headline ? <p className="text-[14px] font-semibold">{a.rejections.headline}</p> : null}
               {a.rejections.total === 0 ? (
                 <p className="text-[13.5px] text-slate">No rejections in this period.</p>
               ) : (

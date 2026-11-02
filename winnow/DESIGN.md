@@ -265,3 +265,16 @@ Inline SVG only, with no icon library. Strokes are 1.5–1.75 with round caps an
 - Every animation still works and has its reduced-motion version.
 - Form tests mock `api.web3forms.com`, so no real inquiries are sent.
 - Copy follows section 10.
+
+## 13. The console (getwinnow.in/console)
+
+The console is a work tool people sit in all day, so it borrows its shape from Linear, Attio and Ashby rather than from the website. It keeps the website's colours and its one signal accent; everything else is quieter and denser. Its rules are scoped under the `.console` class in `globals.css`, so the website is untouched.
+
+- **Type:** Inter (loaded in `app/console/layout.tsx`), base 13.5px. Page titles 20px semibold; section headings 13.5–14px semibold; labels and table headers 12px slate. Numbers are tabular Inter, not mono; mono is kept for keyboard keys only.
+- **Shape:** buttons, fields and tags 5–6px radius; cards and tables 8px. No pills, except counters and dots.
+- **Surfaces:** flat. Hairline borders, no resting shadows. A secondary button carries a 1px hint of shadow; overlays keep `shadow-lift-hover`.
+- **Controls:** buttons 32px (28px small), fields 36px (32px in toolbars). One primary (signal) button per screen; everything else secondary or ghost.
+- **Tags:** tinted background, no outline, a small dot in the status colour, 12px medium text.
+- **Sidebar:** 232px on mist. Company at the top as a monogram, flat 32px items, the active item tinted `ink/6%`, open roles listed below with a status dot.
+- **Tables:** 12px headers on a mist band, 13px rows, hover tint, the active row marked by a 2px signal bar.
+- **Segmented views:** a tinted track with a white raised segment, 28px high.

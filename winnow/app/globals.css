@@ -479,3 +479,22 @@ html:not(.js) .worries {
     transform: none !important;
   }
 }
+
+/* The console is a work tool, not a page to scroll through: Inter, flat
+   surfaces, tighter type. Scoped so the website is untouched. */
+.console {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --shadow-lift: 0 0 0 transparent;
+  font-family: var(--font-sans);
+  font-feature-settings: "cv11", "ss01", "ss03";
+  letter-spacing: -0.006em;
+  -webkit-font-smoothing: antialiased;
+}
+.console .font-mono {
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
+}
+.console kbd.font-mono {
+  font-family: var(--font-mono);
+}

@@ -97,7 +97,7 @@ export default function Uploader({ roleId, source = "upload", compact = false }:
           {busy ? "Uploading…" : "Add CVs"}
         </button>
         {menu || items.length ? (
-          <div className="absolute right-0 top-10 z-30 w-[min(20rem,86vw)] rounded-[12px] border border-hairline bg-paper p-3 text-[13px] shadow-lift-hover">
+          <div className="absolute right-0 top-10 z-30 w-[min(20rem,86vw)] rounded-[8px] border border-hairline bg-paper p-3 text-[13px] shadow-lift-hover">
             <div className="flex flex-wrap gap-2">
               <button type="button" disabled={busy} onClick={() => files.current?.click()} className={buttonClass("secondary", "sm")}>
                 Choose files
@@ -120,7 +120,7 @@ export default function Uploader({ roleId, source = "upload", compact = false }:
     );
 
   return (
-    <div className={compact ? "" : "rounded-[14px] border border-dashed border-hairline bg-mist/50 p-5"}>
+    <div className={compact ? "" : "rounded-[10px] border border-dashed border-hairline bg-mist/50 p-5"}>
       {source === "referral" ? (
         <label className="mb-3 block">
           <span className="text-[13px] font-medium">Referred by</span>

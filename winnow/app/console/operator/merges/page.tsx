@@ -10,7 +10,7 @@ type P = { id: string; name: string; email: string | null; phone: string | null;
 
 function Person({ p }: { p: P }) {
   return (
-    <div className="min-w-0 rounded-[12px] border border-hairline p-3 text-[13px]">
+    <div className="min-w-0 rounded-[8px] border border-hairline p-3 text-[13px]">
       <p className="font-medium">{p.name}</p>
       <dl className="mt-1 grid grid-cols-[4rem_minmax(0,1fr)] gap-x-2 gap-y-0.5 text-slate">
         <dt>Email</dt>

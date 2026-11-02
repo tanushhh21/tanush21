@@ -107,9 +107,9 @@ export default async function Setup({ params, searchParams }: { params: Promise<
             <RubricList rubric={rubric} />
           </>
         ) : failed ? (
-          <p className="rounded-[12px] bg-alert/[0.06] px-4 py-3 text-[13.5px] text-alert">The rubric could not be built: {failed.error}</p>
+          <p className="rounded-[8px] bg-alert/[0.06] px-4 py-3 text-[13.5px] text-alert">The rubric could not be built: {failed.error}</p>
         ) : (
-          <div className="rounded-[12px] border border-hairline px-4 py-6 text-center">
+          <div className="rounded-[8px] border border-hairline px-4 py-6 text-center">
             <p className="font-medium">Building the rubric…</p>
             <p className="mt-1 text-[13px] text-slate">You can continue; it keeps building in the background.</p>
             <Waiter roleId={role.id} until="rubric" />
@@ -138,29 +138,29 @@ export default async function Setup({ params, searchParams }: { params: Promise<
     return (
       <div className="grid gap-6">
         <section>
-          <h2 className="font-display text-[15px] font-semibold">Upload CVs</h2>
+          <h2 className="text-[14px] font-semibold">Upload CVs</h2>
           <p className="mt-0.5 text-[13px] text-slate">A folder of applications, or a few files. Winnow reads and ranks them as they arrive.</p>
           <div className="mt-3">
             <Uploader roleId={role.id} />
           </div>
         </section>
         <section>
-          <h2 className="font-display text-[15px] font-semibold">Add a referral</h2>
+          <h2 className="text-[14px] font-semibold">Add a referral</h2>
           <div className="mt-3">
             <Uploader roleId={role.id} source="referral" />
           </div>
         </section>
         <form action={saveSources} className="grid gap-3">
           <input type="hidden" name="roleId" value={role.id} />
-          <h2 className="font-display text-[15px] font-semibold">More sources</h2>
-          <label className="flex items-start gap-2.5 rounded-[12px] border border-hairline p-3.5 text-[13.5px]">
+          <h2 className="text-[14px] font-semibold">More sources</h2>
+          <label className="flex items-start gap-2.5 rounded-[8px] border border-hairline p-3.5 text-[13.5px]">
             <input type="checkbox" name="sources" value="winnow_sourcing" defaultChecked={picked.has("winnow_sourcing")} className="mt-0.5 size-4 accent-[#1b4dff]" />
             <span>
               <span className="font-medium">Ask Winnow to source</span>
               <span className="block text-slate">We search beyond your applicants, including people who have not applied.</span>
             </span>
           </label>
-          <div className="flex items-start gap-2.5 rounded-[12px] border border-hairline p-3.5 text-[13.5px]">
+          <div className="flex items-start gap-2.5 rounded-[8px] border border-hairline p-3.5 text-[13.5px]">
             <span className="mt-0.5 size-4 rounded-[4px] border border-hairline" aria-hidden="true" />
             <span>
               <span className="font-medium">Connect your ATS</span>
@@ -175,7 +175,7 @@ export default async function Setup({ params, searchParams }: { params: Promise<
               </span>
             </span>
           </div>
-          <div className="flex items-start gap-2.5 rounded-[12px] border border-hairline p-3.5 text-[13.5px]">
+          <div className="flex items-start gap-2.5 rounded-[8px] border border-hairline p-3.5 text-[13.5px]">
             <span className="mt-0.5 size-4 rounded-[4px] border border-hairline" aria-hidden="true" />
             <span>
               <span className="font-medium">Forward a careers inbox</span>
@@ -200,14 +200,14 @@ export default async function Setup({ params, searchParams }: { params: Promise<
         <input type="hidden" name="roleId" value={role.id} />
         <fieldset className="grid gap-2.5">
           <legend className="text-[13px] font-medium">Who can see this role</legend>
-          <label className="flex items-start gap-2.5 rounded-[12px] border border-hairline p-3.5 text-[13.5px]">
+          <label className="flex items-start gap-2.5 rounded-[8px] border border-hairline p-3.5 text-[13.5px]">
             <input type="radio" name="visibility" value="team" defaultChecked={role.visibility === "team"} className="mt-0.5 size-4 accent-[#1b4dff]" />
             <span>
               <span className="font-medium">The TA team and the hiring manager</span>
               <span className="block text-slate">The default.</span>
             </span>
           </label>
-          <label className="flex items-start gap-2.5 rounded-[12px] border border-hairline p-3.5 text-[13.5px]">
+          <label className="flex items-start gap-2.5 rounded-[8px] border border-hairline p-3.5 text-[13.5px]">
             <input type="radio" name="visibility" value="restricted" defaultChecked={role.visibility === "restricted"} className="mt-0.5 size-4 accent-[#1b4dff]" />
             <span>
               <span className="font-medium">Only the people I choose</span>

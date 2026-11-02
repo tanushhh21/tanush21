@@ -25,7 +25,7 @@ export default function RubricList({ rubric }: { rubric: Rubric }) {
     <div className="grid gap-6">
       <ol className="grid gap-3">
         {rubric.requirements.map((q) => (
-          <li key={q.id} className="rounded-[12px] border border-hairline bg-paper p-4">
+          <li key={q.id} className="rounded-[8px] border border-hairline bg-paper p-4">
             <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
               <p className="min-w-0 flex-1 text-[14px] font-medium text-ink">{q.text}</p>
               <div className="flex items-center gap-2">
@@ -53,7 +53,7 @@ export default function RubricList({ rubric }: { rubric: Rubric }) {
           <p className="mt-0.5 text-[12.5px] text-slate">Lines from the job description Winnow would not score on, and why.</p>
           <ul className="mt-3 grid gap-2">
             {rubric.refused.map((r) => (
-              <li key={r.id} className="rounded-[12px] bg-mist px-4 py-3 text-[13px]">
+              <li key={r.id} className="rounded-[8px] bg-mist px-4 py-3 text-[13px]">
                 <p className="text-ink line-through decoration-slate/50">&ldquo;{r.line}&rdquo;</p>
                 <p className="mt-1 text-slate">
                   <Badge tone={r.kind === "protected" ? "alert" : "caution"} className="mr-1.5">

@@ -26,7 +26,7 @@ export default async function Orgs({ searchParams }: { searchParams: Promise<{ n
                 <input type="hidden" name="next" value={next ?? "/console"} />
                 <button
                   type="submit"
-                  className="flex w-full items-center justify-between rounded-[12px] border border-hairline bg-paper px-4 py-3 text-left transition-colors hover:border-slate/40"
+                  className="flex w-full items-center justify-between rounded-[8px] border border-hairline bg-paper px-4 py-3 text-left transition-colors hover:border-slate/40"
                 >
                   <span className="font-medium">{o.name}</span>
                   <span className="text-[12.5px] text-slate">{LEVEL[o.level]}</span>

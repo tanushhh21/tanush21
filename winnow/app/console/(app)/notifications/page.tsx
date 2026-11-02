@@ -41,7 +41,7 @@ export default async function Notifications() {
       {rows.length === 0 ? (
         <Empty title="Nothing yet">When a shortlist is ready, a candidate replies or a role stalls, it shows here.</Empty>
       ) : (
-        <ol className="divide-y divide-hairline overflow-hidden rounded-[14px] border border-hairline">
+        <ol className="divide-y divide-hairline overflow-hidden rounded-[10px] border border-hairline">
           {rows.map((n) => (
             <li key={n.id}>
               <form action={openNotification}>

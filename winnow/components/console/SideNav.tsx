@@ -32,7 +32,7 @@ const MAIN = [
 
 function Icon({ d }: { d: string }) {
   return (
-    <svg viewBox="0 0 20 20" className="size-[17px] shrink-0" aria-hidden="true">
+    <svg viewBox="0 0 20 20" className="size-4 shrink-0" aria-hidden="true">
       <path d={d} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
@@ -46,8 +46,8 @@ function NavLink({ href, active, children, onClick }: { href: string; active: bo
       href={href}
       onClick={onClick}
       aria-current={active ? "page" : undefined}
-      className={`flex min-h-9 items-center gap-2 rounded-[9px] px-2.5 text-[13.5px] transition-colors duration-150 ${
-        active ? "bg-paper font-medium text-ink shadow-lift ring-1 ring-hairline" : "text-slate hover:bg-paper/70 hover:text-ink"
+      className={`flex h-8 items-center gap-2.5 rounded-[6px] px-2 text-[13px] transition-colors duration-100 max-lg:h-10 max-lg:text-[14px] ${
+        active ? "bg-ink/[0.06] font-medium text-ink" : "text-[#3d434d] hover:bg-ink/[0.04] hover:text-ink"
       }`}
     >
       {children}
@@ -64,42 +64,44 @@ export default function SideNav(p: Props) {
 
   const body = (
     <div className="flex h-full flex-col">
-      <div className="flex h-14 items-center justify-between px-4">
-        <Link href="/console" aria-label="Winnow home" onClick={close}>
-          <Logo size={19} />
-        </Link>
-        <Link href="/console/notifications" onClick={close} className="relative rounded-full p-2 text-slate hover:bg-paper hover:text-ink" aria-label={`Notifications${p.unread ? `, ${p.unread} unread` : ""}`}>
-          <svg viewBox="0 0 20 20" className="size-[18px]" aria-hidden="true">
-            <path d="M10 2.75a4.75 4.75 0 0 0-4.75 4.75v2.3c0 .5-.17.98-.48 1.37L3.6 12.6a.9.9 0 0 0 .7 1.47h11.4a.9.9 0 0 0 .7-1.47l-1.17-1.43a2.18 2.18 0 0 1-.48-1.37V7.5A4.75 4.75 0 0 0 10 2.75Z" fill="none" stroke="currentColor" strokeWidth="1.5" />
-            <path d="M8 16.25a2 2 0 0 0 4 0" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-          </svg>
-          {p.unread ? <span className="absolute right-1 top-1 size-2 rounded-full bg-signal ring-2 ring-mist" /> : null}
-        </Link>
-      </div>
-
-      <div className="px-3">
+      <div className="flex h-12 items-center gap-1 px-2.5 pt-1">
         <Link
           href={p.orgCount > 1 ? "/console/orgs" : "/console/settings"}
           onClick={close}
-          className="flex items-center justify-between rounded-[10px] border border-hairline bg-paper px-3 py-2 text-left hover:border-slate/40"
+          className="flex min-w-0 flex-1 items-center gap-2 rounded-[6px] px-1.5 py-1.5 hover:bg-ink/[0.04]"
+          title={p.orgCount > 1 ? "Switch company" : "Company settings"}
         >
-          <span className="min-w-0">
-            <span className="block truncate text-[13.5px] font-medium text-ink">{p.org.name}</span>
-            <span className="block text-[12px] text-slate">{p.level}</span>
+          <span aria-hidden="true" className="grid size-6 shrink-0 place-items-center rounded-[6px] bg-ink text-[12px] font-semibold text-paper">
+            {p.org.name.trim().charAt(0).toUpperCase()}
           </span>
-          {p.orgCount > 1 ? <span className="text-[12px] text-slate">Switch</span> : null}
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-[13px] font-semibold leading-tight text-ink">{p.org.name}</span>
+            <span className="block truncate text-[11.5px] leading-tight text-slate">{p.level}</span>
+          </span>
+          {p.orgCount > 1 ? (
+            <svg viewBox="0 0 20 20" className="size-3.5 shrink-0 text-slate" aria-hidden="true">
+              <path d="m6.5 8 3.5-3 3.5 3M6.5 12l3.5 3 3.5-3" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          ) : null}
+        </Link>
+        <Link href="/console/notifications" onClick={close} className="relative shrink-0 rounded-[6px] p-1.5 text-slate hover:bg-ink/[0.04] hover:text-ink" aria-label={`Notifications${p.unread ? `, ${p.unread} unread` : ""}`}>
+          <svg viewBox="0 0 20 20" className="size-4" aria-hidden="true">
+            <path d="M10 2.75a4.75 4.75 0 0 0-4.75 4.75v2.3c0 .5-.17.98-.48 1.37L3.6 12.6a.9.9 0 0 0 .7 1.47h11.4a.9.9 0 0 0 .7-1.47l-1.17-1.43a2.18 2.18 0 0 1-.48-1.37V7.5A4.75 4.75 0 0 0 10 2.75Z" fill="none" stroke="currentColor" strokeWidth="1.5" />
+            <path d="M8 16.25a2 2 0 0 0 4 0" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
+          {p.unread ? <span className="absolute right-1 top-1 size-1.5 rounded-full bg-signal ring-2 ring-mist" /> : null}
         </Link>
       </div>
 
-      <nav aria-label="Console" className="mt-4 flex-1 overflow-y-auto px-3 pb-4">
-        <ul className="grid gap-0.5">
+      <nav aria-label="Console" className="mt-2 flex-1 overflow-y-auto px-2.5 pb-4">
+        <ul className="grid gap-px">
           {MAIN.map((m) => (
             <li key={m.href}>
               <NavLink href={m.href} active={is(m.href, m.exact) || !!m.also?.some((a) => is(a))} onClick={close}>
                 <Icon d={m.icon} />
                 <span className="flex-1">{m.label}</span>
                 {m.href === "/console" && p.needsYou ? (
-                  <span className="rounded-full bg-signal px-1.5 font-mono text-[11px] leading-[18px] text-paper tabular-nums">{p.needsYou}</span>
+                  <span className="min-w-5 rounded-full bg-signal px-1.5 text-center text-[11px] font-medium leading-[18px] text-paper tabular-nums">{p.needsYou}</span>
                 ) : null}
               </NavLink>
             </li>
@@ -114,20 +116,22 @@ export default function SideNav(p: Props) {
           ) : null}
         </ul>
 
-        <div className="mt-6 flex items-center justify-between px-2.5">
-          <p className="text-[12px] font-medium text-slate">Roles</p>
+        <div className="mt-5 flex h-7 items-center justify-between pl-2 pr-1">
+          <p className="text-[12px] font-medium text-slate">Open roles</p>
           {p.canCreateRole ? (
-            <Link href="/console/chat?new=1" onClick={close} className="text-[12.5px] font-medium text-signal hover:underline">
-              + New role
+            <Link href="/console/chat?new=1" onClick={close} className="grid size-6 place-items-center rounded-[6px] text-slate hover:bg-ink/[0.05] hover:text-ink" aria-label="New role" title="New role">
+              <svg viewBox="0 0 20 20" className="size-3.5" aria-hidden="true">
+                <path d="M10 4.5v11M4.5 10h11" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+              </svg>
             </Link>
           ) : null}
         </div>
-        <ul className="mt-1.5 grid gap-0.5">
-          {p.roles.length === 0 ? <li className="px-2.5 py-1.5 text-[13px] text-slate">No open roles</li> : null}
+        <ul className="mt-0.5 grid gap-px">
+          {p.roles.length === 0 ? <li className="px-2 py-1.5 text-[13px] text-slate">No open roles</li> : null}
           {p.roles.map((r) => (
             <li key={r.id}>
               <NavLink href={`/console/roles/${r.id}`} active={is(`/console/roles/${r.id}`)} onClick={close}>
-                <span className={`size-1.5 shrink-0 rounded-full ${toneDot[r.tone]}`} aria-hidden="true" />
+                <span className="grid size-4 shrink-0 place-items-center" aria-hidden="true"><span className={`size-1.5 rounded-full ${toneDot[r.tone]}`} /></span>
                 <span className="min-w-0 flex-1 truncate">{r.title}</span>
                 <span className="sr-only">, {r.status}</span>
               </NavLink>
@@ -136,16 +140,24 @@ export default function SideNav(p: Props) {
         </ul>
       </nav>
 
-      <div className="flex items-center justify-between gap-2 border-t border-hairline px-4 py-3">
-        <Link href="/console/settings/account" onClick={close} className="min-w-0 rounded-[8px] hover:opacity-80" aria-label="Your account">
-          <span className="block truncate text-[13px] font-medium text-ink">{p.user.name}</span>
-          <span className="block truncate text-[12px] text-slate">{p.user.email}</span>
+      <div className="flex items-center gap-2 border-t border-hairline px-2.5 py-2">
+        <Link href="/console/settings/account" onClick={close} className="flex min-w-0 flex-1 items-center gap-2 rounded-[6px] px-1.5 py-1.5 hover:bg-ink/[0.04]" aria-label="Your account">
+          <span aria-hidden="true" className="grid size-6 shrink-0 place-items-center rounded-full bg-signal/10 text-[11px] font-semibold text-signal">
+            {(p.user.name || p.user.email).trim().charAt(0).toUpperCase()}
+          </span>
+          <span className="min-w-0">
+            <span className="block truncate text-[12.5px] font-medium leading-tight text-ink">{p.user.name}</span>
+            <span className="block truncate text-[11.5px] leading-tight text-slate">{p.user.email}</span>
+          </span>
         </Link>
         <form action={p.signOut}>
-          <button type="submit" className="rounded-full px-2.5 py-1.5 text-[12.5px] text-slate hover:bg-paper hover:text-ink">
+          <button type="submit" className="rounded-[6px] px-2 py-1.5 text-[12px] text-slate hover:bg-ink/[0.04] hover:text-ink">
             Sign out
           </button>
         </form>
+      </div>
+      <div className="flex items-center gap-1.5 px-4 pb-3 text-[11px] text-slate/80">
+        <Logo size={12} />
       </div>
     </div>
   );
@@ -153,20 +165,20 @@ export default function SideNav(p: Props) {
   return (
     <>
       {/* Phones and tablets: a top bar with a menu. */}
-      <div className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-hairline bg-paper/90 px-4 backdrop-blur-[12px] lg:hidden">
+      <div className="sticky top-0 z-40 flex h-12 items-center justify-between border-b border-hairline bg-paper/90 px-4 backdrop-blur-[12px] lg:hidden">
         <button
           type="button"
           onClick={() => setOpen(true)}
           aria-label="Open menu"
           aria-expanded={open}
-          className="-ml-2 rounded-full p-2 text-ink hover:bg-mist"
+          className="-ml-2 rounded-[6px] p-2 text-ink hover:bg-mist"
         >
           <svg viewBox="0 0 20 20" className="size-5" aria-hidden="true">
             <path d="M3.5 6h13M3.5 10h13M3.5 14h13" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
           </svg>
         </button>
         <Link href="/console" aria-label="Winnow home">
-          <Logo size={18} />
+          <Logo size={16} />
         </Link>
         <Link href="/console" className="relative -mr-2 rounded-full p-2 text-[12.5px] font-medium text-ink" aria-label={`${p.needsYou} items need you`}>
           {p.needsYou ? <span className="rounded-full bg-signal px-1.5 py-0.5 font-mono text-[11px] text-paper tabular-nums">{p.needsYou}</span> : <span className="text-slate">0</span>}
@@ -180,7 +192,7 @@ export default function SideNav(p: Props) {
       ) : null}
 
       {/* Desktop: a fixed sidebar. */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[248px] border-r border-hairline bg-mist lg:block">{body}</aside>
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[232px] border-r border-hairline bg-mist lg:block">{body}</aside>
     </>
   );
 }
