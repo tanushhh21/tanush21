@@ -134,9 +134,14 @@ export default async function Home() {
                 Needs you
               </h2>
               {needs.length ? <span className="text-[13px] tabular-nums text-slate">{needs.length}</span> : null}
+              {needs.length > 4 ? (
+                <Link href="/console/inbox" className="ml-auto text-[12.5px] text-slate hover:text-ink">
+                  See all {needs.length}
+                </Link>
+              ) : null}
             </div>
             <div className="-mx-2.5">
-              <NeedsList items={needs.map((n) => ({ key: n.key, type: n.type, label: NEED_LABEL[n.type], roleTitle: n.roleTitle, roleId: n.roleId, person: n.person, ageDays: n.ageDays, text: n.text, action: n.action, priority: n.priority }))} />
+              <NeedsList totals={{ 0: needs.filter((n) => n.priority === 0).length, 1: needs.filter((n) => n.priority === 1).length, 2: needs.filter((n) => n.priority === 2).length }} items={needs.slice(0, 4).map((n) => ({ key: n.key, type: n.type, label: NEED_LABEL[n.type], roleTitle: n.roleTitle, roleId: n.roleId, person: n.person, ageDays: n.ageDays, text: n.text, action: n.action, priority: n.priority }))} />
             </div>
           </section>
 
