@@ -26,6 +26,38 @@ export type RoleRow = {
 const RISK = { high: 2, medium: 1, low: 0 };
 const say = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
+/** The pipeline, left to right, as one bar per role. Colour deepens as people move on. */
+const STEPS = [
+  { key: "toReview", label: "to review", cls: "bg-slate/35" },
+  { key: "shortlisted", label: "shortlisted", cls: "bg-signal/45" },
+  { key: "interviewing", label: "interviewing", cls: "bg-signal" },
+  { key: "offer", label: "offer", cls: "bg-ok" },
+] as const;
+
+function Pipeline({ r }: { r: RoleRow }) {
+  const total = Math.max(r.received, 1);
+  const parts = STEPS.map((s) => ({ ...s, n: r[s.key] })).filter((s) => s.n > 0);
+  const words = [`${r.received} candidate${r.received === 1 ? "" : "s"}`, ...parts.map((s) => `${s.n} ${s.label}`)].join(" · ");
+  return (
+    <div className="min-w-0">
+      <div role="img" aria-label={words} title={words} className="flex h-1.5 w-full max-w-[22rem] gap-[2px] overflow-hidden rounded-full bg-ink/[0.06]">
+        {parts.map((s) => (
+          <span key={s.key} className={`h-full ${s.cls}`} style={{ width: `${Math.max(3, (s.n / total) * 100)}%` }} />
+        ))}
+      </div>
+      <p className="mt-1.5 truncate text-[12px] tabular-nums text-slate">
+        <span className="font-medium text-ink">{r.received}</span> candidates
+        {parts.map((s) => (
+          <span key={s.key}>
+            {" · "}
+            <span className={s.key === "toReview" ? "font-medium text-ink" : ""}>{s.n}</span> {s.label}
+          </span>
+        ))}
+      </p>
+    </div>
+  );
+}
+
 /** One row per role: how many candidates are at each step, and a status in words. Riskiest first. */
 export default function RolesTable({ rows }: { rows: RoleRow[] }) {
   const [mine, setMine] = useState(false);
@@ -38,8 +70,7 @@ export default function RolesTable({ rows }: { rows: RoleRow[] }) {
     [rows, mine, closed],
   );
   const anyClosed = rows.some((r) => r.status === "closed");
-  const num = (n: number, strong = false) => <span className={`tabular-nums ${n ? (strong ? "font-semibold text-ink" : "text-ink") : "text-slate/60"}`}>{n}</span>;
-  const problems = (r: RoleRow) =>
+    const problems = (r: RoleRow) =>
     [r.failed ? `${r.failed} could not be scored` : "", r.unreadable ? `${r.unreadable} could not be read` : ""].filter(Boolean).join(" · ");
 
   return (
@@ -65,23 +96,31 @@ export default function RolesTable({ rows }: { rows: RoleRow[] }) {
             <table className="w-full border-collapse text-left text-[13px]">
               <thead className="bg-mist/60 text-[12px] text-slate">
                 <tr>
-                  <th className="px-4 py-2 font-medium">Role</th>
-                  <th className="px-3 py-2 text-right font-medium">Candidates</th>
-                  <th className="px-3 py-2 text-right font-medium">To review</th>
-                  <th className="px-3 py-2 text-right font-medium">Shortlisted</th>
-                  <th className="px-3 py-2 text-right font-medium">Interviewing</th>
-                  <th className="px-3 py-2 text-right font-medium">Offer</th>
-                  <th className="px-4 py-2 font-medium">Status</th>
+                  <th className="h-8 px-4 font-medium">Role</th>
+                  <th className="h-8 px-4 font-medium">
+                    <span className="flex items-center gap-3">
+                      Pipeline
+                      <span className="flex items-center gap-2.5 font-normal" aria-hidden="true">
+                        {STEPS.map((x) => (
+                          <span key={x.key} className="inline-flex items-center gap-1">
+                            <span className={`size-1.5 rounded-full ${x.cls}`} />
+                            {x.label}
+                          </span>
+                        ))}
+                      </span>
+                    </span>
+                  </th>
+                  <th className="h-8 px-4 font-medium">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {shown.map((r) => (
                   <tr key={r.id} className="group border-t border-hairline hover:bg-mist/40">
-                    <td className="px-4 py-2.5">
+                    <td className="w-[34%] px-4 py-3 align-top">
                       <Link href={`/console/roles/${r.id}`} className="font-medium group-hover:underline">
                         {r.title}
                       </Link>
-                      <span className="block text-[12px] text-slate">
+                      <span className="mt-0.5 block text-[12px] text-slate">
                         {r.manager ?? "No hiring manager"} · {r.status === "closed" ? "closed" : `open ${r.daysOpen} day${r.daysOpen === 1 ? "" : "s"}`}
                       </span>
                       {problems(r) ? (
@@ -90,14 +129,14 @@ export default function RolesTable({ rows }: { rows: RoleRow[] }) {
                         </span>
                       ) : null}
                     </td>
-                    <td className="px-3 py-2.5 text-right">{num(r.received)}</td>
-                    <td className="px-3 py-2.5 text-right">{num(r.toReview, true)}</td>
-                    <td className="px-3 py-2.5 text-right">{num(r.shortlisted)}</td>
-                    <td className="px-3 py-2.5 text-right">{num(r.interviewing)}</td>
-                    <td className="px-3 py-2.5 text-right">{num(r.offer)}</td>
-                    <td className="whitespace-nowrap px-4 py-2.5">
+                    <td className="px-4 py-3 align-top">
+                      <div className="pt-1.5">
+                        <Pipeline r={r} />
+                      </div>
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3 align-top">
                       <Badge tone={r.tone}>{say(r.status)}</Badge>
-                      {r.risk === "high" ? <span className="ml-1.5 text-[12px] text-alert">behind target</span> : null}
+                      {r.risk === "high" ? <span className="mt-1 block text-[12px] text-alert">Behind target</span> : null}
                     </td>
                   </tr>
                 ))}
@@ -112,11 +151,9 @@ export default function RolesTable({ rows }: { rows: RoleRow[] }) {
                     <span className="font-medium">{r.title}</span>
                     <Badge tone={r.tone}>{say(r.status)}</Badge>
                   </span>
-                  <span className="mt-1 block text-[12.5px] text-slate">
-                    {r.received} candidates · <span className="font-medium text-ink">{r.toReview} to review</span> · {r.shortlisted} shortlisted
-                    {r.interviewing ? ` · ${r.interviewing} interviewing` : ""}
-                    {r.offer ? ` · ${r.offer} offer` : ""}
-                  </span>
+                  <div className="mt-2.5">
+                    <Pipeline r={r} />
+                  </div>
                   {problems(r) ? <span className="mt-1 block text-[12px] text-alert">{problems(r)}</span> : null}
                 </Link>
               </li>

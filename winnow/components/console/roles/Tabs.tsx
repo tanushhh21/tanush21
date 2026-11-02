@@ -15,11 +15,11 @@ const TABS = [
   { slug: "pool", label: "Insights", also: ["activity"] },
 ];
 
-export default function Tabs({ roleId, counts }: { roleId: string; counts: Record<string, number> }) {
+export default function Tabs({ roleId, counts, aside }: { roleId: string; counts: Record<string, number>; aside?: React.ReactNode }) {
   const path = usePathname() ?? "";
   const base = `/console/roles/${roleId}`;
   return (
-    <nav aria-label="Role" className="-mx-4 overflow-x-auto border-b border-hairline px-4 sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0">
+    <nav aria-label="Role" className="-mx-4 flex items-center justify-between gap-6 overflow-x-auto border-b border-hairline px-4 sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0">
       <ul className="-ml-2.5 flex gap-0.5">
         {TABS.map((t) => {
           const href = t.slug ? `${base}/${t.slug}` : base;
@@ -39,6 +39,7 @@ export default function Tabs({ roleId, counts }: { roleId: string; counts: Recor
           );
         })}
       </ul>
+      {aside ? <div className="hidden shrink-0 lg:block">{aside}</div> : null}
     </nav>
   );
 }
