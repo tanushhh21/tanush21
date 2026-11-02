@@ -41,7 +41,7 @@ export default async function Welcome({ searchParams }: { searchParams: Promise<
         <ul className="grid gap-2">
           {pending.map((p) => (
             <li key={p.token}>
-              <form action={acceptInvite} className="flex items-center justify-between gap-3 rounded-[12px] border border-hairline px-4 py-3">
+              <form action={acceptInvite} className="flex items-center justify-between gap-3 rounded-[8px] border border-hairline px-4 py-3">
                 <input type="hidden" name="token" value={p.token} />
                 <span className="text-[14px]">
                   <span className="font-medium">{p.org}</span>

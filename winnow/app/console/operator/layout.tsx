@@ -22,7 +22,7 @@ export default async function OperatorLayout({ children }: { children: React.Rea
         <div className="mx-auto flex max-w-[76rem] items-center justify-between gap-3 px-4 py-3 sm:px-6">
           <span className="flex items-center gap-3">
             <Logo size={18} />
-            <span className="rounded-full bg-ink px-2 py-0.5 text-[11.5px] font-medium text-paper">Operator</span>
+            <span className="rounded-[6px] bg-ink px-2 py-0.5 text-[11.5px] font-medium text-paper">Operator</span>
           </span>
           <span className="flex items-center gap-2">
             <Link href="/console/orgs" className={buttonClass("ghost", "sm")}>

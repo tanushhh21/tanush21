@@ -1,21 +1,22 @@
 /**
- * Console building blocks, in the website's language (see DESIGN.md) but
- * denser: 14px base, 12px radii, hairline borders, one signal accent.
+ * Console building blocks. The website's colours (see DESIGN.md) in a work
+ * tool's shape, after Linear, Attio and Ashby: Inter at 13.5px, 6–10px radii,
+ * flat hairline surfaces, one signal accent, one primary action per screen.
  */
 import Link from "next/link";
 
 type Tone = "primary" | "secondary" | "ghost" | "danger";
 
 const buttonTone: Record<Tone, string> = {
-  primary: "bg-signal text-paper hover:bg-[#1440e0] shadow-lift",
-  secondary: "border border-hairline bg-paper text-ink hover:border-slate/40",
+  primary: "bg-signal text-paper hover:bg-[#1440e0]",
+  secondary: "border border-hairline bg-paper text-ink shadow-[0_1px_1px_rgb(10_12_15/0.04)] hover:bg-mist",
   ghost: "text-slate hover:bg-mist hover:text-ink",
   danger: "border border-hairline bg-paper text-alert hover:border-alert/40",
 };
 
 export function buttonClass(tone: Tone = "secondary", size: "sm" | "md" = "md") {
-  const s = size === "sm" ? "h-8 px-3 text-[13px]" : "h-9 px-4 text-[13.5px]";
-  return `inline-flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full font-medium transition-colors duration-150 disabled:pointer-events-none disabled:opacity-45 ${s} ${buttonTone[tone]}`;
+  const s = size === "sm" ? "h-7 px-2.5 text-[12.5px]" : "h-8 px-3 text-[13px]";
+  return `inline-flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-[6px] font-medium transition-colors duration-150 disabled:pointer-events-none disabled:opacity-45 ${s} ${buttonTone[tone]}`;
 }
 
 export function Button({
@@ -37,11 +38,11 @@ export function ButtonLink({
 }
 
 export const fieldClass =
-  "block h-10 w-full rounded-[10px] border border-hairline bg-paper px-3 text-[16px] text-ink placeholder:text-slate/70 transition-[border-color,box-shadow] duration-150 hover:border-slate/40 focus:border-signal focus:shadow-[0_0_0_3px_rgb(27_77_255/0.14)] focus:outline-none sm:text-[14px]";
+  "block h-9 w-full rounded-[6px] border border-hairline bg-paper px-2.5 text-[16px] text-ink placeholder:text-slate/70 transition-[border-color,box-shadow] duration-150 hover:border-slate/40 focus:border-signal focus:shadow-[0_0_0_3px_rgb(27_77_255/0.12)] focus:outline-none sm:text-[13.5px]";
 
-export const areaClass = fieldClass.replace("h-10", "min-h-28 py-2.5 leading-relaxed");
+export const areaClass = fieldClass.replace("h-9", "min-h-28 py-2 leading-relaxed");
 /** A compact control that sizes to its content (toolbars). */
-export const smallFieldClass = fieldClass.replace("h-10", "h-8").replace("w-full", "w-auto").replace("sm:text-[14px]", "sm:text-[13px]");
+export const smallFieldClass = fieldClass.replace("h-9", "h-8").replace("w-full", "w-auto").replace("sm:text-[13.5px]", "sm:text-[13px]");
 
 export function Field({ label, hint, optional, children }: { label: string; hint?: string; optional?: boolean; children: React.ReactNode }) {
   return (
@@ -58,18 +59,29 @@ export function Field({ label, hint, optional, children }: { label: string; hint
 
 type BadgeTone = "neutral" | "signal" | "alert" | "caution" | "ok" | "muted" | "ink";
 const badgeTone: Record<BadgeTone, string> = {
-  neutral: "border-hairline text-ink",
-  signal: "border-signal/30 bg-signal/[0.06] text-signal",
-  alert: "border-alert/30 bg-alert/[0.06] text-alert",
-  caution: "border-caution/30 bg-caution/[0.06] text-caution",
-  ok: "border-ok/30 bg-ok/[0.06] text-ok",
-  muted: "border-hairline text-slate",
-  ink: "border-ink bg-ink text-paper",
+  neutral: "bg-ink/[0.05] text-ink",
+  signal: "bg-signal/[0.08] text-[#1a3fc4]",
+  alert: "bg-alert/[0.08] text-alert",
+  caution: "bg-caution/[0.09] text-caution",
+  ok: "bg-ok/[0.08] text-ok",
+  muted: "bg-ink/[0.04] text-slate",
+  ink: "bg-ink/[0.07] text-ink",
+};
+
+const badgeDot: Record<BadgeTone, string> = {
+  neutral: "",
+  muted: "",
+  signal: "bg-signal",
+  alert: "bg-alert",
+  caution: "bg-caution",
+  ok: "bg-ok",
+  ink: "bg-ink",
 };
 
 export function Badge({ tone = "neutral", className = "", children }: { tone?: BadgeTone; className?: string; children: React.ReactNode }) {
   return (
-    <span className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-2 py-[1px] text-[12px] leading-[18px] ${badgeTone[tone]} ${className}`}>
+    <span className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-[5px] px-1.5 py-[1px] text-[12px] font-medium leading-[18px] ${badgeTone[tone]} ${className}`}>
+      {tone !== "neutral" && tone !== "muted" ? <span aria-hidden="true" className={`size-1.5 shrink-0 rounded-full ${badgeDot[tone]}`} /> : null}
       {children}
     </span>
   );
@@ -77,7 +89,7 @@ export function Badge({ tone = "neutral", className = "", children }: { tone?: B
 
 export function Card({ className = "", id, children }: { className?: string; id?: string; children: React.ReactNode }) {
   return (
-    <section id={id} className={`scroll-mt-20 rounded-[14px] border border-hairline bg-paper ${className}`}>
+    <section id={id} className={`scroll-mt-20 rounded-[8px] border border-hairline bg-paper ${className}`}>
       {children}
     </section>
   );
@@ -85,10 +97,10 @@ export function Card({ className = "", id, children }: { className?: string; id?
 
 export function CardHead({ title, meta, action }: { title: React.ReactNode; meta?: React.ReactNode; action?: React.ReactNode }) {
   return (
-    <div className="flex items-start justify-between gap-3 border-b border-hairline px-4 py-3 sm:px-5">
+    <div className="flex items-start justify-between gap-3 border-b border-hairline px-4 py-2.5">
       <div className="min-w-0">
-        <h2 className="font-display text-[15px] font-semibold tracking-[-0.01em] text-ink">{title}</h2>
-        {meta ? <p className="mt-0.5 text-[12.5px] text-slate">{meta}</p> : null}
+        <h2 className="text-[13.5px] font-semibold text-ink">{title}</h2>
+        {meta ? <p className="mt-0.5 text-[12px] text-slate">{meta}</p> : null}
       </div>
       {action ? <div className="shrink-0">{action}</div> : null}
     </div>
@@ -109,9 +121,9 @@ export function PageHeader({
   return (
     <header className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
       <div className="min-w-0">
-        {eyebrow ? <p className="text-[12.5px] text-slate">{eyebrow}</p> : null}
-        <h1 className="font-display text-[clamp(1.375rem,2.4vw,1.75rem)] font-semibold leading-tight tracking-[-0.025em] text-ink">{title}</h1>
-        {meta ? <div className="mt-1 text-[13px] text-slate">{meta}</div> : null}
+        {eyebrow ? <p className="mb-0.5 text-[12px] text-slate">{eyebrow}</p> : null}
+        <h1 className="text-[20px] font-semibold leading-tight tracking-[-0.018em] text-ink">{title}</h1>
+        {meta ? <div className="mt-1 text-[12.5px] text-slate">{meta}</div> : null}
       </div>
       {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}
     </header>
@@ -123,7 +135,7 @@ export function SettingsHead({ title, meta, actions }: { title: string; meta?: R
   return (
     <div className="flex flex-wrap items-start justify-between gap-3">
       <div className="min-w-0 max-w-[44rem]">
-        <h2 className="font-display text-[18px] font-semibold tracking-[-0.015em] text-ink">{title}</h2>
+        <h2 className="text-[15px] font-semibold tracking-[-0.01em] text-ink">{title}</h2>
         {meta ? <p className="mt-1 text-[13px] text-slate">{meta}</p> : null}
       </div>
       {actions ? <div className="flex items-center gap-2">{actions}</div> : null}
@@ -134,7 +146,7 @@ export function SettingsHead({ title, meta, actions }: { title: string; meta?: R
 export function Empty({ title, children, action }: { title: string; children?: React.ReactNode; action?: React.ReactNode }) {
   return (
     <div className="flex flex-col items-center px-6 py-14 text-center">
-      <p className="font-display text-[16px] font-semibold text-ink">{title}</p>
+      <p className="text-[14px] font-semibold text-ink">{title}</p>
       {children ? <div className="mt-1.5 max-w-[30rem] text-[13.5px] text-slate">{children}</div> : null}
       {action ? <div className="mt-5">{action}</div> : null}
     </div>
@@ -158,15 +170,15 @@ export function Stat({ label, value, sub }: { label: string; value: React.ReactN
   return (
     <div>
       <p className="text-[12.5px] text-slate">{label}</p>
-      <p className="mt-0.5 font-mono text-[20px] font-medium tabular-nums tracking-[-0.02em] text-ink">{value}</p>
+      <p className="mt-0.5 text-[20px] font-semibold tabular-nums tracking-[-0.02em] text-ink">{value}</p>
       {sub ? <p className="text-[12px] text-slate">{sub}</p> : null}
     </div>
   );
 }
 
-export const tableClass = "w-full border-collapse text-left text-[13.5px]";
-export const thClass = "border-b border-hairline px-3 py-2 text-[12px] font-medium text-slate whitespace-nowrap";
-export const tdClass = "border-b border-hairline px-3 py-2.5 align-top";
+export const tableClass = "w-full border-collapse text-left text-[13px]";
+export const thClass = "h-8 border-b border-hairline bg-mist/60 px-3 text-[12px] font-medium text-slate whitespace-nowrap";
+export const tdClass = "border-b border-hairline px-3 py-2 align-top";
 
 export function inr(n: number | null | undefined) {
   if (n == null) return "–";

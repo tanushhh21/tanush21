@@ -19,7 +19,7 @@ export default async function Account({ searchParams }: { searchParams: Promise<
         problems={["wrong-current"]}
       />
       {saved && !["password", "profile", "wrong-current"].includes(saved) ? (
-        <p role="alert" className="rounded-[10px] bg-alert/[0.06] px-3 py-2 text-[13px] text-alert">
+        <p role="alert" className="rounded-[7px] bg-alert/[0.06] px-3 py-2 text-[13px] text-alert">
           {saved}
         </p>
       ) : null}

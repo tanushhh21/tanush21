@@ -180,7 +180,7 @@ export default function TalentList({
       </p>
 
       {selected.size ? (
-        <div className="sticky top-14 z-10 flex flex-wrap items-center gap-2 rounded-[12px] bg-ink px-3 py-2.5 text-[13px] text-paper lg:top-2">
+        <div className="sticky top-14 z-10 flex flex-wrap items-center gap-2 rounded-[8px] bg-ink px-3 py-2.5 text-[13px] text-paper lg:top-2">
           <span className="font-medium">{selected.size} selected</span>
           {canRerank && openRoles.length ? (
             <>
@@ -192,7 +192,7 @@ export default function TalentList({
                   </option>
                 ))}
               </select>
-              <button type="button" disabled={pending} onClick={() => run(() => rerankAgainst(target, ids))} className="h-8 rounded-full bg-paper px-3 font-medium text-ink disabled:opacity-50">
+              <button type="button" disabled={pending} onClick={() => run(() => rerankAgainst(target, ids))} className="h-8 rounded-[6px] bg-paper px-3 font-medium text-ink disabled:opacity-50">
                 Score against this role
               </button>
             </>
@@ -200,7 +200,7 @@ export default function TalentList({
           <span className="text-paper/60">·</span>
           <form className="flex items-center gap-1.5" onSubmit={(e) => { e.preventDefault(); run(() => tagPeople(ids, tagText)); setTagText(""); }}>
             <input aria-label="Tag" value={tagText} onChange={(e) => setTagText(e.target.value)} placeholder="Tag" className="h-8 w-24 rounded-[8px] bg-paper/10 px-2 text-[13px] text-paper placeholder:text-paper/50" />
-            <button type="submit" disabled={pending || !tagText.trim()} className="h-8 rounded-full px-2.5 hover:bg-paper/10 disabled:opacity-50">
+            <button type="submit" disabled={pending || !tagText.trim()} className="h-8 rounded-[6px] px-2.5 hover:bg-paper/10 disabled:opacity-50">
               Tag
             </button>
           </form>
@@ -211,22 +211,22 @@ export default function TalentList({
                 <option key={p.id} value={p.name} />
               ))}
             </datalist>
-            <button type="submit" disabled={pending || !poolText.trim()} className="h-8 rounded-full px-2.5 hover:bg-paper/10 disabled:opacity-50">
+            <button type="submit" disabled={pending || !poolText.trim()} className="h-8 rounded-[6px] px-2.5 hover:bg-paper/10 disabled:opacity-50">
               Add to pool
             </button>
           </form>
-          <button type="button" onClick={() => setSelected(new Set())} className="ml-auto h-8 rounded-full px-2.5 text-paper/70 hover:bg-paper/10 hover:text-paper">
+          <button type="button" onClick={() => setSelected(new Set())} className="ml-auto h-8 rounded-[6px] px-2.5 text-paper/70 hover:bg-paper/10 hover:text-paper">
             Clear
           </button>
         </div>
       ) : null}
       {msg ? (
-        <p role="status" className="rounded-[10px] bg-mist px-3 py-2 text-[13px]">
+        <p role="status" className="rounded-[7px] bg-mist px-3 py-2 text-[13px]">
           {msg}
         </p>
       ) : null}
 
-      <div className="overflow-hidden rounded-[14px] border border-hairline">
+      <div className="overflow-hidden rounded-[10px] border border-hairline">
         <div className="hidden grid-cols-[2rem_minmax(0,1.6fr)_minmax(0,1.2fr)_minmax(0,1.4fr)_minmax(0,1fr)] gap-3 border-b border-hairline bg-mist/60 px-3 py-2 text-[12px] font-medium text-slate md:grid">
           <input type="checkbox" aria-label="Select all shown" checked={allShown} onChange={() => setSelected(allShown ? new Set() : new Set(shown.map((r) => r.id)))} className="size-4 accent-[#1b4dff]" />
           <span>Person</span>
@@ -297,7 +297,7 @@ function PersonEdit({ row, pending, run }: { row: TalentRow; pending: boolean; r
   const [consent, setC] = useState(row.consent);
   const [until, setUntil] = useState(row.retainUntil ?? "");
   return (
-    <div className="mx-3 mb-3 grid gap-3 rounded-[12px] border border-hairline bg-paper p-3 text-[13px] md:ml-14">
+    <div className="mx-3 mb-3 grid gap-3 rounded-[8px] border border-hairline bg-paper p-3 text-[13px] md:ml-14">
       <div className="flex flex-wrap items-end gap-2">
         <label>
           <span className="block text-[12px] text-slate">Consent</span>

@@ -70,7 +70,7 @@ export default async function RubricPage({ params }: { params: Promise<{ roleId:
 
   return (
     <div className="grid gap-5">
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-[12px] bg-mist px-4 py-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-[8px] bg-mist px-4 py-3">
         <p className="text-[13.5px]">
           Candidates are scored on <strong className="font-semibold">{strip.reqs} requirements</strong>, {strip.must} of them must-haves
           {strip.refused ? `. ${strip.refused} line${strip.refused === 1 ? "" : "s"} from the job description ${strip.refused === 1 ? "was" : "were"} left out on purpose` : ""}. Age, gender and other personal details are removed before scoring. Version {role.rubricVersion}.

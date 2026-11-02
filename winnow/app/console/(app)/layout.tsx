@@ -36,8 +36,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         isAdmin={can.orgSettings(c)}
         signOut={signOutAction}
       />
-      <div className="lg:pl-[248px]">
-        <main className="mx-auto w-full max-w-[1320px] px-4 pb-24 pt-6 sm:px-6 lg:px-8 lg:pt-8">{children}</main>
+      <div className="lg:pl-[232px]">
+        <main className="mx-auto w-full max-w-[1360px] px-4 pb-20 pt-5 sm:px-6 lg:px-8 lg:pt-6">{children}</main>
       </div>
     </>
   );

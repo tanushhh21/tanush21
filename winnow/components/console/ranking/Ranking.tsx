@@ -272,13 +272,13 @@ export default function Ranking(p: Props) {
     return [nav[i - 1], nav[i + 1], nav[i - 2], nav[i + 2]].filter(Boolean).map((r) => ({ id: r!.id, name: r!.name, rank: r!.rank }));
   }, [openId, nav]);
 
-  const pad = density === "compact" ? "py-1.5" : "py-2.5";
+  const pad = density === "compact" ? "py-1.5" : "py-2";
 
   // ---- Render --------------------------------------------------------------------------
   return (
     <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
       {progress?.busy || (p.busy && !progress) ? (
-        <div role="status" className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-[10px] bg-signal/[0.06] px-3 py-2 text-[13px] text-ink">
+        <div role="status" className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-[7px] bg-signal/[0.06] px-3 py-2 text-[13px] text-ink">
           <span className="size-2 animate-pulse rounded-full bg-signal" aria-hidden="true" />
           {progress ? (
             <>
@@ -296,8 +296,8 @@ export default function Ranking(p: Props) {
       ) : null}
 
       {/* Toolbar: the everyday tools in view, the rest under More. */}
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="mr-1 text-[13px] text-slate">
+      <div className="flex flex-wrap items-center gap-1.5">
+        <span className="mr-1 text-[12.5px] text-slate">
           <span className="font-semibold text-ink tabular-nums">{filtered.length}</span> {filtered.length === 1 ? "candidate" : "candidates"}
         </span>
         <input
@@ -306,7 +306,7 @@ export default function Ranking(p: Props) {
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search name, company, skill"
           aria-label="Search candidates"
-          className={`${smallFieldClass} w-48 sm:w-60`}
+          className={`${smallFieldClass} w-48 sm:w-64`}
         />
         <div className="relative">
           <Button size="sm" onClick={() => setMenu(menu === "filters" ? null : "filters")} aria-expanded={menu === "filters"}>
@@ -318,7 +318,7 @@ export default function Ranking(p: Props) {
             const v = e.target.value;
             const at = v.lastIndexOf(":");
             setSort({ key: v.slice(0, at), dir: v.slice(at + 1) as "asc" | "desc" });
-          }} className={`${smallFieldClass} max-w-full`}>
+          }} className={`${smallFieldClass} max-w-[13rem]`}>
           <option value="rank:asc">Best match first</option>
           <option value="applied:desc">Newest first</option>
           <option value="stage_days:desc">Waiting longest</option>
@@ -336,7 +336,7 @@ export default function Ranking(p: Props) {
             More
           </Button>
           {menu === "more" ? (
-            <div className="absolute left-0 top-9 z-30 w-64 rounded-[12px] border border-hairline bg-paper p-1.5 text-[13.5px] shadow-lift-hover">
+            <div className="absolute left-0 top-9 z-30 w-64 rounded-[8px] border border-hairline bg-paper p-1.5 text-[13.5px] shadow-lift-hover">
               <button type="button" className="block w-full rounded-[8px] px-2.5 py-1.5 text-left hover:bg-mist" onClick={() => setMenu("columns")}>
                 Choose columns…
               </button>
@@ -378,7 +378,7 @@ export default function Ranking(p: Props) {
       {filters.length ? (
         <div className="flex flex-wrap items-center gap-1.5">
           {filters.map((f, i) => (
-            <button key={i} type="button" onClick={() => setFilters(filters.filter((_, j) => j !== i))} className="inline-flex items-center gap-1.5 rounded-full bg-mist px-2.5 py-1 text-[12.5px] hover:bg-hairline" aria-label={`Remove filter: ${describeFilter(f, p.requirements)}`}>
+            <button key={i} type="button" onClick={() => setFilters(filters.filter((_, j) => j !== i))} className="inline-flex items-center gap-1.5 rounded-[6px] bg-mist px-2.5 py-1 text-[12.5px] hover:bg-hairline" aria-label={`Remove filter: ${describeFilter(f, p.requirements)}`}>
               {describeFilter(f, p.requirements)} <span aria-hidden="true">×</span>
             </button>
           ))}
@@ -390,7 +390,7 @@ export default function Ranking(p: Props) {
 
       {/* Bulk actions */}
       {selected.size ? (
-        <div className="sticky top-14 z-20 flex flex-wrap items-center gap-2 rounded-[12px] border border-hairline bg-paper/95 px-3 py-2 shadow-lift backdrop-blur lg:top-2">
+        <div className="sticky top-14 z-20 flex flex-wrap items-center gap-2 rounded-[8px] border border-hairline bg-paper/95 px-3 py-2 shadow-lift backdrop-blur lg:top-2">
           <span className="text-[13px] font-medium">{selected.size} selected</span>
           <Button size="sm" tone="primary" onClick={() => setDialog({ kind: "decide", ids: [...selected], decision: "shortlisted" })}>
             Shortlist
@@ -416,22 +416,22 @@ export default function Ranking(p: Props) {
       ) : null}
 
       {/* The list */}
-      <div className="overflow-hidden rounded-[14px] border border-hairline">
+      <div className="overflow-hidden rounded-[8px] border border-hairline">
         <div className="hidden overflow-x-auto md:block">
-          <table className="w-full border-collapse text-left text-[13.5px]">
+          <table className="w-full border-collapse text-left text-[13px]">
             <thead className="bg-mist/60">
               <tr>
-                <th className="w-9 px-3 py-2">
+                <th className="h-8 w-9 px-3">
                   <input
                     type="checkbox"
                     aria-label="Select all"
-                    className="size-4 accent-[#1b4dff]"
+                    className="size-3.5 accent-[#1b4dff]"
                     checked={groups.main.length > 0 && groups.main.every((r) => selected.has(r.id))}
                     onChange={(e) => setSelected(e.target.checked ? new Set(groups.main.map((r) => r.id)) : new Set())}
                   />
                 </th>
                 {columns.map((c) => (
-                  <th key={c} title={c === "score" ? "How well they fit, from 0 to 100. A CV that says little about the role scores lower, so the list order always follows this number." : undefined} className="whitespace-nowrap px-3 py-2 text-[12px] font-medium text-slate">
+                  <th key={c} title={c === "score" ? "How well they fit, from 0 to 100. A CV that says little about the role scores lower, so the list order always follows this number." : undefined} className="h-8 whitespace-nowrap px-3 text-[12px] font-medium text-slate">
                     <button type="button" className="hover:text-ink" onClick={() => setSort({ key: c, dir: sort.key === c && sort.dir === "desc" ? "asc" : c === "rank" || c === "name" ? "asc" : "desc" })}>
                       {c.startsWith("req:") ? <span className="block max-w-[9rem] truncate">{columnLabel(c, p.requirements)}</span> : columnLabel(c, p.requirements)}
                       {sort.key === c ? (sort.dir === "asc" ? " ↑" : " ↓") : ""}
@@ -576,7 +576,7 @@ export default function Ranking(p: Props) {
       ) : null}
 
       {toast ? (
-        <div role="status" className="fixed bottom-5 left-1/2 z-50 -translate-x-1/2 rounded-full bg-ink px-4 py-2 text-[13px] text-paper shadow-lift-hover" onAnimationEnd={() => setToast(null)}>
+        <div role="status" className="fixed bottom-5 left-1/2 z-50 -translate-x-1/2 rounded-[6px] bg-ink px-4 py-2 text-[13px] text-paper shadow-lift-hover" onAnimationEnd={() => setToast(null)}>
           {toast}
           <button type="button" className="ml-3 text-paper/70" onClick={() => setToast(null)}>
             Dismiss
@@ -640,7 +640,7 @@ function TableRow(props: {
       className={`cursor-pointer border-t border-hairline align-top transition-colors hover:bg-mist/60 ${props.focused ? "bg-signal/[0.04] shadow-[inset_2px_0_0_var(--color-signal)]" : ""} ${r.decision === "dropped" ? "text-slate" : ""}`}
     >
       <td className={`px-3 ${props.pad}`}>
-        <input type="checkbox" aria-label={`Select ${r.name}`} checked={props.selected} onChange={props.onSelect} className="size-4 accent-[#1b4dff]" />
+        <input type="checkbox" aria-label={`Select ${r.name}`} checked={props.selected} onChange={props.onSelect} className="size-3.5 accent-[#1b4dff]" />
       </td>
       {props.columns.map((c) => (
         <td key={c} className={`px-3 ${props.pad} ${c === "reason" ? "min-w-[18rem] max-w-[28rem]" : "whitespace-nowrap"}`}>
@@ -696,7 +696,7 @@ function Cell({ r, c, reqs, compact, comparing }: { r: Row; c: string; reqs: Req
     case "percentile":
       return <span className="font-mono text-[12.5px] tabular-nums">{r.percentile ?? "–"}</span>;
     case "score":
-      return <span className="font-display text-[15px] font-semibold tabular-nums">{matchOf(r) ?? "–"}</span>;
+      return <span className="text-[13.5px] font-semibold tabular-nums">{matchOf(r) ?? "–"}</span>;
     case "status":
       return <Badge tone={statusOf(r).tone}>{statusOf(r).label}</Badge>;
     case "band":
@@ -733,7 +733,7 @@ function ColumnMenu({ reqs, columns, onChange, onClose }: { reqs: Req[]; columns
     </label>
   );
   return (
-    <div className="absolute left-0 top-9 z-30 max-h-[70vh] w-[min(22rem,90vw)] overflow-y-auto rounded-[12px] border border-hairline bg-paper p-2 text-[13px] shadow-lift-hover">
+    <div className="absolute left-0 top-9 z-30 max-h-[70vh] w-[min(22rem,90vw)] overflow-y-auto rounded-[8px] border border-hairline bg-paper p-2 text-[13px] shadow-lift-hover">
       <p className="px-2 py-1 text-[11.5px] font-medium text-slate">Each requirement</p>
       {reqs.map((r) => box(`req:${r.key}`, r.text))}
       <p className="mt-2 px-2 py-1 text-[11.5px] font-medium text-slate">From the CV</p>
@@ -773,7 +773,7 @@ function FilterMenu({ reqs, onAdd, onClose }: { reqs: Req[]; onAdd: (f: Filter) 
   const must = reqs.find((r) => r.mustHave) ?? reqs[0];
   const other = reqs.find((r) => r.key !== must?.key);
   return (
-    <div className="absolute left-0 top-9 z-30 w-[min(24rem,90vw)] rounded-[12px] border border-hairline bg-paper p-3 text-[13px] shadow-lift-hover">
+    <div className="absolute left-0 top-9 z-30 w-[min(24rem,90vw)] rounded-[8px] border border-hairline bg-paper p-3 text-[13px] shadow-lift-hover">
       <p className="text-[11.5px] font-medium text-slate">Useful starting points</p>
       <div className="mt-1.5 grid gap-1.5">
         {must && other ? (
@@ -1037,9 +1037,9 @@ function Dialogs(props: {
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center" role="dialog" aria-modal="true" aria-label={title}>
       <button type="button" aria-label="Close" className="absolute inset-0 bg-ink/25" onClick={props.onClose} />
       <div className="relative w-full max-w-[28rem] rounded-t-[18px] bg-paper p-5 shadow-lift-hover sm:rounded-[18px]">
-        <h2 className="font-display text-[16px] font-semibold">{title}</h2>
+        <h2 className="text-[14px] font-semibold">{title}</h2>
         {error ? (
-          <p role="alert" className="mt-3 rounded-[10px] bg-alert/[0.06] px-3 py-2 text-[13px] text-alert">
+          <p role="alert" className="mt-3 rounded-[7px] bg-alert/[0.06] px-3 py-2 text-[13px] text-alert">
             {error}
           </p>
         ) : null}

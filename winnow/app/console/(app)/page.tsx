@@ -7,7 +7,7 @@ import { can, requireCtx, visibleRoles } from "@/lib/console/context";
 import { summarizeRoles, statusTone } from "@/lib/console/roles";
 import { NEED_LABEL, needsYou } from "@/lib/console/needs";
 import { awayFeed, awayWindow } from "@/lib/console/data/home";
-import { ButtonLink, Empty, PageHeader } from "@/components/console/ui";
+import { ButtonLink, Empty, PageHeader, buttonClass, fieldClass } from "@/components/console/ui";
 import NeedsList from "@/components/console/home/NeedsList";
 import RolesTable, { type RoleRow } from "@/components/console/home/RolesTable";
 
@@ -87,18 +87,18 @@ export default async function Home() {
   ];
 
   return (
-    <div className="grid gap-8">
+    <div className="grid gap-6">
       <PageHeader
         title={`Good ${greeting()}, ${c.user.name.split(" ")[0]}`}
         meta={needs.length ? `${needs.length} thing${needs.length === 1 ? "" : "s"} need${needs.length === 1 ? "s" : ""} you today.` : "Nothing needs you right now."}
         actions={can.createRole(c) ? <ButtonLink href="/console/chat?new=1" tone="primary">New role</ButtonLink> : null}
       />
 
-      <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {stats.map((s) => (
-          <div key={s.label} className="rounded-[14px] border border-hairline bg-paper px-4 py-3.5">
-            <dt className="text-[12.5px] text-slate">{s.label}</dt>
-            <dd className="mt-1 font-display text-[26px] font-semibold leading-none tracking-[-0.02em] tabular-nums">{s.value}</dd>
+      <dl className="grid grid-cols-2 overflow-hidden rounded-[8px] border border-hairline lg:grid-cols-4">
+        {stats.map((s, i) => (
+          <div key={s.label} className={`px-4 py-3 ${i % 2 ? "border-l border-hairline" : ""} ${i > 1 ? "border-t border-hairline lg:border-t-0" : ""} ${i === 2 ? "lg:border-l" : ""}`}>
+            <dt className="text-[12px] text-slate">{s.label}</dt>
+            <dd className="mt-1 text-[22px] font-semibold leading-none tracking-[-0.02em] tabular-nums">{s.value}</dd>
           </div>
         ))}
       </dl>
@@ -106,14 +106,14 @@ export default async function Home() {
       <div className="grid grid-cols-[minmax(0,1fr)] gap-8 xl:grid-cols-[minmax(0,1fr)_21rem] xl:items-start">
         <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-8">
           <section aria-labelledby="needs">
-            <h2 id="needs" className="mb-3 font-display text-[17px] font-semibold">
+            <h2 id="needs" className="mb-3 text-[14px] font-semibold">
               Needs you
             </h2>
             <NeedsList items={needs.map((n) => ({ key: n.key, type: n.type, label: NEED_LABEL[n.type], roleTitle: n.roleTitle, roleId: n.roleId, person: n.person, ageDays: n.ageDays, text: n.text, action: n.action }))} />
           </section>
 
           <section aria-labelledby="roles-title" id="roles" className="scroll-mt-20">
-            <h2 id="roles-title" className="mb-3 font-display text-[17px] font-semibold">
+            <h2 id="roles-title" className="mb-3 text-[14px] font-semibold">
               Your roles
             </h2>
             <RolesTable rows={rows} />
@@ -121,32 +121,33 @@ export default async function Home() {
         </div>
 
         <aside className="grid min-w-0 gap-6">
-          <form action="/console/chat" method="get" className="rounded-[14px] border border-hairline bg-paper p-4">
-            <label htmlFor="ask" className="font-display text-[15px] font-semibold">
+          <form action="/console/chat" method="get" className="rounded-[8px] border border-hairline bg-mist/50 p-3.5">
+            <label htmlFor="ask" className="text-[14px] font-semibold">
               Ask Winnow
             </label>
-            <p className="mt-0.5 text-[12.5px] text-slate">Ask anything, or tell it what to do: set up a role, shortlist, send questions.</p>
+            <p className="mt-0.5 text-[12px] text-slate">Ask anything, or tell it what to do: set up a role, shortlist, send questions.</p>
             <div className="mt-3 flex gap-2">
-              <input id="ask" name="q" placeholder="e.g. Which role is stuck?" className="h-10 min-w-0 flex-1 rounded-[10px] border border-hairline bg-paper px-3 text-[16px] placeholder:text-slate/70 focus:border-signal focus:outline-none sm:text-[14px]" />
-              <button type="submit" className="h-10 shrink-0 rounded-full bg-ink px-4 text-[13.5px] font-medium text-paper hover:bg-ink/85">
+              <input id="ask" name="q" placeholder="e.g. Which role is stuck?" className={`${fieldClass} min-w-0 flex-1`} />
+              <button type="submit" className={`${buttonClass("secondary")} h-9`}>
                 Ask
               </button>
             </div>
           </form>
 
           <section aria-labelledby="away">
-            <h2 id="away" className="font-display text-[15px] font-semibold">
+            <h2 id="away" className="text-[14px] font-semibold">
               Recently
             </h2>
             <p className="mb-3 text-[12px] text-slate">Since {since.toLocaleString("en-IN", { timeZone: "Asia/Kolkata", weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })}</p>
             {feed.length === 0 ? (
-              <p className="text-[13.5px] text-slate">Nothing new since then.</p>
+              <p className="text-[13px] text-slate">Nothing new since then.</p>
             ) : (
-              <ol className="grid gap-3">
+              <ol className="grid gap-3 border-l border-hairline pl-3.5">
                 {feed.slice(0, 12).map((f) => (
-                  <li key={f.id} className="text-[13.5px] leading-snug">
+                  <li key={f.id} className="relative text-[13px] leading-snug">
+                    <span aria-hidden="true" className={`absolute -left-[18px] top-[6px] size-[7px] rounded-full ring-2 ring-paper ${f.failure ? "bg-alert" : "bg-slate/40"}`} />
                     <span className={f.failure ? "text-alert" : ""}>{f.text}</span>
-                    <span className="block text-[12px] text-slate">
+                    <span className="mt-0.5 block text-[12px] text-slate">
                       {f.roleId ? (
                         <Link href={`/console/roles/${f.roleId}/activity`} className="hover:text-ink hover:underline">
                           {f.roleTitle}

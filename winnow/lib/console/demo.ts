@@ -1,15 +1,15 @@
 /**
- * A sample customer for showing the console: Acme Payments, a made-up company
+ * A sample customer for showing the console: Kestrel Payments, a made-up company
  * with three roles whose candidates have already been read, scored and moved
  * part-way through hiring, so every screen has something real to show.
  *
  * Everything in it is fictional. Every address is on a reserved domain
- * (acme.example, example.com) that no mailbox can receive, and sendEmail never
+ * (kestrel.example, example.com) that no mailbox can receive, and sendEmail never
  * sends to those, so nothing done in the demo can reach a real person. The
  * company carries orgs.demo, which nothing else sets; building it again
  * replaces it.
  */
-import { and, eq, like, notInArray, sql } from "drizzle-orm";
+import { and, eq, like, notInArray, or, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
   activity,
@@ -53,8 +53,10 @@ import {
 import { MODEL } from "@/lib/ai/claude";
 import { arithmetic, contribution } from "./arith";
 
-export const DEMO_DOMAIN = "acme.example";
-export const DEMO_NAME = "Acme Payments (demo)";
+export const DEMO_DOMAIN = "kestrel.example";
+/** Where the demo team lived before the company was renamed, so a reset still clears them. */
+const OLD_DEMO_DOMAIN = "acme.example";
+export const DEMO_NAME = "Kestrel Payments (demo)";
 
 const DAY = 86_400_000;
 const MIN = 60_000;
@@ -171,7 +173,7 @@ const BACKEND: RoleSpec = {
   ],
   jd: `Senior Backend Engineer, Payments Platform
 
-Acme Payments moves money for 40,000 small businesses across India. The payments platform team owns payouts, refunds and the ledger behind them.
+Kestrel Payments moves money for 40,000 small businesses across India. The payments platform team owns payouts, refunds and the ledger behind them.
 
 You have 5+ years building backend services that run in production. You write Go or Java every day. You have designed schemas and tuned queries on Postgres or MySQL at scale. Experience with payments, ledgers or reconciliation is a strong plus. You have mentored other engineers.
 
@@ -182,7 +184,7 @@ Candidates from IIT/NIT preferred. Age below 32. Notice period of 60 days or les
     { key: "be_lang", text: "Writes Go or Java in production", weight: 4, must: true, origin: "jd", source: "You write Go or Java every day.", keywords: ["go", "golang", "java"], ask: "Which production services have you written in Go or Java?" },
     { key: "be_db", text: "Has owned a Postgres or MySQL database at scale: schema design, migrations, query tuning", weight: 4, origin: "jd", source: "You have designed schemas and tuned queries on Postgres or MySQL at scale.", keywords: ["postgres", "mysql", "schema", "migration"], ask: "Tell us about a schema change or slow query you fixed on a large table." },
     { key: "be_money", text: "Has built payments, ledgers or other systems that move money", weight: 4, origin: "jd", source: "Experience with payments, ledgers or reconciliation is a strong plus.", keywords: ["payments", "ledger", "reconciliation", "payouts"], ask: "Have you worked on anything that moves money: payments, payouts, wallets or a ledger?" },
-    { key: "be_dist", text: "Distributed-systems basics: queues, idempotency, retries", weight: 3, origin: "winnow", source: "Every service at Acme talks over Kafka, which the brief assumed rather than said.", keywords: ["kafka", "queue", "idempotent", "retries"], ask: "How have you made a consumer or API safe to retry?" },
+    { key: "be_dist", text: "Distributed-systems basics: queues, idempotency, retries", weight: 3, origin: "winnow", source: "Every service at Kestrel talks over Kafka, which the brief assumed rather than said.", keywords: ["kafka", "queue", "idempotent", "retries"], ask: "How have you made a consumer or API safe to retry?" },
     { key: "be_oncall", text: "Has carried a pager and led incident response", weight: 3, origin: "chat", source: "From the intake call: on call one week in six.", keywords: ["on-call", "incident"], ask: "Have you carried a pager for a production service? Tell us about one incident you led." },
     { key: "be_mentor", text: "Has mentored engineers or led a small team", weight: 2, origin: "jd", source: "You have mentored other engineers.", keywords: ["mentor", "lead"], ask: "Have you mentored or led other engineers?" },
   ],
@@ -832,7 +834,9 @@ const DECISION: Record<Stage, Decision> = {
 async function removeDemo(tx: typeof db) {
   await tx.delete(orgs).where(eq(orgs.demo, true));
   const members = tx.select({ id: memberships.userId }).from(memberships);
-  await tx.delete(users).where(and(like(users.email, `%@${DEMO_DOMAIN}`), notInArray(users.id, members)));
+  await tx
+    .delete(users)
+    .where(and(or(like(users.email, `%@${DEMO_DOMAIN}`), like(users.email, `%@${OLD_DEMO_DOMAIN}`)), notInArray(users.id, members)));
 }
 
 export async function findDemo() {
@@ -1118,7 +1122,7 @@ export async function buildDemo(viewer: string): Promise<string> {
           const sent = ago(q.sent, 240);
           const batchId = uuid();
           rows.questions.push({ applicationId: appId, roleId, kind: "question", requirementKey: q.req, text: q.text, status: q.answer ? "answered" : "sent", batchId, token: uuid().replace(/-/g, ""), sentAt: sent, answer: q.answer ?? null, answeredAt: replied, createdBy: team.vikram, createdAt: sent });
-          rows.messages.push({ applicationId: appId, direction: "out", channel: "email", subject: `A question about your application to ${spec.title} at Acme Payments`, body: `Hi ${c.name.split(" ")[0]},\n\nThanks for applying. Before we go further, one question:\n\n${q.text}\n\nYou can answer from the link below.\n\nAcme Payments, via Winnow`, fromAddress: `careers@${DEMO_DOMAIN}`, sentBy: team.vikram, createdAt: sent });
+          rows.messages.push({ applicationId: appId, direction: "out", channel: "email", subject: `A question about your application to ${spec.title} at Kestrel Payments`, body: `Hi ${c.name.split(" ")[0]},\n\nThanks for applying. Before we go further, one question:\n\n${q.text}\n\nYou can answer from the link below.\n\nKestrel Payments, via Winnow`, fromAddress: `careers@${DEMO_DOMAIN}`, sentBy: team.vikram, createdAt: sent });
           act(roleId, sent, "questions_sent", `Sent 1 question to ${c.name}`, team.vikram, 0, { applicationId: appId });
           if (q.answer && replied) {
             rows.messages.push({ applicationId: appId, direction: "in", channel: "reply_page", body: q.answer, createdAt: replied });

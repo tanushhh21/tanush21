@@ -30,7 +30,7 @@ export default async function NewRolePage({ searchParams }: { searchParams: Prom
       <PageHeader title="New role" meta="What is the role? Winnow builds the rubric from it while you fill in the rest." />
       <Steps current={1} />
       {!aiConfigured() ? (
-        <p className="mt-6 rounded-[10px] bg-caution/[0.07] px-3 py-2.5 text-[13.5px] text-caution">
+        <p className="mt-6 rounded-[7px] bg-caution/[0.07] px-3 py-2.5 text-[13.5px] text-caution">
           The AI is not connected yet, so the rubric will not be built until it is. You can still set the role up.
         </p>
       ) : null}

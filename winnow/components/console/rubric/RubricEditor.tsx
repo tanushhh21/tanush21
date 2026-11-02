@@ -89,7 +89,7 @@ export default function RubricEditor(p: { roleId: string; items: Item[]; refused
       <section>
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div>
-            <h2 className="font-display text-[16px] font-semibold">What candidates are scored on</h2>
+            <h2 className="text-[14px] font-semibold">What candidates are scored on</h2>
             <p className="text-[12.5px] text-slate">More dots means it counts for more. Saving a change re-scores everyone; earlier versions are kept.</p>
           </div>
           {p.canEdit ? (
@@ -103,7 +103,7 @@ export default function RubricEditor(p: { roleId: string; items: Item[]; refused
         </div>
         <ol className="mt-4 grid gap-3">
           {items.map((q, i) => (
-            <li key={q.key} className="rounded-[12px] border border-hairline bg-paper p-3.5">
+            <li key={q.key} className="rounded-[8px] border border-hairline bg-paper p-3.5">
               {p.canEdit ? (
                 <div className="grid gap-2.5">
                   <div className="flex items-start gap-2">
@@ -167,7 +167,7 @@ export default function RubricEditor(p: { roleId: string; items: Item[]; refused
         </ol>
 
         {p.canEdit && dirty ? (
-          <div className="sticky bottom-3 z-20 mt-4 grid gap-2 rounded-[14px] border border-ink/10 bg-paper p-4 shadow-lift-hover">
+          <div className="sticky bottom-3 z-20 mt-4 grid gap-2 rounded-[10px] border border-ink/10 bg-paper p-4 shadow-lift-hover">
             {effect ? (
               <p className="text-[13px]">
                 <span className="font-medium">If saved: </span>
@@ -192,14 +192,14 @@ export default function RubricEditor(p: { roleId: string; items: Item[]; refused
       </section>
 
       <section>
-        <h2 className="font-display text-[16px] font-semibold">Left out on purpose</h2>
+        <h2 className="text-[14px] font-semibold">Left out on purpose</h2>
         <p className="text-[12.5px] text-slate">Lines from the job description Winnow does not score, and why.</p>
         {p.refused.length === 0 ? <p className="mt-3 text-[13px] text-slate">Nothing was refused.</p> : null}
         <ul className="mt-3 grid gap-2">
           {p.refused.map((r) => {
             const ask = r.reason.split("Ask instead: ")[1];
             return (
-              <li key={r.id} className="rounded-[12px] bg-mist px-4 py-3 text-[13px]">
+              <li key={r.id} className="rounded-[8px] bg-mist px-4 py-3 text-[13px]">
                 <p className="text-ink">&ldquo;{r.line}&rdquo;</p>
                 <p className="mt-1 text-slate">
                   <Badge tone={r.kind === "protected" ? "alert" : "caution"} className="mr-1.5">
@@ -240,11 +240,11 @@ export default function RubricEditor(p: { roleId: string; items: Item[]; refused
       </section>
 
       <section>
-        <h2 className="font-display text-[16px] font-semibold">Filters that remove people</h2>
+        <h2 className="text-[14px] font-semibold">Filters that remove people</h2>
         <p className="text-[12.5px] text-slate">A filter takes people out of the ranking entirely, for example a notice period over 60 days. Someone whose CV does not say is never removed.</p>
         <ul className="mt-3 grid gap-2">
           {p.filters.map((f) => (
-            <li key={f.id} className="flex flex-wrap items-center justify-between gap-2 rounded-[12px] border border-hairline px-4 py-2.5 text-[13px]">
+            <li key={f.id} className="flex flex-wrap items-center justify-between gap-2 rounded-[8px] border border-hairline px-4 py-2.5 text-[13px]">
               <span>
                 <span className={f.active ? "font-medium" : "text-slate"}>{f.label}</span>
                 <span className="text-slate">
@@ -291,10 +291,10 @@ export default function RubricEditor(p: { roleId: string; items: Item[]; refused
       </section>
 
       <section>
-        <h2 className="font-display text-[16px] font-semibold">Earlier versions</h2>
+        <h2 className="text-[14px] font-semibold">Earlier versions</h2>
         <ol className="mt-3 grid gap-2">
           {p.versions.map((v, i) => (
-            <li key={v.version} className="rounded-[12px] border border-hairline px-4 py-3 text-[13px]">
+            <li key={v.version} className="rounded-[8px] border border-hairline px-4 py-3 text-[13px]">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <p>
                   <span className="font-mono font-medium">v{v.version}</span> {v.summary}

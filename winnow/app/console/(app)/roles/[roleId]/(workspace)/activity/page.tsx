@@ -45,7 +45,7 @@ export default async function Activity({ params, searchParams }: { params: Promi
                 key={f.id}
                 href={f.id === "all" ? base : `${base}?show=${f.id}`}
                 aria-current={show === f.id ? "page" : undefined}
-                className={`rounded-full px-3 py-1.5 text-[13px] ${show === f.id ? "bg-ink text-paper" : "text-slate hover:bg-mist hover:text-ink"}`}
+                className={`rounded-[6px] px-3 py-1.5 text-[13px] ${show === f.id ? "bg-ink text-paper" : "text-slate hover:bg-mist hover:text-ink"}`}
               >
                 {f.label}
                 {f.id === "failures" && cost.failures ? <span className="ml-1.5 font-mono tabular-nums">{cost.failures}</span> : null}

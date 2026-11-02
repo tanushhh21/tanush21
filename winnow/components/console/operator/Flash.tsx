@@ -2,7 +2,7 @@
 export default function Flash({ text }: { text?: string }) {
   if (!text) return null;
   return (
-    <p role="status" className="rounded-[10px] bg-mist px-3 py-2 text-[13px]">
+    <p role="status" className="rounded-[7px] bg-mist px-3 py-2 text-[13px]">
       {text}
     </p>
   );

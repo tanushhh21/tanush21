@@ -56,7 +56,7 @@ export default function VerifyList({ roleId, work, canAsk, sender, orgName }: { 
 
   return (
     <div className="grid gap-5">
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-[12px] bg-mist px-4 py-3 text-[13.5px]">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-[8px] bg-mist px-4 py-3 text-[13.5px]">
         <p>
           Ordered by how far each person would move if their unverified claims held. <span className="text-slate">{todo.length} to do.</span>
         </p>
@@ -83,7 +83,7 @@ export default function VerifyList({ roleId, work, canAsk, sender, orgName }: { 
       ) : null}
 
       {canAsk && drafts.length ? (
-        <section className="rounded-[14px] border border-signal/30 bg-signal/[0.03] p-4">
+        <section className="rounded-[10px] border border-signal/30 bg-signal/[0.03] p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="font-medium">
               Questions drafted for {drafts.length} candidate{drafts.length === 1 ? "" : "s"}, waiting to be sent
@@ -112,7 +112,7 @@ export default function VerifyList({ roleId, work, canAsk, sender, orgName }: { 
       ) : null}
 
       {selected.size && canAsk ? (
-        <div className="sticky top-14 z-20 flex flex-wrap items-center gap-2 rounded-[12px] border border-hairline bg-paper/95 px-3 py-2 shadow-lift backdrop-blur lg:top-2">
+        <div className="sticky top-14 z-20 flex flex-wrap items-center gap-2 rounded-[8px] border border-hairline bg-paper/95 px-3 py-2 shadow-lift backdrop-blur lg:top-2">
           <span className="text-[13px] font-medium">{selected.size} selected</span>
           <Button size="sm" tone="primary" disabled={pending} onClick={() => run(() => askQuestions(draftsFor([...selected]), true), `Sent questions to ${selected.size}`)}>
             Send each their own questions
@@ -128,7 +128,7 @@ export default function VerifyList({ roleId, work, canAsk, sender, orgName }: { 
       ) : (
         <ol className="grid gap-3">
           {work.map((w) => (
-            <li key={w.id} className={`rounded-[14px] border p-4 ${w.done ? "border-hairline bg-mist/40" : "border-hairline bg-paper"}`}>
+            <li key={w.id} className={`rounded-[10px] border p-4 ${w.done ? "border-hairline bg-mist/40" : "border-hairline bg-paper"}`}>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="flex items-start gap-3">
                   {canAsk && !w.done ? (

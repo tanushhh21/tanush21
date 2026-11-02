@@ -89,8 +89,8 @@ export default function ChatPanel(p: {
     <section className="flex min-h-0 flex-1 flex-col" aria-label={p.title}>
       <header className="flex flex-wrap items-start justify-between gap-3 border-b border-hairline pb-3">
         <div className="min-w-0">
-          <h1 className="font-display text-[18px] font-semibold tracking-[-0.015em]">{p.title}</h1>
-          <p className="text-[13px] text-slate">{p.hint}</p>
+          <h1 className="text-[15px] font-semibold tracking-[-0.01em]">{p.title}</h1>
+          <p className="text-[12.5px] text-slate">{p.hint}</p>
         </div>
         {p.actions ? <div className="flex items-center gap-2">{p.actions}</div> : null}
       </header>
@@ -98,11 +98,11 @@ export default function ChatPanel(p: {
       <div className="min-h-0 flex-1 overflow-y-auto py-4" aria-live="polite">
         {p.messages.length === 0 && !sent ? (
           <div className="mx-auto mt-6 max-w-[34rem] text-center">
-            <p className="font-display text-[16px] font-semibold">{p.starter?.title ?? "What do you want to know or get done?"}</p>
-            <p className="mt-1 text-[13.5px] text-slate">{p.starter?.body ?? "Ask in your own words, or tell Winnow what to do. Try one of these:"}</p>
-            <div className="mt-4 flex flex-wrap justify-center gap-2">
+            <p className="text-[14px] font-semibold">{p.starter?.title ?? "What do you want to know or get done?"}</p>
+            <p className="mt-1 text-[13px] text-slate">{p.starter?.body ?? "Ask in your own words, or tell Winnow what to do. Try one of these:"}</p>
+            <div className="mx-auto mt-4 grid max-w-[26rem] gap-1.5 text-left">
               {p.suggestions.map((s) => (
-                <button key={s} type="button" disabled={!!p.off} onClick={() => submit(s)} className="rounded-full border border-hairline bg-paper px-3.5 py-2 text-left text-[13px] text-ink transition-colors hover:border-slate/40 disabled:opacity-50">
+                <button key={s} type="button" disabled={!!p.off} onClick={() => submit(s)} className="rounded-[7px] border border-hairline bg-paper px-3 py-2 text-left text-[13px] text-ink transition-colors hover:border-slate/40 disabled:opacity-50">
                   {s}
                 </button>
               ))}
@@ -112,7 +112,7 @@ export default function ChatPanel(p: {
         <ul className="mx-auto grid max-w-[46rem] gap-4">
           {p.messages.map((m) => (
             <li key={m.id} className={m.author === "user" ? "flex justify-end" : ""}>
-              <div className={m.author === "user" ? "max-w-[85%] rounded-[16px] rounded-br-[6px] bg-ink px-4 py-2.5 text-[14px] text-paper" : "max-w-full text-[14.5px] leading-relaxed"}>
+              <div className={m.author === "user" ? "max-w-[85%] rounded-[10px] bg-ink/[0.06] px-3.5 py-2 text-[13.5px] text-ink" : "max-w-full text-[13.5px] leading-relaxed"}>
                 {m.author === "winnow" ? <p className="mb-1 text-[12px] font-medium text-slate">Winnow</p> : null}
                 <p className="whitespace-pre-wrap">{m.body}</p>
               </div>
@@ -131,11 +131,11 @@ export default function ChatPanel(p: {
           ))}
           {sent ? (
             <li className="flex justify-end">
-              <div className="max-w-[85%] whitespace-pre-wrap rounded-[16px] rounded-br-[6px] bg-ink px-4 py-2.5 text-[14px] text-paper">{sent}</div>
+              <div className="max-w-[85%] whitespace-pre-wrap rounded-[10px] bg-ink/[0.06] px-3.5 py-2 text-[13.5px] text-ink">{sent}</div>
             </li>
           ) : null}
           {pending ? (
-            <li className="text-[14px] text-slate">
+            <li className="text-[13px] text-slate">
               <span className="inline-flex items-center gap-2">
                 <span className="size-2 animate-pulse rounded-full bg-signal" aria-hidden="true" />
                 Working on it…
@@ -147,14 +147,14 @@ export default function ChatPanel(p: {
       </div>
 
       <div className="border-t border-hairline pt-3">
-        {p.off ? <p className="mb-2 rounded-[10px] bg-caution/[0.08] px-3 py-2 text-[13px] text-ink">{p.off}</p> : null}
+        {p.off ? <p className="mb-2 rounded-[7px] bg-caution/[0.08] px-3 py-2 text-[13px] text-ink">{p.off}</p> : null}
         {error ? (
           <p role="alert" className="mb-2 text-[13px] text-alert">
             {error}
           </p>
         ) : null}
         <form
-          className="mx-auto flex max-w-[46rem] items-end gap-2 rounded-[16px] border border-hairline bg-paper p-2 focus-within:border-signal focus-within:shadow-[0_0_0_3px_rgb(27_77_255/0.14)]"
+          className="mx-auto flex max-w-[46rem] items-end gap-1.5 rounded-[10px] border border-hairline bg-paper p-1.5 shadow-[0_1px_3px_rgb(10_12_15/0.05)] focus-within:border-signal/60 focus-within:shadow-[0_0_0_3px_rgb(27_77_255/0.10)]"
           onSubmit={(e) => {
             e.preventDefault();
             submit();
@@ -166,9 +166,9 @@ export default function ChatPanel(p: {
             disabled={!!p.off || reading || pending}
             aria-label="Attach a job description"
             title="Attach a job description (PDF, Word or text)"
-            className="mb-0.5 grid size-9 shrink-0 place-items-center rounded-full text-slate hover:bg-mist hover:text-ink disabled:opacity-50"
+            className="grid size-8 shrink-0 place-items-center rounded-[6px] text-slate hover:bg-mist hover:text-ink disabled:opacity-50"
           >
-            <svg viewBox="0 0 20 20" className="size-[18px]" aria-hidden="true">
+            <svg viewBox="0 0 20 20" className="size-4" aria-hidden="true">
               <path d="m15.5 9.5-5.6 5.6a3.5 3.5 0 0 1-5-5l6.2-6.2a2.3 2.3 0 0 1 3.3 3.3l-6.2 6.2a1.1 1.1 0 0 1-1.6-1.6l5.6-5.6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
@@ -191,7 +191,7 @@ export default function ChatPanel(p: {
             disabled={!!p.off}
             aria-label="Message"
             placeholder="Ask anything, or tell Winnow what to do"
-            className="max-h-[200px] min-h-10 flex-1 resize-none bg-transparent px-2 py-2 text-[16px] leading-snug text-ink placeholder:text-slate/70 focus:outline-none sm:text-[14.5px]"
+            className="max-h-[200px] min-h-8 flex-1 resize-none bg-transparent px-1.5 py-1.5 text-[16px] leading-snug text-ink placeholder:text-slate/70 focus:outline-none sm:text-[13.5px]"
           />
           <Button type="submit" tone="primary" disabled={pending || reading || (!text.trim() && !file) || !!p.off}>
             Send
@@ -203,7 +203,7 @@ export default function ChatPanel(p: {
               <span className="text-slate">Reading the file…</span>
             ) : (
               <>
-                <span className="rounded-full bg-mist px-2.5 py-1">📎 {file!.name}</span>
+                <span className="rounded-[6px] bg-mist px-2.5 py-1">📎 {file!.name}</span>
                 <button type="button" onClick={() => setFile(null)} className="text-slate hover:text-ink">
                   Remove
                 </button>
@@ -222,7 +222,7 @@ function DiffCard({ m, canApply }: { m: ChatMsg; canApply: boolean }) {
   const [pending, start] = useTransition();
   const diff = m.diff!;
   return (
-    <div className="mt-2 rounded-[14px] border border-hairline bg-mist/50 p-3.5 text-[13.5px]">
+    <div className="mt-2 rounded-[8px] border border-hairline bg-mist/50 p-3 text-[13px]">
       <p className="text-[12px] font-medium text-slate">Proposed change to the criteria</p>
       <ul className="mt-1.5 grid gap-1">
         {(diff.changes as { op: string; text: string | null; weight: number | null; must_have: boolean | null; keywords: string[] }[]).map((ch, i) => (
@@ -276,7 +276,7 @@ function ActionCard({ messageId, a }: { messageId: string; a: ChatAction }) {
       router.refresh();
     });
   return (
-    <div className={`mt-2 rounded-[14px] border p-3.5 text-[13.5px] ${a.state === "proposed" ? "border-signal/30 bg-signal/[0.03]" : "border-hairline bg-mist/40"}`}>
+    <div className={`mt-2 rounded-[10px] border p-3.5 text-[13.5px] ${a.state === "proposed" ? "border-signal/30 bg-signal/[0.03]" : "border-hairline bg-mist/40"}`}>
       <p className="text-[11.5px] font-medium uppercase tracking-[0.05em] text-slate">{KIND[a.kind]}</p>
       <p className="mt-1 font-medium">{a.title}</p>
       {a.detail.length ? (

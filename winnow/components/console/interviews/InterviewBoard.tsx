@@ -83,7 +83,7 @@ export default function InterviewBoard({ board }: { board: Board }) {
   return (
     <div className="grid gap-5">
       {msg ? (
-        <p role="status" className="rounded-[10px] bg-mist px-3 py-2 text-[13px]">
+        <p role="status" className="rounded-[7px] bg-mist px-3 py-2 text-[13px]">
           {msg}
         </p>
       ) : null}
@@ -281,7 +281,7 @@ function DebriefForm({ pending, onSave }: { pending: boolean; onSave: (h: Hire, 
   const [concern, setConcern] = useState("");
   return (
     <form
-      className="mt-3 grid gap-3 rounded-[12px] border border-hairline p-3"
+      className="mt-3 grid gap-3 rounded-[8px] border border-hairline p-3"
       onSubmit={(e) => {
         e.preventDefault();
         if (hire) onSave(hire, strongest, concern);
@@ -291,7 +291,7 @@ function DebriefForm({ pending, onSave }: { pending: boolean; onSave: (h: Hire, 
         <legend className="text-[13px] font-medium">Would you hire them?</legend>
         <div className="mt-1.5 flex flex-wrap gap-1.5">
           {(Object.keys(HIRE) as Hire[]).map((h) => (
-            <label key={h} className={`cursor-pointer rounded-full border px-3 py-1.5 text-[13px] ${hire === h ? "border-signal bg-signal/[0.06] text-ink" : "border-hairline text-slate hover:text-ink"}`}>
+            <label key={h} className={`cursor-pointer rounded-[6px] border px-3 py-1.5 text-[13px] ${hire === h ? "border-signal bg-signal/[0.06] text-ink" : "border-hairline text-slate hover:text-ink"}`}>
               <input type="radio" name="hire" value={h} className="sr-only" checked={hire === h} onChange={() => setHire(h)} />
               {HIRE[h]}
             </label>
@@ -333,7 +333,7 @@ function ScheduleForm({
   const [at, setAt] = useState(slotIn(1, 11));
   return (
     <form
-      className="mt-3 grid gap-3 rounded-[12px] border border-hairline p-3"
+      className="mt-3 grid gap-3 rounded-[8px] border border-hairline p-3"
       onSubmit={(e) => {
         e.preventDefault();
         if (mode === "link") onSend(who, slots, minutes);
@@ -349,7 +349,7 @@ function ScheduleForm({
             aria-checked={mode === m}
             disabled={m === "link" && !hasEmail}
             onClick={() => setMode(m)}
-            className={`rounded-full border px-3 py-1.5 text-[13px] disabled:opacity-45 ${mode === m ? "border-signal bg-signal/[0.06]" : "border-hairline text-slate hover:text-ink"}`}
+            className={`rounded-[6px] border px-3 py-1.5 text-[13px] disabled:opacity-45 ${mode === m ? "border-signal bg-signal/[0.06]" : "border-hairline text-slate hover:text-ink"}`}
           >
             {m === "link" ? "Send times to pick from" : "Already agreed a time"}
           </button>

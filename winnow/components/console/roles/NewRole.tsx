@@ -36,7 +36,7 @@ export default function NewRole({ action, past, error }: { action: (f: FormData)
             role="tab"
             aria-selected={mode === m.key}
             onClick={() => setMode(m.key)}
-            className={`rounded-full border px-3.5 py-1.5 text-[13.5px] transition-colors ${
+            className={`rounded-[6px] border px-3.5 py-1.5 text-[13.5px] transition-colors ${
               mode === m.key ? "border-ink bg-ink text-paper" : "border-hairline text-ink hover:border-slate/40"
             }`}
           >
@@ -46,7 +46,7 @@ export default function NewRole({ action, past, error }: { action: (f: FormData)
       </div>
 
       {error ? (
-        <p role="alert" className="rounded-[10px] bg-alert/[0.06] px-3 py-2.5 text-[13.5px] text-alert">
+        <p role="alert" className="rounded-[7px] bg-alert/[0.06] px-3 py-2.5 text-[13.5px] text-alert">
           {error === "empty" ? "Add a job description, a file, or a few lines about the role." : error}
         </p>
       ) : null}
@@ -63,7 +63,7 @@ export default function NewRole({ action, past, error }: { action: (f: FormData)
 
       {mode === "upload" ? (
         <Field label="Job description file" hint="PDF, Word (.docx) or text.">
-          <input name="jdFile" type="file" required accept=".pdf,.docx,.txt,.md,.rtf" className="block w-full text-[13.5px] file:mr-3 file:rounded-full file:border file:border-hairline file:bg-paper file:px-3.5 file:py-1.5 file:text-[13px] file:font-medium" />
+          <input name="jdFile" type="file" required accept=".pdf,.docx,.txt,.md,.rtf" className="block w-full text-[13.5px] file:mr-3 file:rounded-[6px] file:border file:border-hairline file:bg-paper file:px-3.5 file:py-1.5 file:text-[13px] file:font-medium" />
         </Field>
       ) : null}
 
@@ -88,7 +88,7 @@ export default function NewRole({ action, past, error }: { action: (f: FormData)
 
       {mode !== "past" ? (
         <Field label="People you would hire" optional hint="Three to five CVs of people you'd be happy to hire. Winnow learns what good looks like from them.">
-          <input name="examples" type="file" multiple accept=".pdf,.docx,.txt,.md" className="block w-full text-[13.5px] file:mr-3 file:rounded-full file:border file:border-hairline file:bg-paper file:px-3.5 file:py-1.5 file:text-[13px] file:font-medium" />
+          <input name="examples" type="file" multiple accept=".pdf,.docx,.txt,.md" className="block w-full text-[13.5px] file:mr-3 file:rounded-[6px] file:border file:border-hairline file:bg-paper file:px-3.5 file:py-1.5 file:text-[13px] file:font-medium" />
         </Field>
       ) : null}
 

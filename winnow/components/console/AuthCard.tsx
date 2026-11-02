@@ -23,7 +23,7 @@ export default function AuthCard({ title, lead, children, foot }: { title: strin
 
 export function Notice({ tone = "info", children }: { tone?: "info" | "alert"; children: React.ReactNode }) {
   return (
-    <p role={tone === "alert" ? "alert" : "status"} className={`mb-4 rounded-[10px] px-3 py-2.5 text-center text-[13.5px] ${tone === "alert" ? "bg-alert/[0.06] text-alert" : "bg-signal/[0.06] text-ink"}`}>
+    <p role={tone === "alert" ? "alert" : "status"} className={`mb-4 rounded-[7px] px-3 py-2.5 text-center text-[13.5px] ${tone === "alert" ? "bg-alert/[0.06] text-alert" : "bg-signal/[0.06] text-ink"}`}>
       {children}
     </p>
   );

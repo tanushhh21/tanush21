@@ -82,7 +82,7 @@ export default async function Audit({ searchParams }: { searchParams: Promise<Re
       {rows.length === 0 ? (
         <Empty title="Nothing matches">Loosen a filter.</Empty>
       ) : (
-        <ol className="divide-y divide-hairline overflow-hidden rounded-[14px] border border-hairline">
+        <ol className="divide-y divide-hairline overflow-hidden rounded-[10px] border border-hairline">
           {rows.map((r) => {
             const d = r.detail as Detail;
             return (

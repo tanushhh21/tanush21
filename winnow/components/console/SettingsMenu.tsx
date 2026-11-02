@@ -21,7 +21,7 @@ export default function SettingsMenu() {
       aria-current={active(k) ? "page" : undefined}
       className={
         chip
-          ? `whitespace-nowrap rounded-full px-3 py-1.5 text-[13px] ${active(k) ? "bg-ink text-paper" : "bg-mist text-slate"}`
+          ? `whitespace-nowrap rounded-[6px] px-3 py-1.5 text-[13px] ${active(k) ? "bg-ink text-paper" : "bg-mist text-slate"}`
           : `block rounded-[8px] px-2.5 py-1.5 text-[13.5px] transition-colors ${active(k) ? "bg-mist font-medium text-ink" : "text-slate hover:text-ink"}`
       }
     >

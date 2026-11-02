@@ -14,7 +14,7 @@ export default async function Overview({ searchParams }: { searchParams: Promise
   return (
     <div className="grid gap-6">
       <PageHeader title="Across every customer" meta="Work waits by action, so twelve roles batch into one pass." />
-      <div className="grid grid-cols-2 gap-5 rounded-[14px] border border-hairline p-4 sm:grid-cols-3 lg:grid-cols-6">
+      <div className="grid grid-cols-2 gap-5 rounded-[10px] border border-hairline p-4 sm:grid-cols-3 lg:grid-cols-6">
         <Stat label="Searches to run" value={q?.searches ?? 0} />
         <Stat label="Results to open" value={q?.triage ?? 0} />
         <Stat label="Messages to send" value={q?.outreach ?? 0} />
