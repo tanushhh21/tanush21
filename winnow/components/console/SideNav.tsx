@@ -24,6 +24,7 @@ type Props = {
 /** Five places, each a plain word. Company knowledge and the audit log live in Settings. */
 const MAIN = [
   { href: "/console", label: "Home", exact: true, icon: "M3.75 9.25 10 4l6.25 5.25V16a.75.75 0 0 1-.75.75H12.5V12h-5v4.75H4.5a.75.75 0 0 1-.75-.75Z" },
+  { href: "/console/inbox", label: "Needs you", icon: "M3.75 11.5h3.5l1 2h3.5l1-2h3.5M5.25 4.75h9.5l1.5 6.75v4a.75.75 0 0 1-.75.75H4.5a.75.75 0 0 1-.75-.75v-4Z" },
   { href: "/console/chat", label: "Chat", icon: "M4 4.75h12a.75.75 0 0 1 .75.75v7.5a.75.75 0 0 1-.75.75H9l-3.5 2.75V13.75H4a.75.75 0 0 1-.75-.75V5.5A.75.75 0 0 1 4 4.75Z" },
   { href: "/console/talent", label: "People", icon: "M7.5 9.25a2.75 2.75 0 1 0 0-5.5 2.75 2.75 0 0 0 0 5.5ZM2.75 16.25c0-2.6 2.1-4.25 4.75-4.25s4.75 1.65 4.75 4.25M13.25 9a2.25 2.25 0 1 0 0-4.5M14.5 12.1c1.6.4 2.75 1.8 2.75 4.15" },
   { href: "/console/analytics", label: "Insights", icon: "M4 16.25V10.5M8 16.25V6.5M12 16.25v-4.5M16 16.25V3.75" },
@@ -100,7 +101,7 @@ export default function SideNav(p: Props) {
               <NavLink href={m.href} active={is(m.href, m.exact) || !!m.also?.some((a) => is(a))} onClick={close}>
                 <Icon d={m.icon} />
                 <span className="flex-1">{m.label}</span>
-                {m.href === "/console" && p.needsYou ? (
+                {m.href === "/console/inbox" && p.needsYou ? (
                   <span className="min-w-5 rounded-full bg-signal px-1.5 text-center text-[11px] font-medium leading-[18px] text-paper tabular-nums">{p.needsYou}</span>
                 ) : null}
               </NavLink>
@@ -180,7 +181,7 @@ export default function SideNav(p: Props) {
         <Link href="/console" aria-label="Winnow home">
           <Logo size={16} />
         </Link>
-        <Link href="/console" className="relative -mr-2 rounded-full p-2 text-[12.5px] font-medium text-ink" aria-label={`${p.needsYou} items need you`}>
+        <Link href="/console/inbox" className="relative -mr-2 rounded-full p-2 text-[12.5px] font-medium text-ink" aria-label={`${p.needsYou} items need you`}>
           {p.needsYou ? <span className="rounded-full bg-signal px-1.5 py-0.5 font-mono text-[11px] text-paper tabular-nums">{p.needsYou}</span> : <span className="text-slate">0</span>}
         </Link>
       </div>

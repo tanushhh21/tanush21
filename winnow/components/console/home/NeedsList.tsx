@@ -9,16 +9,16 @@ import { Button, fieldClass } from "@/components/console/ui";
 export type NeedItem = { key: string; type: string; label: string; roleTitle: string; roleId: string; person?: string; ageDays: number; text: string; action: { label: string; href: string }; priority: 0 | 1 | 2 };
 
 /** The tiers, each with one colour that is also spelled out, so colour never carries it alone. */
-const TIERS = [
+export const TIERS = [
   { tag: "P0", label: "Do today", hint: "A candidate or a decision is waiting on you", chip: "bg-alert/[0.09] text-alert" },
   { tag: "P1", label: "This week", hint: "Slowing a role down", chip: "bg-caution/[0.10] text-caution" },
   { tag: "P2", label: "When you can", hint: "Housekeeping", chip: "bg-ink/[0.06] text-slate" },
 ] as const;
 
-const REASONS = ["Already handled", "Not relevant to me", "Waiting on someone else", "Not a real problem"];
+export const REASONS = ["Already handled", "Not relevant to me", "Waiting on someone else", "Not a real problem"];
 
 /** Each kind of item gets one glyph and one tint, so the list can be read by shape before words. */
-const KIND: Record<string, { tint: string; d: string }> = {
+export const KIND: Record<string, { tint: string; d: string }> = {
   reply_unread: { tint: "bg-signal/[0.09] text-signal", d: "M4 4.75h12a.75.75 0 0 1 .75.75v7.5a.75.75 0 0 1-.75.75H9l-3.5 2.75V13.75H4a.75.75 0 0 1-.75-.75V5.5A.75.75 0 0 1 4 4.75Z" },
   questions_drafted: { tint: "bg-signal/[0.09] text-signal", d: "M7.75 7.5a2.25 2.25 0 1 1 3.4 1.94c-.68.4-1.15.9-1.15 1.68v.38M10 14.25v.01" },
   shortlist_unseen: { tint: "bg-caution/[0.10] text-caution", d: "M7 6h9M7 10h9M7 14h9M4 6h.01M4 10h.01M4 14h.01" },
@@ -30,10 +30,10 @@ const KIND: Record<string, { tint: string; d: string }> = {
   waiting_at_stage: { tint: "bg-caution/[0.10] text-caution", d: "M10 16.25a6.25 6.25 0 1 0 0-12.5 6.25 6.25 0 0 0 0 12.5ZM10 6.75V10l2.25 1.5" },
   role_quiet: { tint: "bg-ink/[0.06] text-slate", d: "M3.75 11.5h3.5l1 2h3.5l1-2h3.5M5.25 4.75h9.5l1.5 6.75v4a.75.75 0 0 1-.75.75H4.5a.75.75 0 0 1-.75-.75v-4Z" },
 };
-const FALLBACK = { tint: "bg-ink/[0.06] text-slate", d: "M10 6v4.5M10 13.5v.01" };
+export const FALLBACK = { tint: "bg-ink/[0.06] text-slate", d: "M10 6v4.5M10 13.5v.01" };
 
 /** The needs-you queue: keyboard-first (j/k, Enter opens, d dismisses), readable on a phone. */
-export default function NeedsList({ items }: { items: NeedItem[] }) {
+export default function NeedsList({ items, totals }: { items: NeedItem[]; totals?: Record<number, number> }) {
   const router = useRouter();
   const [cursor, setCursor] = useState(0);
   const [dismissing, setDismissing] = useState<string | null>(null);
@@ -81,7 +81,7 @@ export default function NeedsList({ items }: { items: NeedItem[] }) {
           const k = KIND[n.type] ?? FALLBACK;
           const tier = TIERS[n.priority] ?? TIERS[2];
           const first = i === 0 || items[i - 1].priority !== n.priority;
-          const count = first ? items.filter((x) => x.priority === n.priority).length : 0;
+          const count = first ? (totals?.[n.priority] ?? items.filter((x) => x.priority === n.priority).length) : 0;
           return (
           <li key={n.key}>
             {first ? (

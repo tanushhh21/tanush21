@@ -92,6 +92,20 @@ export const NEED_LABEL: Record<NeedType, string> = {
   role_quiet: "No new candidates",
 };
 
+/** Why each kind of item is in the queue, in one or two plain sentences. */
+export const NEED_WHY: Record<NeedType, string> = {
+  reply_unread: "A candidate wrote back and nobody has read it yet. Replies left unread for a day are the most common reason good people drop out.",
+  questions_drafted: "Winnow drafted questions for candidates whose CVs leave something open. Nothing is sent until you approve it.",
+  shortlist_unseen: "The hiring manager has not opened the shortlist. Until they do, the people on it are waiting on no one in particular.",
+  manager_holding: "The hiring manager has opened the shortlist but not decided on anyone. A nudge usually unblocks it.",
+  no_debrief: "An interview happened but no one has written feedback. Without it the next decision cannot be made.",
+  contradiction_unread: "Two parts of this CV say different things, for example dates or titles. Worth a look before you meet them.",
+  unanswered_twice: "This candidate has not answered after two reminders. You can close them out or try another way to reach them.",
+  rubric_unreviewed: "The criteria this role is scored against have never been checked by a person. Every score depends on them.",
+  waiting_at_stage: "This person has been at the same stage longer than usual. Decide, or tell them when they will hear.",
+  role_quiet: "No new candidates have come in for a while. The role may need another source or a sharper description.",
+};
+
 const DAY = 86_400_000;
 const age = (d: Date | null | undefined) => (d ? Math.max(0, Math.floor((Date.now() - d.getTime()) / DAY)) : 0);
 const stamp = (d: Date | null | undefined) => (d ? d.getTime().toString(36) : "0");
