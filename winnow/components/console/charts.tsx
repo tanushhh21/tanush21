@@ -82,9 +82,9 @@ export function BarList({ data, max, fmt: f, head = ["", "Value"], unit = "" }: 
                 {d.note ? <span className="block truncate text-[11.5px] text-slate">{d.note}</span> : null}
               </span>
               <span className="flex items-center gap-2">
-                <span className="h-[14px] flex-1">
+                <span className="h-2 flex-1 overflow-hidden rounded-full bg-ink/[0.05]">
                   <span
-                    className={`block h-full rounded-r-[4px] transition-opacity hover:opacity-80 ${d.muted ? "bg-slate/35" : "bg-signal"}`}
+                    className={`block h-full rounded-full transition-opacity hover:opacity-80 ${d.muted ? "bg-slate/35" : "bg-signal/85"}`}
                     style={{ width: `${Math.max(d.value > 0 ? 1.5 : 0, (100 * d.value) / top)}%` }}
                   />
                 </span>

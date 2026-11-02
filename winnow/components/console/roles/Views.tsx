@@ -17,7 +17,7 @@ export function CandidateViews({ roleId, active }: { roleId: string; active: "ra
           { href: `${base}/candidates`, label: "Everyone", active: active === "everyone" },
         ]}
       />
-      <p className="text-[13px] text-slate">{hint}</p>
+      <p className="text-[12.5px] text-slate">{hint}</p>
     </div>
   );
 }

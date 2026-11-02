@@ -96,27 +96,33 @@ export default function CandidateView({ data, reasons, canAsk, neighbours = [], 
               <span className="text-[12px] text-slate">Applied {dateLabel(h.appliedAt)}</span>
             </div>
           </div>
-          <div className="text-right">
-            <p className="text-[28px] font-semibold leading-none tabular-nums tracking-[-0.03em]">{match ?? "–"}</p>
-            <p className="mt-1 text-[12px] text-slate">{h.rank ? `match · #${h.rank} for this role` : "Not ranked yet"}</p>
+          <div className="w-[9.5rem] shrink-0 text-right">
+            <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate">Match</p>
+            <p className="mt-0.5 text-[28px] font-semibold leading-none tabular-nums tracking-[-0.03em]">{match ?? "–"}</p>
+            {typeof match === "number" ? (
+              <div className="mt-2 h-1 overflow-hidden rounded-full bg-ink/[0.07]" aria-hidden="true">
+                <div className="h-full rounded-full bg-signal" style={{ width: `${Math.max(0, Math.min(100, match))}%` }} />
+              </div>
+            ) : null}
+            <p className="mt-1.5 text-[12px] text-slate">{h.rank ? `#${h.rank} for this role` : "Not ranked yet"}</p>
           </div>
         </div>
         {h.status === "unreadable" || h.status === "failed" ? (
           <p className="mt-3 rounded-[7px] bg-alert/[0.06] px-3 py-2 text-alert">{h.status === "unreadable" ? "This CV could not be read" : "Scoring failed"}: {h.problem}</p>
         ) : null}
         {h.strength || h.gap ? (
-          <div className="mt-4 grid gap-1.5 rounded-[8px] border border-hairline bg-mist/60 px-3.5 py-2.5">
+          <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
             {h.strength ? (
-              <p>
-                <span className="font-medium text-ok">Best evidence: </span>
-                {h.strength}
-              </p>
+              <div className="rounded-[8px] border border-hairline border-l-[3px] border-l-ok/70 px-3.5 py-2.5">
+                <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-ok">Best evidence</p>
+                <p className="mt-1 leading-[1.5]">{h.strength}</p>
+              </div>
             ) : null}
             {h.gap ? (
-              <p>
-                <span className="font-medium text-caution">Biggest gap: </span>
-                {h.gap}
-              </p>
+              <div className="rounded-[8px] border border-hairline border-l-[3px] border-l-caution/70 px-3.5 py-2.5">
+                <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-caution">Biggest gap</p>
+                <p className="mt-1 leading-[1.5]">{h.gap}</p>
+              </div>
             ) : null}
           </div>
         ) : null}

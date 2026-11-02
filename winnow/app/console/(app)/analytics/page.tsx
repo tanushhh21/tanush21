@@ -15,6 +15,16 @@ const versus = (v: number | null, base: number | null) => {
   return Math.abs(d) < 0.5 ? `In line with your usual ${days(base)}` : `${d < 0 ? "Faster" : "Slower"} than your usual ${days(base)}`;
 };
 
+function Kpi({ label, value, sub }: { label: string; value: string; sub: string }) {
+  return (
+    <div className="min-w-0">
+      <dt className="text-[12.5px] text-slate">{label}</dt>
+      <dd className="mt-1 text-[26px] font-semibold leading-none tabular-nums tracking-[-0.025em] text-ink">{value}</dd>
+      <dd className="mt-1.5 text-[12px] text-slate">{sub}</dd>
+    </div>
+  );
+}
+
 export default async function Analytics({ searchParams }: { searchParams: Promise<{ from?: string; to?: string; days?: string; role?: string }> }) {
   const c = await requireCtx();
   const q = await searchParams;
@@ -23,7 +33,7 @@ export default async function Analytics({ searchParams }: { searchParams: Promis
   const qs = new URLSearchParams(Object.entries(q).filter(([, v]) => v) as [string, string][]).toString();
 
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
+    <div className="mx-auto grid w-full max-w-[1180px] grid-cols-[minmax(0,1fr)] gap-6">
       <PageHeader
         title="Insights"
         meta={`${a.received.toLocaleString("en-IN")} applications ${range.days === "all" ? "all time" : `from ${range.from.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })} to ${range.to.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}`}`}
@@ -33,9 +43,9 @@ export default async function Analytics({ searchParams }: { searchParams: Promis
           </a>
         }
       />
-      <form className="flex flex-wrap items-end gap-2 text-[13px]" method="get">
+      <form className="flex flex-wrap items-center gap-x-2 gap-y-2 text-[13px]" method="get">
         <label>
-          <span className="block text-[12px] text-slate">Role</span>
+          <span className="sr-only">Role</span>
           <select name="role" defaultValue={range.roleId ?? ""} className={smallFieldClass}>
             <option value="">All roles</option>
             {a.roles.map((r) => (
@@ -46,7 +56,7 @@ export default async function Analytics({ searchParams }: { searchParams: Promis
           </select>
         </label>
         <label>
-          <span className="block text-[12px] text-slate">Period</span>
+          <span className="sr-only">Period</span>
           <select name="days" defaultValue={range.days} className={smallFieldClass}>
             <option value="30">Last 30 days</option>
             <option value="90">Last 90 days</option>
@@ -55,12 +65,12 @@ export default async function Analytics({ searchParams }: { searchParams: Promis
             <option value="custom">Between dates</option>
           </select>
         </label>
-        <label>
-          <span className="block text-[12px] text-slate">From</span>
+        <label className="flex items-center gap-1.5">
+          <span className="text-[12.5px] text-slate">From</span>
           <input type="date" name="from" defaultValue={q.from ?? ""} className={smallFieldClass} />
         </label>
-        <label>
-          <span className="block text-[12px] text-slate">To</span>
+        <label className="flex items-center gap-1.5">
+          <span className="text-[12.5px] text-slate">to</span>
           <input type="date" name="to" defaultValue={q.to ?? ""} className={smallFieldClass} />
         </label>
         <button type="submit" className={buttonClass("secondary", "sm")}>
@@ -72,22 +82,22 @@ export default async function Analytics({ searchParams }: { searchParams: Promis
         <Empty title="Nothing in this period">Pick a longer period or another role.</Empty>
       ) : (
         <>
-          <div className="grid gap-5 lg:grid-cols-2">
-            <Card>
-              <CardHead title="Pipeline" meta="With the conversion from each step to the next." />
-              <div className="px-4 py-4 sm:px-5">
-                <Funnel steps={a.pipeline} />
-              </div>
-            </Card>
-            <Card>
-              <CardHead title="Time" meta="Median days from opening the role, against your own roles, not an industry number." />
-              <div className="grid gap-5 px-4 py-4 sm:grid-cols-3 sm:px-5">
-                <Stat label="To first shortlist" value={days(a.time.toShortlist.value)} sub={versus(a.time.toShortlist.value, a.time.toShortlist.baseline)} />
-                <Stat label="To offer" value={days(a.time.toOffer.value)} sub={versus(a.time.toOffer.value, a.time.toOffer.baseline)} />
-                <Stat label="To close" value={days(a.time.toClose.value)} sub={versus(a.time.toClose.value, a.time.toClose.baseline)} />
-              </div>
-            </Card>
-          </div>
+          <section aria-label="Time to hire" className="border-y border-hairline py-5">
+            <dl className="grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-4">
+              <Kpi label="To first shortlist" value={days(a.time.toShortlist.value)} sub={versus(a.time.toShortlist.value, a.time.toShortlist.baseline)} />
+              <Kpi label="To offer" value={days(a.time.toOffer.value)} sub={versus(a.time.toOffer.value, a.time.toOffer.baseline)} />
+              <Kpi label="To close" value={days(a.time.toClose.value)} sub={versus(a.time.toClose.value, a.time.toClose.baseline)} />
+              <Kpi label="Cost per hire" value={rupees(a.cost.perHire)} sub={`${rupees(a.cost.perShortlist)} per shortlist`} />
+            </dl>
+            <p className="mt-4 text-[12px] text-slate">Times are median days from opening the role, against your own roles, not an industry number.</p>
+          </section>
+
+          <Card>
+            <CardHead title="Pipeline" meta="How many people reached each step, with the conversion from the step before." />
+            <div className="px-4 py-4 sm:px-5">
+              <Funnel steps={a.pipeline} />
+            </div>
+          </Card>
 
           <Card>
             <CardHead title="Why candidates were rejected" meta={`${a.rejections.total} rejection${a.rejections.total === 1 ? "" : "s"} with a reason code, by the stage ${a.rejections.total === 1 ? "it was" : "they were"} made at.`} />

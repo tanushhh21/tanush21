@@ -7,7 +7,7 @@ import { can, requireCtx, visibleRoles } from "@/lib/console/context";
 import { summarizeRoles, statusTone } from "@/lib/console/roles";
 import { NEED_LABEL, needsYou } from "@/lib/console/needs";
 import { awayFeed, awayWindow } from "@/lib/console/data/home";
-import { ButtonLink, Empty, PageHeader, buttonClass, fieldClass } from "@/components/console/ui";
+import { ButtonLink, Empty, PageHeader, buttonClass } from "@/components/console/ui";
 import NeedsList from "@/components/console/home/NeedsList";
 import RolesTable, { type RoleRow } from "@/components/console/home/RolesTable";
 
@@ -86,30 +86,58 @@ export default async function Home() {
     { label: "Offers out", value: open.reduce((n, r) => n + (r.stages.offer ?? 0), 0), href: "#roles" },
   ];
 
+  const today = new Date().toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", weekday: "long", day: "numeric", month: "long" });
+
   return (
-    <div className="grid gap-6">
+    <div className="mx-auto grid w-full max-w-[1180px] gap-8 lg:pt-2">
       <PageHeader
+        eyebrow={today}
         title={`Good ${greeting()}, ${c.user.name.split(" ")[0]}`}
-        meta={needs.length ? `${needs.length} thing${needs.length === 1 ? "" : "s"} need${needs.length === 1 ? "s" : ""} you today.` : "Nothing needs you right now."}
         actions={can.createRole(c) ? <ButtonLink href="/console/chat?new=1" tone="primary">New role</ButtonLink> : null}
       />
 
-      <dl className="grid grid-cols-2 overflow-hidden rounded-[8px] border border-hairline lg:grid-cols-4">
-        {stats.map((s, i) => (
-          <div key={s.label} className={`px-4 py-3 ${i % 2 ? "border-l border-hairline" : ""} ${i > 1 ? "border-t border-hairline lg:border-t-0" : ""} ${i === 2 ? "lg:border-l" : ""}`}>
+      {/* One place to ask or instruct; Chat holds the conversation. */}
+      <form action="/console/chat" method="get" className="-mt-2">
+        <label htmlFor="ask" className="sr-only">
+          Ask Winnow
+        </label>
+        <div className="flex items-center gap-2 rounded-[10px] border border-hairline bg-paper py-1.5 pl-3.5 pr-1.5 shadow-[0_1px_3px_rgb(10_12_15/0.05)] transition-[border-color,box-shadow] focus-within:border-signal/60 focus-within:shadow-[0_0_0_3px_rgb(27_77_255/0.10)]">
+          <svg viewBox="0 0 20 20" className="size-4 shrink-0 text-signal" aria-hidden="true">
+            <path d="M10 2.75 11.6 8.4l5.65 1.6-5.65 1.6L10 17.25 8.4 11.6 2.75 10 8.4 8.4Z" fill="currentColor" />
+          </svg>
+          <input
+            id="ask"
+            name="q"
+            placeholder="Ask Winnow, or tell it what to do: set up a role, shortlist, send questions…"
+            className="h-9 min-w-0 flex-1 bg-transparent text-[16px] text-ink placeholder:text-slate/70 focus:outline-none sm:text-[13.5px]"
+          />
+          <button type="submit" className={`${buttonClass("secondary", "sm")} shrink-0`}>
+            Ask
+          </button>
+        </div>
+      </form>
+
+      <dl className="grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-4">
+        {stats.map((s) => (
+          <div key={s.label}>
             <dt className="text-[12px] text-slate">{s.label}</dt>
-            <dd className="mt-1 text-[22px] font-semibold leading-none tracking-[-0.02em] tabular-nums">{s.value}</dd>
+            <dd className="mt-1 text-[26px] font-semibold leading-none tracking-[-0.025em] tabular-nums">{s.value}</dd>
           </div>
         ))}
       </dl>
 
-      <div className="grid grid-cols-[minmax(0,1fr)] gap-8 xl:grid-cols-[minmax(0,1fr)_21rem] xl:items-start">
-        <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-8">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-10 border-t border-hairline pt-8 xl:grid-cols-[minmax(0,1fr)_17rem] xl:gap-12">
+        <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-10">
           <section aria-labelledby="needs">
-            <h2 id="needs" className="mb-3 text-[14px] font-semibold">
-              Needs you
-            </h2>
-            <NeedsList items={needs.map((n) => ({ key: n.key, type: n.type, label: NEED_LABEL[n.type], roleTitle: n.roleTitle, roleId: n.roleId, person: n.person, ageDays: n.ageDays, text: n.text, action: n.action }))} />
+            <div className="mb-2 flex items-baseline gap-2">
+              <h2 id="needs" className="text-[14px] font-semibold">
+                Needs you
+              </h2>
+              {needs.length ? <span className="text-[13px] tabular-nums text-slate">{needs.length}</span> : null}
+            </div>
+            <div className="-mx-2.5">
+              <NeedsList items={needs.map((n) => ({ key: n.key, type: n.type, label: NEED_LABEL[n.type], roleTitle: n.roleTitle, roleId: n.roleId, person: n.person, ageDays: n.ageDays, text: n.text, action: n.action }))} />
+            </div>
           </section>
 
           <section aria-labelledby="roles-title" id="roles" className="scroll-mt-20">
@@ -120,46 +148,31 @@ export default async function Home() {
           </section>
         </div>
 
-        <aside className="grid min-w-0 gap-6">
-          <form action="/console/chat" method="get" className="rounded-[8px] border border-hairline bg-mist/50 p-3.5">
-            <label htmlFor="ask" className="text-[14px] font-semibold">
-              Ask Winnow
-            </label>
-            <p className="mt-0.5 text-[12px] text-slate">Ask anything, or tell it what to do: set up a role, shortlist, send questions.</p>
-            <div className="mt-3 flex gap-2">
-              <input id="ask" name="q" placeholder="e.g. Which role is stuck?" className={`${fieldClass} min-w-0 flex-1`} />
-              <button type="submit" className={`${buttonClass("secondary")} h-9`}>
-                Ask
-              </button>
-            </div>
-          </form>
-
-          <section aria-labelledby="away">
-            <h2 id="away" className="text-[14px] font-semibold">
-              Recently
-            </h2>
-            <p className="mb-3 text-[12px] text-slate">Since {since.toLocaleString("en-IN", { timeZone: "Asia/Kolkata", weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })}</p>
-            {feed.length === 0 ? (
-              <p className="text-[13px] text-slate">Nothing new since then.</p>
-            ) : (
-              <ol className="grid gap-3 border-l border-hairline pl-3.5">
-                {feed.slice(0, 12).map((f) => (
-                  <li key={f.id} className="relative text-[13px] leading-snug">
-                    <span aria-hidden="true" className={`absolute -left-[18px] top-[6px] size-[7px] rounded-full ring-2 ring-paper ${f.failure ? "bg-alert" : "bg-slate/40"}`} />
-                    <span className={f.failure ? "text-alert" : ""}>{f.text}</span>
-                    <span className="mt-0.5 block text-[12px] text-slate">
-                      {f.roleId ? (
-                        <Link href={`/console/roles/${f.roleId}/activity`} className="hover:text-ink hover:underline">
-                          {f.roleTitle}
-                        </Link>
-                      ) : null}{" "}
-                      · {f.at.toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour: "numeric", minute: "2-digit" })}
-                    </span>
-                  </li>
-                ))}
-              </ol>
-            )}
-          </section>
+        <aside aria-labelledby="away" className="min-w-0">
+          <h2 id="away" className="text-[14px] font-semibold">
+            While you were away
+          </h2>
+          <p className="mb-4 text-[12px] text-slate">Since {since.toLocaleString("en-IN", { timeZone: "Asia/Kolkata", weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })}</p>
+          {feed.length === 0 ? (
+            <p className="text-[13px] text-slate">Nothing new since then.</p>
+          ) : (
+            <ol className="grid gap-4 border-l border-hairline pl-4">
+              {feed.slice(0, 8).map((f) => (
+                <li key={f.id} className="relative text-[13px] leading-snug">
+                  <span aria-hidden="true" className={`absolute -left-[20px] top-[5px] size-[7px] rounded-full ring-[3px] ring-paper ${f.failure ? "bg-alert" : "bg-slate/35"}`} />
+                  <span className={f.failure ? "text-alert" : "text-ink"}>{f.text}</span>
+                  <span className="mt-0.5 block text-[12px] text-slate">
+                    {f.roleId ? (
+                      <Link href={`/console/roles/${f.roleId}/activity`} className="hover:text-ink hover:underline">
+                        {f.roleTitle}
+                      </Link>
+                    ) : null}{" "}
+                    · {f.at.toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour: "numeric", minute: "2-digit" })}
+                  </span>
+                </li>
+              ))}
+            </ol>
+          )}
         </aside>
       </div>
     </div>

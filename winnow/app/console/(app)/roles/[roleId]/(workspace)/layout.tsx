@@ -43,9 +43,24 @@ export default async function Workspace({ children, params }: { children: React.
     { n: counts.hired, label: "hired", href: `${base}/interviews` },
   ].filter((x, i) => i < 2 || x.n > 0);
 
+  const pipelineLinks = (
+    <>
+      {pipeline.map((x) => (
+        <Link key={x.label} href={x.href} className="whitespace-nowrap text-slate hover:text-ink">
+          <span className="font-semibold text-ink tabular-nums">{x.n}</span> {x.label}
+        </Link>
+      ))}
+      {counts.unreadable ? (
+        <Link href={`${base}/candidates`} className="whitespace-nowrap text-alert hover:underline">
+          {counts.unreadable} could not be read
+        </Link>
+      ) : null}
+    </>
+  );
+
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
-      <header className="grid grid-cols-[minmax(0,1fr)] gap-2.5">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-5">
+      <header className="grid grid-cols-[minmax(0,1fr)] gap-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
             <h1 className="text-[20px] font-semibold leading-tight tracking-[-0.018em]">
@@ -67,19 +82,9 @@ export default async function Workspace({ children, params }: { children: React.
             </Link>
           </div>
         </div>
-        <p className="flex flex-wrap gap-x-4 gap-y-1 text-[12.5px]">
-          {pipeline.map((x) => (
-            <Link key={x.label} href={x.href} className="text-slate hover:text-ink">
-              <span className="font-semibold text-ink tabular-nums">{x.n}</span> {x.label}
-            </Link>
-          ))}
-          {counts.unreadable ? (
-            <Link href={`${base}/candidates`} className="text-alert hover:underline">
-              {counts.unreadable} could not be read
-            </Link>
-          ) : null}
-        </p>
-        <Tabs roleId={role.id} counts={{}} />
+        {/* The pipeline in numbers: under the title on phones, beside the tabs on wide screens. */}
+        <p className="flex flex-wrap gap-x-4 gap-y-1 text-[12.5px] lg:hidden">{pipelineLinks}</p>
+        <Tabs roleId={role.id} counts={{}} aside={<p className="flex gap-4 text-[12.5px]">{pipelineLinks}</p>} />
       </header>
       {children}
     </div>
