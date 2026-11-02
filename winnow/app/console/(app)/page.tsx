@@ -136,7 +136,7 @@ export default async function Home() {
               {needs.length ? <span className="text-[13px] tabular-nums text-slate">{needs.length}</span> : null}
             </div>
             <div className="-mx-2.5">
-              <NeedsList items={needs.map((n) => ({ key: n.key, type: n.type, label: NEED_LABEL[n.type], roleTitle: n.roleTitle, roleId: n.roleId, person: n.person, ageDays: n.ageDays, text: n.text, action: n.action }))} />
+              <NeedsList items={needs.map((n) => ({ key: n.key, type: n.type, label: NEED_LABEL[n.type], roleTitle: n.roleTitle, roleId: n.roleId, person: n.person, ageDays: n.ageDays, text: n.text, action: n.action, priority: n.priority }))} />
             </div>
           </section>
 

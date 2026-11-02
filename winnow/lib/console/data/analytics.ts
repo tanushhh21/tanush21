@@ -93,6 +93,21 @@ export async function loadAnalytics(c: Ctx, range: Range) {
     { label: "Joined", value: joined.size },
   ];
 
+  // ---- Applications per week across the range (Monday-start weeks), with how many of them were shortlisted
+  const weekStart = (d: Date) => {
+    const x = new Date(d);
+    x.setHours(0, 0, 0, 0);
+    x.setDate(x.getDate() - ((x.getDay() + 6) % 7));
+    return x;
+  };
+  const weekly: { label: string; value: number; shortlisted: number }[] = [];
+  const firstApp = apps.length ? new Date(Math.min(...apps.map((a) => a.createdAt.getTime()))) : range.from;
+  for (let w = weekStart(firstApp > range.from ? firstApp : range.from); w <= range.to && weekly.length < 60; w = new Date(w.getTime() + 7 * DAY)) {
+    const end = w.getTime() + 7 * DAY;
+    const inWeek = apps.filter((a) => a.createdAt.getTime() >= w.getTime() && a.createdAt.getTime() < end);
+    weekly.push({ label: w.toLocaleDateString("en-IN", { day: "numeric", month: "short" }), value: inWeek.length, shortlisted: inWeek.filter((a) => everShortlisted.has(a.id)).length });
+  }
+
   // ---- Time, against this company's own baseline (all its roles, all time)
   const firstAt = (roleId: string, action: string) => {
     const t = decisions.filter((d) => d.roleId === roleId && d.action === action).map((d) => d.at.getTime());
@@ -269,7 +284,7 @@ export async function loadAnalytics(c: Ctx, range: Range) {
     .where(and(eq(dismissals.orgId, c.org.id), gte(dismissals.createdAt, range.from), lte(dismissals.createdAt, range.to)))
     .groupBy(dismissals.itemType, dismissals.reason);
 
-  return { roles: roleRows.map((r) => ({ id: r.id, title: r.title })), pipeline, time, rejections, sources: sourceRows, accuracy, blind, cost, fairness, dismissals: dism, received: apps.length };
+  return { roles: roleRows.map((r) => ({ id: r.id, title: r.title })), pipeline, weekly, time, rejections, sources: sourceRows, accuracy, blind, cost, fairness, dismissals: dism, received: apps.length };
 }
 
 export function parseRange(q: { from?: string; to?: string; days?: string; role?: string }): Range & { days: string } {

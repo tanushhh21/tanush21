@@ -6,7 +6,14 @@ import { useRouter } from "next/navigation";
 import { dismissNeed } from "@/lib/console/actions/home";
 import { Button, fieldClass } from "@/components/console/ui";
 
-export type NeedItem = { key: string; type: string; label: string; roleTitle: string; roleId: string; person?: string; ageDays: number; text: string; action: { label: string; href: string } };
+export type NeedItem = { key: string; type: string; label: string; roleTitle: string; roleId: string; person?: string; ageDays: number; text: string; action: { label: string; href: string }; priority: 0 | 1 | 2 };
+
+/** The tiers, each with one colour that is also spelled out, so colour never carries it alone. */
+const TIERS = [
+  { tag: "P0", label: "Do today", hint: "A candidate or a decision is waiting on you", chip: "bg-alert/[0.09] text-alert" },
+  { tag: "P1", label: "This week", hint: "Slowing a role down", chip: "bg-caution/[0.10] text-caution" },
+  { tag: "P2", label: "When you can", hint: "Housekeeping", chip: "bg-ink/[0.06] text-slate" },
+] as const;
 
 const REASONS = ["Already handled", "Not relevant to me", "Waiting on someone else", "Not a real problem"];
 
@@ -72,8 +79,20 @@ export default function NeedsList({ items }: { items: NeedItem[] }) {
       <ol ref={list} className="grid gap-px">
         {items.map((n, i) => {
           const k = KIND[n.type] ?? FALLBACK;
+          const tier = TIERS[n.priority] ?? TIERS[2];
+          const first = i === 0 || items[i - 1].priority !== n.priority;
+          const count = first ? items.filter((x) => x.priority === n.priority).length : 0;
           return (
-          <li key={n.key} className={`group relative rounded-[8px] px-2.5 py-2.5 transition-colors ${i === cursor ? "bg-mist" : ""}`} onMouseEnter={() => setCursor(i)}>
+          <li key={n.key}>
+            {first ? (
+              <div role="presentation" className={`flex items-baseline gap-2 px-2.5 pb-1.5 ${i === 0 ? "" : "mt-4"}`}>
+                <span className={`rounded-[4px] px-1.5 py-px text-[11px] font-semibold tabular-nums ${tier.chip}`}>{tier.tag}</span>
+                <span className="text-[12.5px] font-medium text-ink">{tier.label}</span>
+                <span className="text-[12px] tabular-nums text-slate">{count}</span>
+                <span className="hidden text-[12px] text-slate sm:inline">· {tier.hint}</span>
+              </div>
+            ) : null}
+          <div className={`group relative rounded-[8px] px-2.5 py-2.5 transition-colors ${i === cursor ? "bg-mist" : ""}`} onMouseEnter={() => setCursor(i)}>
             <div className="flex items-center gap-3">
               <span aria-hidden="true" className={`grid size-8 shrink-0 place-items-center rounded-[7px] ${k.tint}`}>
                 <svg viewBox="0 0 20 20" className="size-4">
@@ -132,6 +151,7 @@ export default function NeedsList({ items }: { items: NeedItem[] }) {
                 {error ? <p role="alert" className="text-[12.5px] text-alert">{error}</p> : null}
               </div>
             ) : null}
+          </div>
           </li>
           );
         })}

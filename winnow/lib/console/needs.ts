@@ -41,6 +41,28 @@ export type Need = {
   ageDays: number;
   text: string;
   action: { label: string; href: string };
+  /** P0 blocks a candidate today, P1 slows a role this week, P2 is housekeeping. */
+  priority: Priority;
+};
+
+export type Priority = 0 | 1 | 2;
+
+/** Each kind starts at a tier; anything left a week or more moves up one. */
+const TIER: Record<NeedType, Priority> = {
+  reply_unread: 0,
+  questions_drafted: 0,
+  no_debrief: 0,
+  shortlist_unseen: 1,
+  manager_holding: 1,
+  contradiction_unread: 1,
+  waiting_at_stage: 1,
+  unanswered_twice: 2,
+  rubric_unreviewed: 2,
+  role_quiet: 2,
+};
+export const priorityOf = (type: NeedType, ageDays: number): Priority => {
+  const t = TIER[type];
+  return (ageDays >= 7 && t > 0 ? t - 1 : t) as Priority;
 };
 
 /** Lower is more blocking. */
@@ -82,7 +104,7 @@ export async function needsYou(c: Ctx, opts: { includeDismissed?: boolean } = {}
   if (open.length === 0) return [];
   const ids = open.map((r) => r.id);
   const title = new Map(open.map((r) => [r.id, r.title]));
-  const items: Need[] = [];
+  const items: Omit<Need, "priority">[] = [];
   const base = (roleId: string) => `/console/roles/${roleId}`;
 
   // A candidate replied and nobody has read it.
@@ -282,15 +304,15 @@ export async function needsYou(c: Ctx, opts: { includeDismissed?: boolean } = {}
     });
   }
 
-  let out = items;
-  if (!opts.includeDismissed && items.length) {
+  let out: Need[] = items.map((i) => ({ ...i, priority: priorityOf(i.type, i.ageDays) }));
+  if (!opts.includeDismissed && out.length) {
     const gone = await db
       .select({ key: dismissals.itemKey })
       .from(dismissals)
-      .where(and(eq(dismissals.orgId, c.org.id), eq(dismissals.userId, c.user.id), inArray(dismissals.itemKey, items.map((i) => i.key))));
+      .where(and(eq(dismissals.orgId, c.org.id), eq(dismissals.userId, c.user.id), inArray(dismissals.itemKey, out.map((i) => i.key))));
     const hidden = new Set(gone.map((g) => g.key));
-    out = items.filter((i) => !hidden.has(i.key));
+    out = out.filter((i) => !hidden.has(i.key));
   }
-  return out.sort((a, b) => PRIORITY[a.type] - PRIORITY[b.type] || b.ageDays - a.ageDays);
+  return out.sort((a, b) => a.priority - b.priority || PRIORITY[a.type] - PRIORITY[b.type] || b.ageDays - a.ageDays);
 }
 
