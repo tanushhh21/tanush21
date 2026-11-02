@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { and, desc, eq, gte, inArray, lte, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { evaluations, interviews, roles as rolesTable } from "@/lib/db/schema";
+import { evaluations, interviews, roles as rolesTable, users } from "@/lib/db/schema";
 import { can, requireCtx, visibleRoles } from "@/lib/console/context";
 import { summarizeRoles, statusTone } from "@/lib/console/roles";
 import { NEED_LABEL, needsYou } from "@/lib/console/needs";
@@ -10,6 +10,8 @@ import { awayFeed, awayWindow } from "@/lib/console/data/home";
 import { ButtonLink, Empty, PageHeader, buttonClass } from "@/components/console/ui";
 import NeedsList from "@/components/console/home/NeedsList";
 import RolesTable, { type RoleRow } from "@/components/console/home/RolesTable";
+import CustomiseHome from "@/components/console/home/CustomiseHome";
+import { STATS, normalizeLayout, type SectionId, type StatId } from "@/lib/console/homeLayout";
 
 export const metadata: Metadata = { title: "Home" };
 
@@ -21,7 +23,9 @@ const DAY = 86_400_000;
  */
 export default async function Home() {
   const c = await requireCtx();
-  const [roles, needs] = await Promise.all([summarizeRoles(c, { includeClosed: true }), needsYou(c)]);
+  const [roles, needs, [me]] = await Promise.all([summarizeRoles(c, { includeClosed: true }), needsYou(c), db.select({ layout: users.homeLayout }).from(users).where(eq(users.id, c.user.id))]);
+  const layout = normalizeLayout(me?.layout);
+  const visible = (id: SectionId) => !layout.hidden.includes(id);
 
   // First run: one thing on screen.
   if (roles.length === 0) {
@@ -29,7 +33,13 @@ export default async function Home() {
       <div className="flex min-h-[70svh] items-center justify-center">
         <Empty
           title={can.createRole(c) ? "Add your first role" : "No roles yet"}
-          action={can.createRole(c) ? <ButtonLink href="/console/chat?new=1" tone="primary">Add a role</ButtonLink> : null}
+          action={
+            can.createRole(c) ? (
+              <ButtonLink href="/console/chat?new=1" tone="primary">
+                Add a role
+              </ButtonLink>
+            ) : null
+          }
         >
           {can.createRole(c)
             ? "Describe the role in your own words, or paste the job description. Winnow sets it up, decides what to screen on, and starts ranking."
@@ -79,12 +89,121 @@ export default async function Home() {
     tone: statusTone(r.status),
     risk: r.risk,
   }));
-  const stats = [
-    { label: "Open roles", value: open.length, href: "#roles" },
-    { label: "Candidates to review", value: open.reduce((n, r) => n + toReview(r), 0), href: "#roles" },
-    { label: "Interviews this week", value: week?.n ?? 0, href: "#roles" },
-    { label: "Offers out", value: open.reduce((n, r) => n + (r.stages.offer ?? 0), 0), href: "#roles" },
-  ];
+  const statValue: Record<StatId, number> = {
+    openRoles: open.length,
+    toReview: open.reduce((n, r) => n + toReview(r), 0),
+    shortlisted: open.reduce((n, r) => n + (r.stages.shortlisted ?? 0) + (r.stages.on_hold ?? 0), 0),
+    interviewsWeek: week?.n ?? 0,
+    offersOut: open.reduce((n, r) => n + (r.stages.offer ?? 0), 0),
+    doToday: needs.filter((n) => n.priority === 0).length,
+    received: open.reduce((n, r) => n + r.received, 0),
+    behind: open.filter((r) => r.risk === "high").length,
+  };
+  const statHref: Partial<Record<StatId, string>> = { doToday: "/console/inbox" };
+
+  const main = layout.order.filter((id) => id !== "away" && visible(id));
+  // Full-width blocks run until the first list; from there on, blocks share the row with "While you were away".
+  const split = main.findIndex((id) => id === "needs" || id === "roles");
+  const top = split < 0 ? main : main.slice(0, split);
+  const lower = split < 0 ? [] : main.slice(split);
+  const block = (id: SectionId) => {
+    switch (id) {
+      case "ask":
+        return (
+          <div key="ask">
+            {/* One place to ask or instruct; Chat holds the conversation. */}
+            <form action="/console/chat" method="get" >
+              <label htmlFor="ask" className="sr-only">
+                Ask Winnow
+              </label>
+              <div className="flex items-center gap-2 rounded-[10px] border border-hairline bg-paper py-1.5 pl-3.5 pr-1.5 shadow-[0_1px_3px_rgb(10_12_15/0.05)] transition-[border-color,box-shadow] focus-within:border-signal/60 focus-within:shadow-[0_0_0_3px_rgb(27_77_255/0.10)]">
+                <svg viewBox="0 0 20 20" className="size-4 shrink-0 text-signal" aria-hidden="true">
+                  <path d="M10 2.75 11.6 8.4l5.65 1.6-5.65 1.6L10 17.25 8.4 11.6 2.75 10 8.4 8.4Z" fill="currentColor" />
+                </svg>
+                <input
+                  id="ask"
+                  name="q"
+                  placeholder="Ask Winnow, or tell it what to do: set up a role, shortlist, send questions…"
+                  className="h-9 min-w-0 flex-1 bg-transparent text-[16px] text-ink placeholder:text-slate/70 focus:outline-none sm:text-[13.5px]"
+                />
+                <button type="submit" className={`${buttonClass("secondary", "sm")} shrink-0`}>
+                  Ask
+                </button>
+              </div>
+            </form>
+          </div>
+        );
+      case "stats":
+        return (
+          <div key="stats">
+            <dl className={`grid grid-cols-2 gap-x-6 gap-y-5 ${layout.stats.length >= 4 ? "sm:grid-cols-4" : layout.stats.length === 3 ? "sm:grid-cols-3" : ""}`}>
+              {layout.stats.map((id) => {
+                const inner = (
+                  <>
+                    <dt className="text-[12px] text-slate">{STATS[id]}</dt>
+                    <dd className="mt-1 text-[26px] font-semibold leading-none tracking-[-0.025em] tabular-nums">{statValue[id]}</dd>
+                  </>
+                );
+                return statHref[id] ? (
+                  <Link key={id} href={statHref[id]!} className="block rounded-[6px] hover:opacity-80">
+                    {inner}
+                  </Link>
+                ) : (
+                  <div key={id}>{inner}</div>
+                );
+              })}
+            </dl>
+          </div>
+        );
+      case "needs":
+        return (
+          <section key="needs" aria-labelledby="needs">
+            <div className="mb-2 flex items-baseline gap-2">
+              <h2 id="needs" className="text-[14px] font-semibold">
+                Needs you
+              </h2>
+              {needs.length ? <span className="text-[13px] tabular-nums text-slate">{needs.length}</span> : null}
+              {needs.length > layout.needsShown ? (
+                <Link href="/console/inbox" className="ml-auto text-[12.5px] text-slate hover:text-ink">
+                  See all {needs.length}
+                </Link>
+              ) : null}
+            </div>
+            <div className="-mx-2.5">
+              <NeedsList
+                totals={{ 0: needs.filter((n) => n.priority === 0).length, 1: needs.filter((n) => n.priority === 1).length, 2: needs.filter((n) => n.priority === 2).length }}
+                items={needs
+                  .slice(0, layout.needsShown)
+                  .map((n) => ({
+                    key: n.key,
+                    type: n.type,
+                    label: NEED_LABEL[n.type],
+                    roleTitle: n.roleTitle,
+                    roleId: n.roleId,
+                    person: n.person,
+                    ageDays: n.ageDays,
+                    text: n.text,
+                    action: n.action,
+                    priority: n.priority,
+                  }))}
+              />
+            </div>
+          </section>
+        );
+      case "roles":
+        return (
+          <section key="roles" aria-labelledby="roles-title" id="roles" className="scroll-mt-20">
+            <h2 id="roles-title" className="mb-3 text-[14px] font-semibold">
+              Your roles
+            </h2>
+            <RolesTable rows={rows} />
+          </section>
+        );
+      default:
+        return null;
+    }
+  };
+  const showAway = visible("away");
 
   const today = new Date().toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", weekday: "long", day: "numeric", month: "long" });
 
@@ -93,93 +212,56 @@ export default async function Home() {
       <PageHeader
         eyebrow={today}
         title={`Good ${greeting()}, ${c.user.name.split(" ")[0]}`}
-        actions={can.createRole(c) ? <ButtonLink href="/console/chat?new=1" tone="primary">New role</ButtonLink> : null}
+        actions={
+          <>
+            <CustomiseHome layout={layout} />
+            {can.createRole(c) ? (
+              <ButtonLink href="/console/chat?new=1" tone="primary">
+                New role
+              </ButtonLink>
+            ) : null}
+          </>
+        }
       />
 
-      {/* One place to ask or instruct; Chat holds the conversation. */}
-      <form action="/console/chat" method="get" className="-mt-2">
-        <label htmlFor="ask" className="sr-only">
-          Ask Winnow
-        </label>
-        <div className="flex items-center gap-2 rounded-[10px] border border-hairline bg-paper py-1.5 pl-3.5 pr-1.5 shadow-[0_1px_3px_rgb(10_12_15/0.05)] transition-[border-color,box-shadow] focus-within:border-signal/60 focus-within:shadow-[0_0_0_3px_rgb(27_77_255/0.10)]">
-          <svg viewBox="0 0 20 20" className="size-4 shrink-0 text-signal" aria-hidden="true">
-            <path d="M10 2.75 11.6 8.4l5.65 1.6-5.65 1.6L10 17.25 8.4 11.6 2.75 10 8.4 8.4Z" fill="currentColor" />
-          </svg>
-          <input
-            id="ask"
-            name="q"
-            placeholder="Ask Winnow, or tell it what to do: set up a role, shortlist, send questions…"
-            className="h-9 min-w-0 flex-1 bg-transparent text-[16px] text-ink placeholder:text-slate/70 focus:outline-none sm:text-[13.5px]"
-          />
-          <button type="submit" className={`${buttonClass("secondary", "sm")} shrink-0`}>
-            Ask
-          </button>
-        </div>
-      </form>
+      {/* Each person arranges their own Home (Customise); the order and what shows come from their saved layout. */}
+      {top.map(block)}
 
-      <dl className="grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-4">
-        {stats.map((s) => (
-          <div key={s.label}>
-            <dt className="text-[12px] text-slate">{s.label}</dt>
-            <dd className="mt-1 text-[26px] font-semibold leading-none tracking-[-0.025em] tabular-nums">{s.value}</dd>
-          </div>
-        ))}
-      </dl>
-
-      <div className="grid grid-cols-[minmax(0,1fr)] gap-10 border-t border-hairline pt-8 xl:grid-cols-[minmax(0,1fr)_17rem] xl:gap-12">
-        <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-10">
-          <section aria-labelledby="needs">
-            <div className="mb-2 flex items-baseline gap-2">
-              <h2 id="needs" className="text-[14px] font-semibold">
-                Needs you
+      {lower.length || showAway ? (
+        <div className={`grid grid-cols-[minmax(0,1fr)] gap-10 border-t border-hairline pt-8 ${lower.length && showAway ? "xl:grid-cols-[minmax(0,1fr)_17rem] xl:gap-12" : ""}`}>
+          {lower.length ? <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-10">{lower.map(block)}</div> : null}
+          {showAway ? (
+            <aside aria-labelledby="away" className="min-w-0">
+              <h2 id="away" className="text-[14px] font-semibold">
+                While you were away
               </h2>
-              {needs.length ? <span className="text-[13px] tabular-nums text-slate">{needs.length}</span> : null}
-              {needs.length > 4 ? (
-                <Link href="/console/inbox" className="ml-auto text-[12.5px] text-slate hover:text-ink">
-                  See all {needs.length}
-                </Link>
-              ) : null}
-            </div>
-            <div className="-mx-2.5">
-              <NeedsList totals={{ 0: needs.filter((n) => n.priority === 0).length, 1: needs.filter((n) => n.priority === 1).length, 2: needs.filter((n) => n.priority === 2).length }} items={needs.slice(0, 4).map((n) => ({ key: n.key, type: n.type, label: NEED_LABEL[n.type], roleTitle: n.roleTitle, roleId: n.roleId, person: n.person, ageDays: n.ageDays, text: n.text, action: n.action, priority: n.priority }))} />
-            </div>
-          </section>
-
-          <section aria-labelledby="roles-title" id="roles" className="scroll-mt-20">
-            <h2 id="roles-title" className="mb-3 text-[14px] font-semibold">
-              Your roles
-            </h2>
-            <RolesTable rows={rows} />
-          </section>
+              <p className="mb-4 text-[12px] text-slate">
+                Since {since.toLocaleString("en-IN", { timeZone: "Asia/Kolkata", weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })}
+              </p>
+              {feed.length === 0 ? (
+                <p className="text-[13px] text-slate">Nothing new since then.</p>
+              ) : (
+                <ol className="grid gap-4 border-l border-hairline pl-4">
+                  {feed.slice(0, 8).map((f) => (
+                    <li key={f.id} className="relative text-[13px] leading-snug">
+                      <span aria-hidden="true" className={`absolute -left-[20px] top-[5px] size-[7px] rounded-full ring-[3px] ring-paper ${f.failure ? "bg-alert" : "bg-slate/35"}`} />
+                      <span className={f.failure ? "text-alert" : "text-ink"}>{f.text}</span>
+                      <span className="mt-0.5 block text-[12px] text-slate">
+                        {f.roleId ? (
+                          <Link href={`/console/roles/${f.roleId}/activity`} className="hover:text-ink hover:underline">
+                            {f.roleTitle}
+                          </Link>
+                        ) : null}{" "}
+                        · {f.at.toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour: "numeric", minute: "2-digit" })}
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </aside>
+          ) : null}
         </div>
-
-        <aside aria-labelledby="away" className="min-w-0">
-          <h2 id="away" className="text-[14px] font-semibold">
-            While you were away
-          </h2>
-          <p className="mb-4 text-[12px] text-slate">Since {since.toLocaleString("en-IN", { timeZone: "Asia/Kolkata", weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })}</p>
-          {feed.length === 0 ? (
-            <p className="text-[13px] text-slate">Nothing new since then.</p>
-          ) : (
-            <ol className="grid gap-4 border-l border-hairline pl-4">
-              {feed.slice(0, 8).map((f) => (
-                <li key={f.id} className="relative text-[13px] leading-snug">
-                  <span aria-hidden="true" className={`absolute -left-[20px] top-[5px] size-[7px] rounded-full ring-[3px] ring-paper ${f.failure ? "bg-alert" : "bg-slate/35"}`} />
-                  <span className={f.failure ? "text-alert" : "text-ink"}>{f.text}</span>
-                  <span className="mt-0.5 block text-[12px] text-slate">
-                    {f.roleId ? (
-                      <Link href={`/console/roles/${f.roleId}/activity`} className="hover:text-ink hover:underline">
-                        {f.roleTitle}
-                      </Link>
-                    ) : null}{" "}
-                    · {f.at.toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour: "numeric", minute: "2-digit" })}
-                  </span>
-                </li>
-              ))}
-            </ol>
-          )}
-        </aside>
-      </div>
+      ) : null}
     </div>
   );
 }

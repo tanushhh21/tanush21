@@ -44,6 +44,8 @@ export const users = pgTable("user", {
   sessionsValidFrom: ts("sessions_valid_from"),
   failedLogins: integer("failed_logins").notNull().default(0),
   lockedUntil: ts("locked_until"),
+  /** How this person has arranged their own Home (see lib/console/homeLayout.ts). Null means the default. */
+  homeLayout: jsonb("home_layout").$type<Record<string, unknown>>(),
   createdAt: created(),
 });
 
