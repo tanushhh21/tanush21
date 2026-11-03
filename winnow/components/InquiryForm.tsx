@@ -19,12 +19,35 @@ function Tick() {
   );
 }
 
+/** What each form asks for and says. The waitlist reuses the call form's sending and fallbacks. */
+const COPY = {
+  call: {
+    subject: "Call request",
+    button: "Book a call",
+    note: "We will reply to find a time that suits you.",
+    thanks: "We have your details and will be in touch shortly to set up the call.",
+    mailed: "Your email app has opened with your details filled in. Send it, and we will reply to set up the call.",
+    again: "Send another request",
+  },
+  waitlist: {
+    subject: "Waitlist",
+    button: "Join the waitlist",
+    note: "No spam. We will write when there is a place for you.",
+    thanks: "You are on the waitlist. We will write to you as soon as there is a place.",
+    mailed: "Your email app has opened with your details filled in. Send it, and you are on the list.",
+    again: "Add someone else",
+  },
+} as const;
+
+export type FormKind = keyof typeof COPY;
+
 /**
- * A short call request. With a Web3Forms key it is emailed straight to us;
+ * A short call request, or a waitlist signup. With a Web3Forms key it is emailed straight to us;
  * without one, it opens the visitor's email app with the details filled in.
  * If the service cannot be reached, the visitor can still send it by email.
  */
-export default function InquiryForm() {
+export default function InquiryForm({ kind = "call" }: { kind?: FormKind }) {
+  const copy = COPY[kind];
   const [state, setState] = useState<State>("form");
   const [name, setName] = useState("");
   const [mailto, setMailto] = useState(MAIL);
@@ -40,11 +63,12 @@ export default function InquiryForm() {
     const fields = {
       Name: get("name"),
       Email: get("email"),
-      Phone: get("phone") || "-",
+      ...(kind === "call" ? { Phone: get("phone") || "-" } : {}),
       Company: get("company"),
+      ...(kind === "waitlist" ? { "Your role": get("title") || "-" } : {}),
       "Hiring for": get("role") || "-",
     };
-    const subject = `Call request: ${fields.Company || fields.Name}`;
+    const subject = `${copy.subject}: ${fields.Company || fields.Name}`;
     const body = Object.entries(fields)
       .map(([k, v]) => `${k}: ${v}`)
       .join("\n");
@@ -88,10 +112,10 @@ export default function InquiryForm() {
             Thank you{name ? `, ${name}` : ""}.
           </p>
           <p className="mx-auto mt-2 max-w-[22rem] text-[15px] leading-relaxed text-slate">
-            We have your details and will be in touch shortly to set up the call.
+            {copy.thanks}
           </p>
           <button type="button" onClick={() => setState("form")} className="link-chevron mt-6">
-            Send another request
+            {copy.again}
           </button>
         </div>
       ) : state === "mailed" ? (
@@ -99,7 +123,7 @@ export default function InquiryForm() {
           <Tick />
           <p className="mt-5 font-display text-[1.375rem] font-semibold tracking-[-0.02em] text-ink">Almost there.</p>
           <p className="mx-auto mt-2 max-w-[22rem] text-[15px] leading-relaxed text-slate">
-            Your email app has opened with your details filled in. Send it, and we will reply to set up the call.
+            {copy.mailed}
           </p>
           <p className="mt-5 text-[14px] text-slate">
             Nothing opened? Write to{" "}
@@ -141,10 +165,17 @@ export default function InquiryForm() {
               Company
               <input name="company" required autoComplete="organization" className={field} />
             </label>
-            <label className={label}>
-              Phone <span className="font-normal text-slate">(optional)</span>
-              <input name="phone" type="tel" autoComplete="tel" className={field} />
-            </label>
+            {kind === "waitlist" ? (
+              <label className={label}>
+                Your role <span className="font-normal text-slate">(optional)</span>
+                <input name="title" autoComplete="organization-title" placeholder="e.g. Head of HR" className={field} />
+              </label>
+            ) : (
+              <label className={label}>
+                Phone <span className="font-normal text-slate">(optional)</span>
+                <input name="phone" type="tel" autoComplete="tel" className={field} />
+              </label>
+            )}
           </div>
           <label className={`${label} mt-4`}>
             What are you hiring for? <span className="font-normal text-slate">(optional)</span>
@@ -158,9 +189,9 @@ export default function InquiryForm() {
             disabled={state === "sending"}
             className="btn-primary mt-7 w-full justify-center disabled:pointer-events-none disabled:opacity-70"
           >
-            {state === "sending" ? "Sending…" : "Book a call"}
+            {state === "sending" ? "Sending…" : copy.button}
           </button>
-          <p className="mt-3 text-center text-[13px] text-slate">We will reply to find a time that suits you.</p>
+          <p className="mt-3 text-center text-[13px] text-slate">{copy.note}</p>
         </form>
       )}
     </div>
