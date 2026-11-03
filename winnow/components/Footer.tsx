@@ -18,7 +18,7 @@ export default function Footer() {
           ))}
           <li>
             <a href="#talk" className="inline-block py-2 hover:text-ink">
-              Contact
+              Waitlist
             </a>
           </li>
         </ul>

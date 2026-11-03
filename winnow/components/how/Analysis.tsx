@@ -274,7 +274,7 @@ export default function Analysis() {
             <p className="text-[14px] text-slate">
               Full reports come with every shortlist.{" "}
               <a href="#talk" className="link-chevron inline-block py-1.5 !text-[14px]">
-                Book a call <span aria-hidden="true">›</span>
+                Join the waitlist <span aria-hidden="true">›</span>
               </a>
             </p>
           ) : (

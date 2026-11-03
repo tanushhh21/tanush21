@@ -231,7 +231,7 @@ export default function Hero() {
           </p>
           <div className="load-fade mt-9" style={{ animationDelay: "450ms" }}>
             <a href="#talk" className="btn-primary">
-              Book a call
+              Join the waitlist
             </a>
           </div>
         </div>

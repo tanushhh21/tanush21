@@ -2,7 +2,7 @@ import Reveal from "./Reveal";
 import Logo from "./Logo";
 import InquiryForm from "./InquiryForm";
 
-/** The section every page closes on: book a call so we can run a hire for you. */
+/** The section every page closes on: join the waitlist so we can run a hire for you. */
 export default function Contact({ logo = false }: { logo?: boolean }) {
   return (
     <section id="talk" aria-labelledby="contact-heading" className="section-y bg-mist">
@@ -19,10 +19,10 @@ export default function Contact({ logo = false }: { logo?: boolean }) {
         </h2>
         <p className="body-lg mt-5 max-w-[30rem]">
           <Reveal delay={0.06}>
-            Book a short call. Tell us about the role, and we&rsquo;ll handle everything up to the interview.
+            Join the waitlist. Tell us what you&rsquo;re hiring for, and we&rsquo;ll be in touch when we&rsquo;re ready for your team.
           </Reveal>
         </p>
-        <InquiryForm />
+        <InquiryForm kind="waitlist" />
       </div>
     </section>
   );

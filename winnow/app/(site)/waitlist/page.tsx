@@ -21,7 +21,7 @@ export default function Waitlist() {
         title="Hiring, handled up to the interview."
         sub="We source, evaluate and shortlist. You pick who to meet. Leave your details and we will be in touch when we are ready for your team."
       />
-      <section aria-label="Join the waitlist" className="section-y pt-0!">
+      <section id="talk" aria-label="Join the waitlist" className="section-y pt-0!">
         <div className="wrap flex justify-center">
           <InquiryForm kind="waitlist" />
         </div>
