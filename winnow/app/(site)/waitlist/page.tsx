@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   ...pageMeta(
     "/waitlist",
     "Join the waitlist · Winnow",
-    "Winnow sources, evaluates and shortlists candidates for Indian companies. Join the waitlist and we will write when there is a place.",
+    "Winnow sources, evaluates and shortlists candidates for Indian companies. Join the waitlist and we will be in touch when we are ready for your team.",
   ),
 };
 
@@ -19,7 +19,7 @@ export default function Waitlist() {
       <PageHead
         label="Waitlist"
         title="Hiring, handled up to the interview."
-        sub="We source, evaluate and shortlist. You pick who to meet. Leave your details and we will write when there is a place for your team."
+        sub="We source, evaluate and shortlist. You pick who to meet. Leave your details and we will be in touch when we are ready for your team."
       />
       <section aria-label="Join the waitlist" className="section-y pt-0!">
         <div className="wrap flex justify-center">
