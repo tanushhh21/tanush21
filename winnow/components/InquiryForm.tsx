@@ -32,8 +32,8 @@ const COPY = {
   waitlist: {
     subject: "Waitlist",
     button: "Join the waitlist",
-    note: "No spam. We will write when there is a place for you.",
-    thanks: "You are on the waitlist. We will write to you as soon as there is a place.",
+    note: "We will email you as soon as we are ready for your team.",
+    thanks: "You are on the waitlist. We will email you as soon as we are ready for your team.",
     mailed: "Your email app has opened with your details filled in. Send it, and you are on the list.",
     again: "Add someone else",
   },
